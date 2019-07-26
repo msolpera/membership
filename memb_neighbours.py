@@ -4,7 +4,7 @@ from sklearn import preprocessing
 # import pandas as pd
 import numpy as np
 import seaborn as seaborn
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 
 # Read data
 data = Table.read('haf14_match.dat', format='ascii')
@@ -15,11 +15,24 @@ name, coord_x, coord_y, RA, DE, Plx, pmRA, pmDE = np.array(
      data['Plx'], data['pmRA'], data['pmDE']])
 
 # Normalize input data
-RA_norm = preprocessing.normalize(RA[:, np.newaxis], axis=0).ravel()
-DE_norm = preprocessing.normalize(DE[:, np.newaxis], axis=0).ravel()
-Plx_norm = preprocessing.normalize(Plx[:, np.newaxis], axis=0).ravel()
-pmRA_norm = preprocessing.normalize(pmRA[:, np.newaxis], axis=0).ravel()
-pmDE_norm = preprocessing.normalize(pmDE[:, np.newaxis], axis=0).ravel()
+
+
+def norm_data(data_array):
+    """
+    Normalize imput data
+    """
+    min_array = np.nanmin(data_array)
+    data_min = data_array - min_array
+    max_array = np.nanmax(data_min)
+    data_norm = data_min/max_array
+    return data_norm
+
+RA_norm = norm_data(RA)
+DE_norm = norm_data(DE)
+Plx_norm = norm_data(Plx)
+pmRA_norm = norm_data(pmRA)
+pmDE_norm = norm_data(pmDE)
+
 
 # Assign to each star a vector with its parameters
 l = 1.
@@ -59,5 +72,5 @@ for i in range(len(name)):
 # print(star_n_prom)
 
 hist_n = seaborn.distplot(star_n_prom, bins=100, kde=False, color='g')
-hist_n.set(xlim=(0, 0.02))
-hist_n.figure.savefig('hist.png')
+plt.show()
+# hist_n.figure.savefig('hist.png')

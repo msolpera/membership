@@ -6,7 +6,6 @@ import numpy as np
 import seaborn as seaborn
 # import matplotlib.pyplot as plt
 
-probando
 # Read data
 data = Table.read('haf14_match.dat', format='ascii')
 

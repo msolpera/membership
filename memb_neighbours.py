@@ -5,29 +5,21 @@ import numpy as np
 import seaborn as seaborn
 import matplotlib.pyplot as plt
 import sys
+import time as t
 
+s0 = t.time()
 # Read data
 data = Table.read('haf14_match.dat', format='ascii')
 
 # Save data as numpy array
-name, coord_x, coord_y, RA, DE, Plx, pmRA, pmDE = np.array(
+name, coord_x, coord_y, RA, DE, pmRA, pmDE = np.array(
     [data['id'], data['x'], data['y'], data['RA_ICRS'], data['DE_ICRS'],
-     data['Plx'], data['pmRA'], data['pmDE']])
-
-
-# msk = (pmRA < 0) & (pmRA > -4) & (pmDE < 5) & (pmDE > 0) 
-# df = pd.DataFrame(np.array([RA, DE]).T, columns=["RA_ICRS", "DE_ICRS"])
-# df2 =  pd.DataFrame(np.array([pmRA[msk],pmDE[msk]]).T, columns=["pmRA", "pmDE"])
-# plt.scatter(RA, DE)
-# seaborn.jointplot(x="RA_ICRS", y="DE_ICRS", data = df, kind="kde")
-# seaborn.jointplot(x="pmRA", y="pmDE", data = df2, kind="kde",)
-# plt.show()
-# plt.scatter(pmRA, pmDE)
-# plt.show()
-# sys.exit()
+     data['pmRA'], data['pmDE']])
+print("1", t.time() - s0)
 
 
 # Normalize input data
+
 
 def norm_data(data_array):
     """
@@ -38,72 +30,57 @@ def norm_data(data_array):
     data_norm = (data_array - min_array)/(max_array - min_array)
     return data_norm
 
+
+s0 = t.time()
 RA_norm = norm_data(RA)
 DE_norm = norm_data(DE)
-Plx_norm = norm_data(Plx)
 pmRA_norm = norm_data(pmRA)
 pmDE_norm = norm_data(pmDE)
-
+print("2", t.time()-s0)
 
 # Assign to each star a vector with its parameters
+s0 = t.time()
+star = np.array([RA_norm, DE_norm, pmRA_norm, pmDE_norm]).T
+print("3", t.time() - s0)
 
-star = np.array([RA_norm, DE_norm, Plx_norm, pmRA_norm, pmDE_norm]).T
+# Calculate the average distance of each star to its nearest n neighbors
+s0 = t.time()
+star_count = np.zeros(len(name))
+n_i = 5
+n_f = 25
+for n in range(n_i, n_f + 1):
+        tree = sc.spatial.cKDTree(star)
+        inx = tree.query(star, k=n+1)
+        dist = inx[0]
+        star_n_prom = []
+        for i in range(len(name)):
+                promedio = sum(dist[i])/n
+                star_n_prom.append(promedio)
 
-# star = []
-# for i in range(len(name)):
-# star.append((RA_norm[i], DE_norm[i],
-# Plx_norm[i], pmRA_norm[i], pmDE_norm[i]))
+        # Stars with distances less than a percentage value are assigned the  
+        # number 1 (Cluster member)
+        p_i = 1
+        p_f = 10
+        for p in range(p_i, p_f + 1):
+                d_max = np.percentile(star_n_prom, p)
+                for j in range(len(name)):
+                        if star_n_prom[j] < d_max:
+                                star_count[j] = star_count[j] + 1
+print("4", t.time() - s0)
 
+# A percentage of membership is assigned to each star
+star_count_max = np.max(star_count)
+star_m_perc = star_count/star_count_max
 
-# Calculate distance between stars
-
-dist = sc.spatial.distance.cdist(star, star, 'euclidean')
-
-
-# Sort distances from least to greatest
-
-dist_star_sort = np.sort(dist)
-# dist_star = []
-# for i in range(len(name)):
-#    dist_star.append(dist[i])
-#    dist_star[i].sort()
-
-
-# Select the n smallest distances
-
-n = 10
-dist_star_n_min = []
-for i in range(len(name)):
-    min = dist_star_sort[i]
-    min_n = min[1:n + 1]
-    dist_star_n_min.append(min_n)
-
-
-# Average of the n shortest distances
-
-star_n_prom = []
-for i in range(len(name)):
-    prom = sum(dist_star_n_min[i]) / n
-    star_n_prom.append(prom)
-
-# Assign a number from 0 to 1 to each star (1 = min dist)
-
-star_n_prom_norm = np.array(norm_data(star_n_prom))
-star_n_prom_factor = star_n_prom_norm*(-1.)+1.
-
+# The coordinates of the stars with percentage of membership greater than perc 
+# are plotted
 memb_RA = []
 memb_DE = []
+perc = 0.5
 for i in range(len(name)):
-    if star_n_prom_factor[i] >= 0.9:
-        memb_RA.append(RA[i])
-        memb_DE.append(DE[i])
+        if star_m_perc[i] > perc:
+                memb_DE.append(DE[i])
+                memb_RA.append(RA[i])
 
-print(len(memb_RA))
-
-# plt.subplot(121)
-# plt.hist(star_n_prom, bins=50)
-# plt.subplot(122)
-# plt.hist(star_n_prom_factor, bins=50)
-plot = seaborn.JointGrid(memb_RA, memb_DE, space=0, size=5, ratio=30)
-plot.plot_joint(plt.scatter, color="darkcyan")
+plt.scatter(memb_RA, memb_DE)
 plt.show()

@@ -32,8 +32,8 @@ def main():
         star_n_prom = dist_neighbours(tree, n, stars)
         nn_avrg_dist += star_n_prom
 
-        # Use the 10th percentile of the average NN distances.
-        perc = np.percentile(star_n_prom, .1)
+        # Use the 1th percentile of the average NN distances.
+        perc = np.percentile(star_n_prom, 1)
 
         # Select stars with average distance less than 'perc'
         select_star, select_star_dist = [], []
@@ -59,6 +59,8 @@ def main():
         N_n += 1
 
     nn_avrg_dist, memb_prob = nn_avrg_dist / N_n, memb_prob / N_n
+    memb_prob = norm_data([memb_prob], 10.)
+    memb_prob = memb_prob.T[0]
 
     # Using the Differential Evolution algorithm, estimate the x,y limits
     # in the upper left corner that delimitate the most probable members.

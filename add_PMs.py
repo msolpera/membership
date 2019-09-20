@@ -46,7 +46,7 @@ def main(CI=.6):
     field_V_N, field_BV_N = generateFieldPhot(N_field, field_V, field_BV)
 
     # Generate proper motions data
-    pms_membs, pms_field = generatePMs(N_membs, N_field)
+    pms_membs, pms_field, dmean = generatePMs(N_membs, N_field)
 
     # Write final combined data to file
     tabl_cl = Table(
@@ -60,8 +60,8 @@ def main(CI=.6):
 
     # Generate plot
     makePlot(
-        membs_x, membs_y, membs_V, membs_BV, x_fl, y_fl, field_BV_N, field_V_N,
-        pms_membs, pms_field)
+        CI, membs_x, membs_y, membs_V, membs_BV, x_fl, y_fl, field_BV_N,
+        field_V_N, pms_membs, pms_field, dmean)
 
     print("Finished")
 
@@ -133,7 +133,7 @@ def generateFieldPhot(N_field, field_V, field_BV):
 
 def generatePMs(
     N_membs, N_field, fm1=-5., fm2=5., fstd1=1., fstd2=5., cm1=.05,
-        cm2=.1):
+        cm2=.1, nstd=2.):
     """
     Given a 'data' array read from a cluster file, generate proper motions
     from a bi-variate Gaussian with reasonable mean and standard deviation
@@ -146,29 +146,31 @@ def generatePMs(
        Number of members stars.
     N_field : int
        Number of field stars.
-    fm1  : float
+    fm1 : float
        Minimum value for the `mean` range used for field stars.
-    fm2  : float
+    fm2 : float
        Maximum value for the `mean` range used for field stars.
-    fstd1  : float
+    fstd1 : float
        Minimum value for the `stddev` range used for field stars.
-    fstd2  : float
+    fstd2 : float
        Maximum value for the `stddev` range used for field stars.
-    cm1  : float
+    cm1 : float
        Minimum value for the scale used for the `stddev` of cluster stars.
-    cm2  : float
+    cm2 : float
        Maximum value for the scale used for the `stddev` of cluster stars.
-
+    nstd : float
+       Number of field stars standard deviations around the mean, that define
+       the range where the mean for the cluster stars can be generated.
     """
 
     # Generate PMs for field stars.
-    mean = np.random.uniform(fm1, fm2, (2))
+    mean_f = np.random.uniform(fm1, fm2, (2))
     # This defines the standard deviation for the field stars PMs.
     c1 = np.random.uniform(fstd1, fstd2)
     # Defined as a covariance matrix, since this is a bi-variate Gaussian.
     cov = np.eye(2) * c1
     # Generate PMs for all the field stars.
-    pms_field = np.random.multivariate_normal(mean, cov, N_field)
+    pms_field = np.random.multivariate_normal(mean_f, cov, N_field)
 
     # Generate PMs for member stars.
     c2 = np.random.uniform(cm1, cm2)
@@ -180,42 +182,68 @@ def generatePMs(
     # the PM values already defined for the field stars.
 
     # Limits in the field stars PM_RA
-    range_RA = [pms_field.T[0].min(), pms_field.T[0].max()]
+    ra_std = pms_field.T[0].std()
+    range_RA = [mean_f[0] - nstd * ra_std, mean_f[0] + nstd * ra_std]
     # Random mean in the RA axis, within the defined range
     m1 = np.random.uniform(*range_RA)
 
     # Limits in the field stars PM_DEC
-    range_DEC = [pms_field.T[1].min(), pms_field.T[1].max()]
+    de_std = pms_field.T[0].std()
+    range_DE = [mean_f[1] - nstd * de_std, mean_f[1] + nstd * de_std]
     # Random mean in the DEC axis, within the defined range
-    m2 = np.random.uniform(*range_DEC)
+    m2 = np.random.uniform(*range_DE)
 
     # Mean for cluster stars
-    mean_m = np.array([m1, m2])
+    mean_c = np.array([m1, m2])
     # Generate PMs for all the member stars.
-    pms_membs = np.random.multivariate_normal(mean_m, cov, N_membs)
+    pms_membs = np.random.multivariate_normal(mean_c, cov, N_membs)
 
-    return pms_membs.T, pms_field.T
+    # Distance between means, normalized by the cluster's region stddev.
+    dmean = np.linalg.norm(mean_f - mean_c) / cov[0][0]
+
+    return pms_membs.T, pms_field.T, dmean
 
 
 def makePlot(
-    membs_x, membs_y, membs_V, membs_BV, x_fl, y_fl, field_BV_N, field_V_N,
-        pms_membs, pms_field):
+    CI, membs_x, membs_y, membs_V, membs_BV, x_fl, y_fl, field_BV_N, field_V_N,
+        pms_membs, pms_field, dmean):
     """
     """
-    fig = plt.figure(figsize=(30, 10))
+    fig = plt.figure(figsize=(10, 15))
+    plt.suptitle("CI={:.2f}, d_mean={:.2f}".format(CI, dmean), y=1.02)
 
-    plt.subplot(1, 3, 1)
-    plt.scatter(x_fl, y_fl, c='b', s=15)
-    plt.scatter(membs_x, membs_y, c='r', s=40, lw=1.5, ec='k')
+    plt.subplot(321)
+    plt.scatter(x_fl, y_fl, c='b', ec='k', lw=.5, alpha=.7, s=10)
+    plt.scatter(membs_x, membs_y, c='r', s=40, ec='k')
 
-    plt.subplot(1, 3, 2)
-    plt.scatter(field_BV_N, field_V_N, c='b', s=15)
-    plt.scatter(membs_BV, membs_V, c='r', s=40, lw=1.5, ec='k')
+    plt.subplot(322)
+    plt.hexbin(
+        x_fl.tolist() + membs_x, y_fl.tolist() + membs_y, gridsize=20,
+        cmap='Greens')
+
+    plt.subplot(323)
+    plt.scatter(
+        pms_field[0], pms_field[1], c='b', s=10, ec='k', lw=.5,
+        alpha=.7,)
+    plt.scatter(pms_membs[0], pms_membs[1], c='r', s=30, ec='k')
+
+    plt.subplot(324)
+    plt.hexbin(
+        pms_field[0].tolist() + pms_membs[0].tolist(),
+        pms_field[1].tolist() + pms_membs[1].tolist(), gridsize=20,
+        cmap='Greens')
+
+    plt.subplot(325)
+    plt.scatter(
+        field_BV_N, field_V_N, c='b', ec='k', lw=.5, alpha=.7, s=10)
+    plt.scatter(membs_BV, membs_V, c='r', s=30, ec='k')
     plt.gca().invert_yaxis()
 
-    plt.subplot(1, 3, 3)
-    plt.scatter(pms_field[0], pms_field[1], c='b', s=15)
-    plt.scatter(pms_membs[0], pms_membs[1], c='r', s=40, lw=1.5, ec='k')
+    plt.subplot(326)
+    plt.hexbin(
+        field_BV_N + membs_BV, field_V_N + membs_V, gridsize=50,
+        cmap='Greens')
+    plt.gca().invert_yaxis()
 
     fig.tight_layout()
     plt.savefig('synth_clust_out.png', dpi=150, bbox_inches='tight')

@@ -5,7 +5,7 @@ from astropy.io import ascii
 import matplotlib.pyplot as plt
 
 
-def main(CI=.6):
+def main(CI):
     """
 
     xy_range : float
@@ -246,7 +246,7 @@ def makePlot(
     plt.gca().invert_yaxis()
 
     fig.tight_layout()
-    plt.savefig('synth_clust_out.png', dpi=150, bbox_inches='tight')
+    plt.savefig('synth_clust_out_' + str(CI) + '.png', dpi=150, bbox_inches='tight')
 
 
 if __name__ == '__main__':

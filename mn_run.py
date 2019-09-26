@@ -6,9 +6,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def main():
+def main(file_name, CI):
 
-    file_name = 'synth_clust_out.dat'#'rup152_match.dat'  'haf14_match.dat' #
+    # file_name = 'haf14_match.dat'  # 'synth_clust_out.dat'#'rup152_match.dat'
     print("\nProcessing: {}".format(file_name))
 
     # Nearest neighbors range
@@ -59,18 +59,34 @@ def main():
         N_n += 1
 
     nn_avrg_dist, memb_prob = nn_avrg_dist / N_n, memb_prob / N_n
+    nn_avrg_dist = norm_data([nn_avrg_dist], 10.)
+    nn_avrg_dist = nn_avrg_dist.T[0]
     memb_prob = norm_data([memb_prob], 10.)
     memb_prob = memb_prob.T[0]
 
     # Using the Differential Evolution algorithm, estimate the x,y limits
     # in the upper left corner that delimitate the most probable members.
     bound_box = [[0., .5], [0.5, .999]]
+    xy_lim = [.5, .5]
+    crdens_frdens = boundary(
+        xy_lim, nn_avrg_dist, memb_prob, coord_x, coord_y)
+    for i in np.arange(0., .5, 0.005):
+        for j in np.arange(0.5, .999, 0.005):
+            xy_lim = [i, j]
+            crdens_frdens_ij = boundary(
+                xy_lim, nn_avrg_dist, memb_prob, coord_x, coord_y)
+            if crdens_frdens_ij <= crdens_frdens:
+                crdens_frdens = crdens_frdens_ij
+                xy_lim_min = xy_lim
+    xy_lim = xy_lim_min
+    print("xy_lim", xy_lim)
+    '''
     res = DE(
         boundary, bound_box, popsize=50, maxiter=100, disp=True,
         args=(nn_avrg_dist, memb_prob, coord_x, coord_y))
     print(res)
     xy_lim = res.x
-
+    '''
     cent, rad, crdens, frdens = boundary(
         xy_lim, nn_avrg_dist, memb_prob, coord_x, coord_y, True)
     print(cent, rad, crdens, frdens)
@@ -78,7 +94,7 @@ def main():
     # Generate plot
     plot_memb(
         file_name, nn_avrg_dist, memb_prob, coord_x, coord_y, Vmag, BV, pmRA,
-        pmDE, xy_lim, cent, rad)
+        pmDE, xy_lim, cent, rad, CI)
 
 
 def readData(file_name):
@@ -124,7 +140,7 @@ def boundary(xyf, nn_avrg_dist, memb_prob, coord_x, coord_y, cr_flag=False):
     """
     """
 
-    xp = np.percentile(nn_avrg_dist, 100 * xyf[0])
+    xp = np.percentile(nn_avrg_dist, 100. * xyf[0])
     yp = np.percentile(memb_prob, 100. * xyf[1])
 
     # Select a portion of the stars in the upper left corner
@@ -156,7 +172,7 @@ def boundary(xyf, nn_avrg_dist, memb_prob, coord_x, coord_y, cr_flag=False):
 
 def plot_memb(
     file_name, nn_avrg_dist, memb_prob, coord_x, coord_y, Vmag, BV, pmRA, pmDE,
-        xy_lim, cent, rad):
+        xy_lim, cent, rad, CI):
     """
     """
 
@@ -248,7 +264,7 @@ def plot_memb(
     plt.ylabel('pmDE')
 
     fig.tight_layout()
-    plt.savefig(file_name[:-4] + '_nn.png', dpi=150, bbox_inches='tight')
+    plt.savefig(file_name[:-4] + '_nn_' + str(CI) + '.png', dpi=150, bbox_inches='tight')
 
 
 if __name__ == '__main__':

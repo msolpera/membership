@@ -49,10 +49,9 @@ def main(file_name, CI):
         # Calculate the N-dimensional centroid of these stars as the
         # average of their positions, weighted by their associated average
         # N-N distances.
-        centroid = np.average(
-            select_star, axis=0, weights=1. / np.array(select_star_dist))
-        print("NN: {}, centroid: ({:.3f}, {:.3f}, {:.3f}, {:.3f})".format(
-            n, *centroid))
+        w = np.exp(-.5 * np.array(select_star_dist))
+        centroid = np.average(select_star, axis=0, weights=w)
+        print("NN: {}, centroid: {}".format(n, centroid))
 
         # Calculate the probability of membership as the reciprocal of the
         # distance to the centroid

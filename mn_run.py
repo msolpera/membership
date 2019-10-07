@@ -6,6 +6,7 @@ from astropy.table import Table
 from astropy.io import ascii
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
 
 
 def main(file_name, CI):
@@ -268,9 +269,11 @@ def plot_memb(
     """
     """
     # Define output figure size
-    fig = plt.figure(figsize=(20, 20))
+    fig = plt.figure(figsize=(20, 50))
+    gs = gridspec.GridSpec(10, 4)
 
-    plt.subplot(221)
+    ax = plt.subplot(gs[0:2, 0:2])
+    ax.minorticks_on()
     plt.title("N (filtered)={}".format(len(memb_RA)))
     plt.grid(ls=':', c='grey', lw=.7)
     # plt.hist(mp_norm, bins=50, density=True)
@@ -279,23 +282,28 @@ def plot_memb(
     st_mean, st_std = np.median(nn_avrg_dist), np.std(nn_avrg_dist)
     xmin, xmax = max(0., min(nn_avrg_dist) - .5 * st_std),\
         st_mean + 2. * st_std
+    xp = np.percentile(nn_avrg_dist, 100 * xy_lim[0])
+    yp1 = np.percentile(memb_prob, 100. * xy_lim[1])
+    # yp2 = np.percentile(memb_prob, 100. * xy_lim[2])
     plt.hlines(
         xy_lim[1], xmin=xmin, xmax=xy_lim[0], color='r', lw=2, ls='--',
-        label='MP={:.2f}'.format(xy_lim[1]))
+        label='MP={:.2f} (yp1={:.2f})'.format(xy_lim[1], yp1))
+    # plt.hlines(
+    #     xy_lim[2], xmin=xmin, xmax=xy_lim[0], color='r', lw=2, ls='--',
+    #     label='MP={:.2f} (yp2={:.2f})'.format(xy_lim[2], yp2))
     plt.vlines(
-        xy_lim[0], ymin=xy_lim[1], ymax=ymax, color='r', lw=2, ls='--',
-        label='NN dist={:.2f}'.format(xy_lim[0]))
+        xy_lim[0], ymin=xy_lim[1], ymax=1., color='r', lw=2, ls='--',
+        label='NN dist={:.2f} (xp={:.2f})'.format(xy_lim[0], xp))
     plt.xlim(xmin, xmax)
     plt.ylim(ymin, ymax)
     plt.xlabel("Average NN distance")
     plt.ylabel('MPs')
     plt.legend()
 
-    plt.subplot(222)
+    plt.subplot(gs[2:4, 0:2])
     plt.title("(x0, y0)=({:.2f}, {:.2f}) , r={:.2f}".format(*cent, rad))
     plt.grid(ls=':', c='grey', lw=.7)
-    plt.scatter(memb_RA, memb_DE, s=50, c=memb_color, lw=.5,
-                edgecolor='k')
+    plt.scatter(memb_RA, memb_DE, s=50, c=memb_color, lw=.5, edgecolor='k')
     plt.colorbar(aspect=90, pad=0.01)
     plt.scatter(
         field_RA, field_DE, s=5, facecolor='none', edgecolor='k', alpha=.5)
@@ -305,29 +313,88 @@ def plot_memb(
     plt.xlabel('x')
     plt.ylabel('y')
 
-    plt.subplot(223)
+    plt.subplot(gs[2:4, 2:4])
+    # plt.title("(x0, y0)=({:.2f}, {:.2f}) , r={:.2f}".format(*cent, rad))
     plt.grid(ls=':', c='grey', lw=.7)
-    plt.scatter(memb_BV, memb_V, s=50, c=memb_color, lw=.5,
-                edgecolor='k', zorder=4)
-    plt.scatter(
-        field_BV, field_V, marker='^', s=5, c='grey', alpha=.75, zorder=1)
-    plt.xlabel('BV')
-    plt.ylabel('V')
-    plt.gca().invert_yaxis()
+    plt.scatter(memb_RA, memb_DE, s=50, c=memb_color, lw=.5, edgecolor='k')
+    plt.colorbar(aspect=90, pad=0.01)
+    plt.xlabel('x')
+    plt.ylabel('y')
 
-    plt.subplot(224)
+    # IN PLACE FOR THE PARALAX
+    # plt.subplot(gs[4:6, 0:2])
+    # plt.grid(ls=':', c='grey', lw=.7)
+    # plt.scatter(memb_Plx, memb_V, s=50, c=memb_color, lw=.5,
+    #             edgecolor='k', zorder=4)
+    # plt.colorbar(aspect=90, pad=0.01)
+    # plt.scatter(
+    #     field_Plx, field_V, marker='^', s=5, c='grey', alpha=.75, zorder=1)
+    # xmean, xstd = np.mean(field_Plx), np.std(field_Plx)
+    # plt.xlim(max(-1., xmean - 3. * xstd), xmean + 3. * xstd)
+    # plt.gca().invert_yaxis()
+    # plt.xlabel('Plx')
+    # plt.ylabel('Mag')
+
+    # plt.subplot(gs[4:6, 2:4])
+    # plt.grid(ls=':', c='grey', lw=.7)
+    # plt.scatter(
+    #     field_Plx, field_V, marker='^', s=5, c='grey', zorder=1)
+    # plt.scatter(memb_Plx, memb_V, s=50, c=memb_color, lw=.5, alpha=.75,
+    #             edgecolor='k', zorder=4)
+    # plt.colorbar(aspect=90, pad=0.01)
+    # xmean, xstd = np.mean(memb_Plx), np.std(memb_Plx)
+    # plt.xlim(xmean - 3. * xstd, xmean + 3. * xstd)
+    # plt.gca().invert_yaxis()
+    # plt.xlabel('Plx')
+    # plt.ylabel('Mag')
+
+    plt.subplot(gs[6:8, 0:2])
     plt.grid(ls=':', c='grey', lw=.7)
     plt.scatter(memb_pmRA, memb_pmDE, s=50, c=memb_color, lw=.5,
                 edgecolor='k', zorder=4)
     plt.colorbar(aspect=90, pad=0.01)
     plt.scatter(
         field_pmRA, field_pmDE, marker='^', s=5, c='grey', alpha=.75, zorder=1)
+    xmean, xstd = np.mean(field_pmRA), np.std(field_pmRA)
+    ymean, ystd = np.mean(field_pmDE), np.std(field_pmDE)
+    plt.xlim(xmean - 3. * xstd, xmean + 3. * xstd)
+    plt.ylim(ymean - 3. * ystd, ymean + 3. * ystd)
+    plt.xlabel('pmRA')
+    plt.ylabel('pmDE')
+
+    plt.subplot(gs[6:8, 2:4])
+    plt.grid(ls=':', c='grey', lw=.7)
+    plt.scatter(
+        field_pmRA, field_pmDE, marker='^', s=5, c='grey', zorder=1)
+    plt.scatter(memb_pmRA, memb_pmDE, s=50, c=memb_color, lw=.5, alpha=.75,
+                edgecolor='k', zorder=4)
+    plt.colorbar(aspect=90, pad=0.01)
     xmean, xstd = np.mean(memb_pmRA), np.std(memb_pmRA)
     ymean, ystd = np.mean(memb_pmDE), np.std(memb_pmDE)
     plt.xlim(xmean - 3. * xstd, xmean + 3. * xstd)
     plt.ylim(ymean - 3. * ystd, ymean + 3. * ystd)
     plt.xlabel('pmRA')
     plt.ylabel('pmDE')
+
+    plt.subplot(gs[8:10, 0:2])
+    plt.grid(ls=':', c='grey', lw=.7)
+    # plt.scatter(memb_BV, memb_V, s=50, c=memb_color, lw=.5,
+    #             edgecolor='k', zorder=4)
+    plt.scatter(
+        field_BV, field_V, marker='^', s=5, c='grey', alpha=.75, zorder=1)
+    plt.xlabel('BV')
+    plt.ylabel('V')
+    plt.gca().invert_yaxis()
+
+    plt.subplot(gs[8:10, 2:4])
+    plt.grid(ls=':', c='grey', lw=.7)
+    plt.scatter(memb_BV, memb_V, s=50, c=memb_color, lw=.5,
+                edgecolor='k', zorder=4)
+    # plt.scatter(
+    #     field_BV, field_V, marker='^', s=5, c='grey', alpha=.75, zorder=1)
+    plt.xlabel('BV')
+    plt.ylabel('V')
+    plt.gca().invert_yaxis()
 
     fig.tight_layout()
 

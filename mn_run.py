@@ -18,14 +18,15 @@ def main(file_name, CI):
     ID, coord_x, coord_y, Vmag, BV, pmRA, pmDE = readData(file_name)
 
     # Normalize all input data
-    stars = norm_data((coord_x, coord_y, pmRA, pmDE))
+    stars, msk_data = norm_data((coord_x, coord_y, pmRA, pmDE))
+    N_stars = stars.shape[0]
 
     # Process this once here, to avoid repeating multiple times inside the
     # 'for' block below.
     tree = spatial.cKDTree(stars)
 
     # Calculate the average distance of each star to its nearest n neighbors
-    nn_avrg_dist, memb_prob, N_n = np.zeros(len(ID)), np.zeros(len(ID)), 0
+    nn_avrg_dist, memb_prob, N_n = np.zeros(N_stars), np.zeros(N_stars), 0
     for n in range(n_i, n_f + 1, 2):
 
         # Average distance to the 'n' nearest neighbors
@@ -58,28 +59,26 @@ def main(file_name, CI):
 
         N_n += 1
 
-    nn_avrg_dist, memb_prob = nn_avrg_dist / N_n, memb_prob / N_n
-    nn_avrg_dist = norm_data([nn_avrg_dist], 10.)
-    nn_avrg_dist = nn_avrg_dist.T[0]
-    memb_prob = norm_data([memb_prob], 10.)
-    memb_prob = memb_prob.T[0]
+    data_n, _ = norm_data([memb_prob, nn_avrg_dist], 100.)
+    memb_prob, nn_avrg_dist = data_n.T
 
     # Using the Differential Evolution algorithm, estimate the x,y limits
     # in the upper left corner that delimitate the most probable members.
     # bound_box = [[0., .5], [0.5, .999]]
     xy_lim = [.5, .5]
     crdens_frdens = boundary(
-        xy_lim, nn_avrg_dist, memb_prob, coord_x, coord_y)
+        xy_lim, nn_avrg_dist, memb_prob, coord_x[msk_data], coord_y[msk_data])
     for i in np.arange(0., .5, 0.005):
         for j in np.arange(0.5, .999, 0.005):
             xy_lim = [i, j]
             crdens_frdens_ij = boundary(
-                xy_lim, nn_avrg_dist, memb_prob, coord_x, coord_y)
+                xy_lim, nn_avrg_dist, memb_prob, coord_x[msk_data], coord_y[msk_data])
             if crdens_frdens_ij <= crdens_frdens:
                 crdens_frdens = crdens_frdens_ij
                 xy_lim_min = xy_lim
     xy_lim = xy_lim_min
     print("xy_lim", xy_lim)
+
     '''
     res = DE(
         boundary, bound_box, popsize=50, maxiter=100, disp=True,
@@ -87,14 +86,23 @@ def main(file_name, CI):
     print(res)
     xy_lim = res.x
     '''
+
+    # Split cluster members and field stars populations.
+    memb_ID, memb_x, memb_y, memb_V, memb_BV, memb_pmRA, memb_pmDE,\
+        memb_color, field_x, field_y, field_V, field_BV, field_pmRA,\
+        field_pmDE = membSplit(
+            ID, coord_x, coord_y, Vmag, BV, pmRA, pmDE, msk_data,
+            nn_avrg_dist, memb_prob, xy_lim)
+
     cent, rad, crdens, frdens = boundary(
-        xy_lim, nn_avrg_dist, memb_prob, coord_x, coord_y, True)
+        xy_lim, nn_avrg_dist, memb_prob, coord_x[msk_data], coord_y[msk_data], True)
     print(cent, rad, crdens, frdens)
 
     # Generate plot
     plot_memb(
-        file_name, nn_avrg_dist, memb_prob, coord_x, coord_y, Vmag, BV, pmRA,
-        pmDE, xy_lim, cent, rad, CI)
+        file_name, CI, memb_prob, nn_avrg_dist, memb_x, memb_y, memb_V,
+        memb_BV, memb_pmRA, memb_pmDE, memb_color, field_x, field_y, field_V,
+        field_BV, field_pmRA, field_pmDE, xy_lim, cent, rad)
 
 
 def readData(file_name):
@@ -112,18 +120,23 @@ def norm_data(data_arr, nstd=3.):
     """
     Normalize input data
     """
-    data_norm = []
+    msk_all = []
     for arr in data_arr:
         # Mask outliers (np.nan).
         med, std = np.nanmedian(arr), np.nanstd(arr)
         dmin, dmax = med - nstd * std, med + nstd * std
-        arr = np.clip(arr, dmin, dmax)
+        msk = (arr > dmin) & (arr < dmax)
+        msk_all.append(msk.data)
 
-        min_array = np.nanmin(arr)
-        max_array = np.nanmax(arr)
-        data_norm.append((arr - min_array) / (max_array - min_array))
+    msk_data = np.logical_and.reduce(msk_all)
 
-    return np.array(data_norm).T
+    data_norm = []
+    for arr in data_arr:
+        min_array = np.nanmin(arr[msk_data])
+        max_array = np.nanmax(arr[msk_data])
+        data_norm.append((arr[msk_data] - min_array) / (max_array - min_array))
+
+    return np.array(data_norm).T, msk_data
 
 
 def dist_neighbours(tree, n, stars):
@@ -140,8 +153,9 @@ def boundary(xyf, nn_avrg_dist, memb_prob, coord_x, coord_y, cr_flag=False):
     """
     """
 
-    xp = np.percentile(nn_avrg_dist, 100. * xyf[0])
-    yp = np.percentile(memb_prob, 100. * xyf[1])
+    # xp = np.percentile(nn_avrg_dist, 100. * xyf[0])
+    # yp = np.percentile(memb_prob, 100. * xyf[1])
+    xp, yp = xyf
 
     # Select a portion of the stars in the upper left corner
     msk = (nn_avrg_dist < xp) & (memb_prob > yp)
@@ -170,29 +184,26 @@ def boundary(xyf, nn_avrg_dist, memb_prob, coord_x, coord_y, cr_flag=False):
     return abs(clust_reg_field_dens - field_dens)
 
 
-def plot_memb(
-    file_name, nn_avrg_dist, memb_prob, coord_x, coord_y, Vmag, BV, pmRA, pmDE,
-        xy_lim, cent, rad, CI):
+def membSplit(
+    ID, coord_x, coord_y, Vmag, BV, pmRA, pmDE, msk_data, nn_avrg_dist,
+        memb_prob, xy_lim):
     """
     """
-
-    memb_RA, memb_DE, memb_V, memb_BV, memb_pmRA, memb_pmDE, memb_color =\
+    msk_ID, msk_RA, msk_DE, msk_V, msk_BV, msk_pmRA, msk_pmDE,\
+        msk_Plx = [[] for _ in range(8)]
+    field_RA, field_DE, field_V, field_BV, field_pmRA, field_pmDE, field_Plx =\
         [[] for _ in range(7)]
-    field_RA, field_DE, field_V, field_BV, field_pmRA, field_pmDE =\
-        [[] for _ in range(6)]
 
-    xp = np.percentile(nn_avrg_dist, 100 * xy_lim[0])
-    yp = np.percentile(memb_prob, 100. * xy_lim[1])
-
-    for i, x in enumerate(coord_x):
-        if nn_avrg_dist[i] < xp and memb_prob[i] > yp:
-            memb_RA.append(coord_x[i])
-            memb_DE.append(coord_y[i])
-            memb_V.append(Vmag[i])
-            memb_BV.append(BV[i])
-            memb_pmRA.append(pmRA[i])
-            memb_pmDE.append(pmDE[i])
-            memb_color.append(memb_prob[i])
+    for i, flag in enumerate(msk_data):
+        if bool(flag) is True:
+            msk_ID.append(ID[i])
+            msk_RA.append(coord_x[i])
+            msk_DE.append(coord_y[i])
+            msk_V.append(Vmag[i])
+            msk_BV.append(BV[i])
+            msk_pmRA.append(pmRA[i])
+            msk_pmDE.append(pmDE[i])
+            # msk_Plx.append(Plx[i])
         else:
             field_RA.append(coord_x[i])
             field_DE.append(coord_y[i])
@@ -200,7 +211,42 @@ def plot_memb(
             field_BV.append(BV[i])
             field_pmRA.append(pmRA[i])
             field_pmDE.append(pmDE[i])
+            # field_Plx.append(Plx[i])
 
+    memb_ID, memb_RA, memb_DE, memb_V, memb_BV, memb_pmRA, memb_pmDE,\
+        memb_Plx, memb_color = [[] for _ in range(9)]
+
+    for i, _id in enumerate(msk_ID):
+        if nn_avrg_dist[i] < xy_lim[0] and memb_prob[i] > xy_lim[1]:
+            memb_ID.append(_id)
+            memb_RA.append(msk_RA[i])
+            memb_DE.append(msk_DE[i])
+            memb_V.append(msk_V[i])
+            memb_BV.append(msk_BV[i])
+            memb_pmRA.append(msk_pmRA[i])
+            memb_pmDE.append(msk_pmDE[i])
+            # memb_Plx.append(msk_Plx[i])
+            memb_color.append(memb_prob[i])
+        else:
+            field_RA.append(msk_RA[i])
+            field_DE.append(msk_DE[i])
+            field_V.append(msk_V[i])
+            field_BV.append(msk_BV[i])
+            field_pmRA.append(msk_pmRA[i])
+            field_pmDE.append(msk_pmDE[i])
+            # field_Plx.append(msk_Plx[i])
+
+    return memb_ID, memb_RA, memb_DE, memb_V, memb_BV, memb_pmRA, memb_pmDE,\
+        memb_color, field_RA, field_DE, field_V, field_BV, field_pmRA,\
+        field_pmDE
+
+
+def plot_memb(
+    file_name, CI, memb_prob, nn_avrg_dist, memb_RA, memb_DE, memb_V, memb_BV,
+    memb_pmRA, memb_pmDE, memb_color, field_RA, field_DE, field_V,
+        field_BV, field_pmRA, field_pmDE, xy_lim, cent, rad):
+    """
+    """
     # Define output figure size
     fig = plt.figure(figsize=(20, 20))
 
@@ -214,11 +260,11 @@ def plot_memb(
     xmin, xmax = max(0., min(nn_avrg_dist) - .5 * st_std),\
         st_mean + 2. * st_std
     plt.hlines(
-        yp, xmin=xmin, xmax=xp, color='r', lw=2, ls='--',
-        label='yp={:.2f}'.format(yp))
+        xy_lim[1], xmin=xmin, xmax=xy_lim[0], color='r', lw=2, ls='--',
+        label='MP={:.2f}'.format(xy_lim[1]))
     plt.vlines(
-        xp, ymin=yp, ymax=ymax, color='r', lw=2, ls='--',
-        label='xp={:.2f}'.format(xp))
+        xy_lim[0], ymin=xy_lim[1], ymax=ymax, color='r', lw=2, ls='--',
+        label='NN dist={:.2f}'.format(xy_lim[0]))
     plt.xlim(xmin, xmax)
     plt.ylim(ymin, ymax)
     plt.xlabel("Average NN distance")

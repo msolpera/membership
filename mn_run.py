@@ -74,7 +74,8 @@ def main(file_name, CI):
         for j in np.arange(0.5, .999, 0.005):
             xy_lim = [i, j]
             crdens_frdens_ij = boundary(
-                xy_lim, nn_avrg_dist, memb_prob, coord_x[msk_data], coord_y[msk_data])
+                xy_lim, nn_avrg_dist, memb_prob, coord_x[msk_data],
+                coord_y[msk_data])
             if crdens_frdens_ij <= crdens_frdens:
                 crdens_frdens = crdens_frdens_ij
                 xy_lim_min = xy_lim
@@ -97,7 +98,8 @@ def main(file_name, CI):
             nn_avrg_dist, memb_prob, xy_lim)
 
     cent, rad, crdens, frdens = boundary(
-        xy_lim, nn_avrg_dist, memb_prob, coord_x[msk_data], coord_y[msk_data], True)
+        xy_lim, nn_avrg_dist, memb_prob, coord_x[msk_data], coord_y[msk_data],
+        True)
     print(cent, rad, crdens, frdens)
 
     # Generate plot

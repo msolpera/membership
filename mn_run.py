@@ -43,7 +43,7 @@ def main(file_name, CI):
         # Select stars with average distance less than 'perc'
         select_star, select_star_dist = [], []
         for i, star in enumerate(stars):
-            if star_n_prom[i] < perc:
+            if star_n_prom[i] <= perc:
                 select_star.append(star)
                 select_star_dist.append(star_n_prom[i])
 

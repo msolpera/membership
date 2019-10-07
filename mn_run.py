@@ -3,6 +3,7 @@ import os
 from scipy import spatial
 # from scipy.optimize import differential_evolution as DE
 from astropy.table import Table
+from astropy.io import ascii
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -101,6 +102,9 @@ def main(file_name, CI):
         xy_lim, nn_avrg_dist, memb_prob, coord_x[msk_data], coord_y[msk_data],
         True)
     print(cent, rad, crdens, frdens)
+
+    # Store the selected member stars in an output file.
+    storeMembs(file_name, memb_ID, CI)
 
     # Generate plot
     plot_memb(
@@ -245,6 +249,18 @@ def membSplit(
         field_pmDE
 
 
+def storeMembs(file_name, memb_ID, CI):
+    """
+    """
+    # If the 'output/' folder does not exist, create one.
+    if not os.path.exists('output'):
+        os.makedirs('output')
+
+    out_name = 'output/' + file_name[6:-4] + '_nn_' + str(CI) + '.dat'
+    ascii.write(
+        [memb_ID], out_name, names=['ID'], overwrite=True)
+
+
 def plot_memb(
     file_name, CI, memb_prob, nn_avrg_dist, memb_RA, memb_DE, memb_V, memb_BV,
     memb_pmRA, memb_pmDE, memb_color, field_RA, field_DE, field_V,
@@ -315,9 +331,6 @@ def plot_memb(
 
     fig.tight_layout()
 
-    # If the 'output/' folder does not exist, create one.
-    if not os.path.exists('output'):
-        os.makedirs('output')
     # Output image name
     out_name = 'output/' + file_name[6:-4] + '_nn_' + str(CI) + '.png'
     plt.savefig(out_name, dpi=150, bbox_inches='tight')

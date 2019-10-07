@@ -104,6 +104,10 @@ def main(file_name, CI):
         True)
     print(cent, rad, crdens, frdens)
 
+    # Calculate member index
+    MI = member_index(ID[msk_data], coord_x[msk_data], coord_y[msk_data], memb_prob)
+
+    '''
     # Store the selected member stars in an output file.
     storeMembs(file_name, memb_ID, CI)
 
@@ -112,6 +116,8 @@ def main(file_name, CI):
         file_name, CI, memb_prob, nn_avrg_dist, memb_x, memb_y, memb_V,
         memb_BV, memb_pmRA, memb_pmDE, memb_color, field_x, field_y, field_V,
         field_BV, field_pmRA, field_pmDE, xy_lim, cent, rad)
+    '''
+    return MI
 
 
 def readData(file_name):
@@ -260,6 +266,25 @@ def storeMembs(file_name, memb_ID, CI):
     out_name = 'output/' + file_name[6:-4] + '_nn_' + str(CI) + '.dat'
     ascii.write(
         [memb_ID], out_name, names=['ID'], overwrite=True)
+
+def member_index(ID, coord_x, coord_y, memb_prob):
+    sum_pm = 0.
+    sum_memb = 0.
+    sum_pf = 0.
+    cent, rad = (1024, 1024), 250.
+    dist_2_cent = np.linalg.norm(np.array([coord_x, coord_y]).T - cent, axis=1)
+    for i in range(len(ID)):
+        if (str(ID[i])[0] == '1' and dist_2_cent[i] <= rad):
+            sum_pm = sum_pm + memb_prob[i]
+
+        if (str(ID[i])[0] != '1' and dist_2_cent[i] <= rad):
+            sum_pf = sum_pf + memb_prob[i]
+
+        if str(ID[i])[0] == '1':
+            sum_memb = sum_memb + 1.
+
+    MI = (sum_pm - sum_pf)/sum_memb
+    return MI
 
 
 def plot_memb(

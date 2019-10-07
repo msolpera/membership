@@ -1,7 +1,7 @@
 
 import os
 from scipy import spatial
-from scipy.optimize import differential_evolution as DE
+# from scipy.optimize import differential_evolution as DE
 from astropy.table import Table
 import numpy as np
 import matplotlib.pyplot as plt
@@ -66,7 +66,7 @@ def main(file_name, CI):
 
     # Using the Differential Evolution algorithm, estimate the x,y limits
     # in the upper left corner that delimitate the most probable members.
-    bound_box = [[0., .5], [0.5, .999]]
+    # bound_box = [[0., .5], [0.5, .999]]
     xy_lim = [.5, .5]
     crdens_frdens = boundary(
         xy_lim, nn_avrg_dist, memb_prob, coord_x, coord_y)

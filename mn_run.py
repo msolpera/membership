@@ -33,8 +33,11 @@ def main(file_name, CI):
         star_n_prom = dist_neighbours(tree, n, stars)
         nn_avrg_dist += star_n_prom
 
-        # Use the 1th percentile of the average NN distances.
-        perc = np.percentile(star_n_prom, 1)
+        # Use the Xth percentile of the average NN distances.
+        perc, p = 0., 1.
+        while perc <= 0.:
+            perc = np.percentile(star_n_prom, p)
+            p += 1.
 
         # Select stars with average distance less than 'perc'
         select_star, select_star_dist = [], []

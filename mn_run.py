@@ -1,4 +1,5 @@
 
+import os
 from scipy import spatial
 from scipy.optimize import differential_evolution as DE
 from astropy.table import Table
@@ -8,8 +9,7 @@ import matplotlib.pyplot as plt
 
 def main(file_name, CI):
 
-    # file_name = 'haf14_match.dat'  # 'synth_clust_out.dat'#'rup152_match.dat'
-    print("\nProcessing: {}".format(file_name))
+    print("\nProcessing: {}".format(file_name[6:-4]))
 
     # Nearest neighbors range
     n_i, n_f = 5, 25
@@ -264,8 +264,14 @@ def plot_memb(
     plt.ylabel('pmDE')
 
     fig.tight_layout()
-    plt.savefig(file_name[:-4] + '_nn_' + str(CI) + '.png', dpi=150, bbox_inches='tight')
+
+    # If the 'output/' folder does not exist, create one.
+    if not os.path.exists('output'):
+        os.makedirs('output')
+    # Output image name
+    out_name = 'output/' + file_name[6:-4] + '_nn_' + str(CI) + '.png'
+    plt.savefig(out_name, dpi=150, bbox_inches='tight')
 
 
 if __name__ == '__main__':
-    main()
+    main('input/synth_clust_out.dat', .6)

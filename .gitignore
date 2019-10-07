@@ -3,3 +3,6 @@
 *.pyc
 *.png
 *.dat
+/input/*
+!/input/README.md
+/output/*

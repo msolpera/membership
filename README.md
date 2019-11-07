@@ -12,3 +12,6 @@
  - [Using Voronoi diagrams to improve classification performances when modeling imbalanced datasets](https://link.springer.com/article/10.1007/s00521-014-1780-0)
  - [Classification and K-nearest neighbours](https://www.inf.ed.ac.uk/teaching/courses/inf2b/learnnotes/inf2b-learn04-notes-nup.pdf)
  - [A Fuzzy Neural Network Approach to Classification Based on Proximity Characteristics of Patterns](http://www.cs.uoi.gr/~kblekas/papers/C8.pdf)
+
+### MST clustering
+- [A scaled-MST-based clustering algorithm and application on image segmentation](https://link.springer.com/article/10.1007%2Fs10844-019-00572-x), [PDF](https://sci-hub.tw/10.1007/s10844-019-00572-x)

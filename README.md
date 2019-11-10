@@ -15,3 +15,8 @@
 
 ### MST clustering
 - [A scaled-MST-based clustering algorithm and application on image segmentation](https://link.springer.com/article/10.1007%2Fs10844-019-00572-x), [PDF](https://sci-hub.tw/10.1007/s10844-019-00572-x)
+
+### Unsupervised clustering
+
+- [Clustering Unclustered Data: Unsupervised Binary Labeling of Two Datasets Having Different Class Balances](https://arxiv.org/abs/1305.0103)
+- [Clustering using Unsupervised Binary Trees: CUBT](https://arxiv.org/abs/1011.2624v2)

@@ -6,3 +6,4 @@
 /input/*
 !/input/README.md
 /output/*
+.vscode/

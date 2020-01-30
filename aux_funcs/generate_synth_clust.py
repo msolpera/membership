@@ -1,11 +1,12 @@
 
 import numpy as np
+from scipy.spatial import distance
 from astropy.table import Table, vstack
 from astropy.io import ascii
 import matplotlib.pyplot as plt
 
 
-def main(CI=0.6):
+def main(CI=0.9):
     """
 
     xy_range : float
@@ -16,8 +17,9 @@ def main(CI=0.6):
       The contamination index. Set to be 0.6 to match Haffner 14.
     """
 
-    # Hardcoded parameters: cluster radius and frame lengths in x & y.
-    cl_rad, xy_range = 250., 2048.
+    # Hardcoded parameters: cluster's center and radius, and frame's lengths
+    # in x & y.
+    cl_cent, cl_rad, xy_range = [(1024., 1024.)], 250., 2048.
 
     # Read input synthetic cluster data
     data = ascii.read('synth_clust_input.dat')
@@ -61,8 +63,8 @@ def main(CI=0.6):
 
     # Generate plot
     makePlot(
-        CI, membs_x, membs_y, membs_V, membs_BV, x_fl, y_fl, field_BV_N,
-        field_V_N, pms_membs, pms_field, dmean)
+        cl_cent, cl_rad, CI, membs_x, membs_y, membs_V, membs_BV, x_fl, y_fl,
+        field_BV_N, field_V_N, pms_membs, pms_field, dmean)
 
     print("Finished")
 
@@ -134,7 +136,7 @@ def generateFieldPhot(N_field, field_V, field_BV):
 
 def generatePMs(
     N_membs, N_field, fm1=-5., fm2=5., fstd1=1., fstd2=5., cm1=.05,
-        cm2=.1, nstd=2.):
+        cm2=.1, nstd=5.):
     """
     Given a 'data' array read from a cluster file, generate proper motions
     from a bi-variate Gaussian with reasonable mean and standard deviation
@@ -206,16 +208,27 @@ def generatePMs(
 
 
 def makePlot(
-    CI, membs_x, membs_y, membs_V, membs_BV, x_fl, y_fl, field_BV_N, field_V_N,
-        pms_membs, pms_field, dmean):
+    cl_cent, cl_rad, CI, membs_x, membs_y, membs_V, membs_BV, x_fl, y_fl,
+        field_BV_N, field_V_N, pms_membs, pms_field, dmean):
     """
     """
+    dist_cent = distance.cdist(cl_cent, np.array((x_fl, y_fl)).T)[0]
+    msk = dist_cent <= cl_rad
+
     fig = plt.figure(figsize=(10, 15))
     plt.suptitle("CI={:.2f}, d_mean={:.2f}".format(CI, dmean), y=1.02)
 
     plt.subplot(321)
-    plt.scatter(x_fl, y_fl, c='b', ec='k', lw=.5, alpha=.7, s=10)
-    plt.scatter(membs_x, membs_y, c='r', s=40, ec='k')
+    x_fl_i, y_fl_i = x_fl[msk], y_fl[msk]
+    x_fl_o, y_fl_o = x_fl[~msk], y_fl[~msk]
+    plt.scatter(
+        x_fl_o, y_fl_o, c='b', ec='k', lw=.5, alpha=.7, s=10,
+        label="Field")
+    plt.scatter(
+        x_fl_i, y_fl_i, c='orange', ec='k', lw=.5, alpha=.7, s=25,
+        label="Field, r<rad")
+    plt.scatter(membs_x, membs_y, c='r', s=40, ec='k', label="Cluster")
+    plt.legend(fontsize="small")
 
     plt.subplot(322)
     plt.hexbin(
@@ -223,9 +236,10 @@ def makePlot(
         cmap='Greens')
 
     plt.subplot(323)
-    plt.scatter(
-        pms_field[0], pms_field[1], c='b', s=10, ec='k', lw=.5,
-        alpha=.7,)
+    pmra_i, pmde_i = pms_field[0][msk], pms_field[1][msk]
+    pmra_o, pmde_o = pms_field[0][~msk], pms_field[1][~msk]
+    plt.scatter(pmra_o, pmde_o, c='b', s=10, ec='k', lw=.5, alpha=.7,)
+    plt.scatter(pmra_i, pmde_i, c='orange', s=25, ec='k', lw=.5, alpha=.7,)
     plt.scatter(pms_membs[0], pms_membs[1], c='r', s=30, ec='k')
 
     plt.subplot(324)
@@ -235,8 +249,10 @@ def makePlot(
         cmap='Greens')
 
     plt.subplot(325)
-    plt.scatter(
-        field_BV_N, field_V_N, c='b', ec='k', lw=.5, alpha=.7, s=10)
+    BV_i, V_i = np.array(field_BV_N)[msk], np.array(field_V_N)[msk]
+    BV_o, V_o = np.array(field_BV_N)[~msk], np.array(field_V_N)[~msk]
+    plt.scatter(BV_o, V_o, c='b', s=10, ec='k', lw=.5, alpha=.7,)
+    plt.scatter(BV_i, V_i, c='orange', s=25, ec='k', lw=.5, alpha=.7,)
     plt.scatter(membs_BV, membs_V, c='r', s=30, ec='k')
     plt.gca().invert_yaxis()
 

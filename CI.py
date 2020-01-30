@@ -4,13 +4,6 @@ from scipy.spatial import distance
 from astropy.table import Table
 
 
-def read_data(file_name):
-    data = Table.read(file_name, format='ascii')
-    data = data['ID', 'x', 'y', 'V', 'BV', 'pmRA', 'pmDE']
-    return data['ID'], data['x'], data['y'], data['V'],\
-        data['BV'], data['pmRA'], data['pmDE']
-
-
 def main(rad, cent, file_name):
     # Read data
     ID, coord_x, coord_y, V, BV, pmRA, pmDE = read_data(file_name)
@@ -54,6 +47,13 @@ def main(rad, cent, file_name):
 
     # Unused?
     A_parameter, B_paramater = [], []
+
+
+def read_data(file_name):
+    data = Table.read(file_name, format='ascii')
+    data = data['ID', 'x', 'y', 'V', 'BV', 'pmRA', 'pmDE']
+    return data['ID'], data['x'], data['y'], data['V'],\
+        data['BV'], data['pmRA'], data['pmDE']
 
 
 if __name__ == '__main__':

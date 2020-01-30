@@ -1,9 +1,12 @@
 
-
+# Ignore this
 *.pyc
 *.png
 *.dat
 /input/*
-!/input/README.md
 /output/*
 .vscode/
+#
+# Do not ignore this
+!/input/README.md
+!/aux_funcs/synth_clust_input.dat

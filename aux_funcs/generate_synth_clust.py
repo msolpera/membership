@@ -5,7 +5,7 @@ from astropy.io import ascii
 import matplotlib.pyplot as plt
 
 
-def main(CI):
+def main(CI=0.6):
     """
 
     xy_range : float
@@ -56,7 +56,8 @@ def main(CI):
         [field_ID, x_fl, y_fl, field_V_N, field_BV_N, pms_field[0],
          pms_field[1]], names=('ID', 'x', 'y', 'V', 'BV', 'pmRA', 'pmDE'))
     ascii.write(
-        vstack([tabl_cl, tabl_fl]), 'synth_clust_out.dat', overwrite=True)
+        vstack([tabl_cl, tabl_fl]), 'synth_clust_out_' + str(CI) + '.dat',
+        overwrite=True)
 
     # Generate plot
     makePlot(
@@ -246,7 +247,8 @@ def makePlot(
     plt.gca().invert_yaxis()
 
     fig.tight_layout()
-    plt.savefig('synth_clust_out_' + str(CI) + '.png', dpi=150, bbox_inches='tight')
+    plt.savefig(
+        'synth_clust_out_' + str(CI) + '.png', dpi=150, bbox_inches='tight')
 
 
 if __name__ == '__main__':

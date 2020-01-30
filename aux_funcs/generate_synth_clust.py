@@ -6,7 +6,7 @@ from astropy.io import ascii
 import matplotlib.pyplot as plt
 
 
-def main(CI=0.9):
+def main(CI=0.8):
     """
 
     xy_range : float
@@ -136,7 +136,7 @@ def generateFieldPhot(N_field, field_V, field_BV):
 
 def generatePMs(
     N_membs, N_field, fm1=-5., fm2=5., fstd1=1., fstd2=5., cm1=.05,
-        cm2=.1, nstd=5.):
+        cm2=.1, nstd=3.):
     """
     Given a 'data' array read from a cluster file, generate proper motions
     from a bi-variate Gaussian with reasonable mean and standard deviation

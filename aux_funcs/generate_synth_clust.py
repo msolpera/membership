@@ -57,14 +57,24 @@ def main(CI=0.8):
     tabl_fl = Table(
         [field_ID, x_fl, y_fl, field_V_N, field_BV_N, pms_field[0],
          pms_field[1]], names=('ID', 'x', 'y', 'V', 'BV', 'pmRA', 'pmDE'))
-    ascii.write(
-        vstack([tabl_cl, tabl_fl]), 'synth_clust_out_' + str(CI) + '.dat',
-        overwrite=True)
-
+    
     # Generate plot
     makePlot(
         cl_cent, cl_rad, CI, membs_x, membs_y, membs_V, membs_BV, x_fl, y_fl,
         field_BV_N, field_V_N, pms_membs, pms_field, dmean)
+    
+    # Generate CI for another dimensions
+    table_data = vstack([tabl_cl, tabl_fl])
+    CI_array, data_dims, data_arrs = CI_2(cl_rad, cl_cent, table_data, NN=10)
+
+    # Gererate plor for another dimensions
+    makePlot_2(CI, data_dims, data_arrs)
+
+    # Write final data
+    ascii.write(
+        vstack([tabl_cl, tabl_fl]), str(CI) + '_' + str(CI_array[0]) + '_' + str(CI_array[1]) 
+        + '_' + str(CI_array[2]) + '_' + str(CI_array[3]) + '.dat',
+        overwrite=True)
 
     print("Finished")
 
@@ -98,7 +108,7 @@ def estimateNfield(N_membs, CI, tot_area, cl_area):
     """
 
     # Number of field stars in the cluster area
-    N_field_in_clreg = N_membs / (1. / CI - 1.)
+    N_field_in_clreg = N_membs / ((1. / CI) - 1.)         #CONSULTAR
 
     # Field stars density
     field_dens = N_field_in_clreg / cl_area
@@ -266,6 +276,76 @@ def makePlot(
     plt.savefig(
         'synth_clust_out_' + str(CI) + '.png', dpi=150, bbox_inches='tight')
 
+def CI_2(rad, cent, table_data, NN=10):
+
+    # Select stars from cluster area (A) and field area (B)
+    coord_x, coord_y = table_data['x'], table_data['y']
+    coords = np.array((coord_x, coord_y)).T
+    dist_cent = distance.cdist(cent, coords, 'euclidean')[0]
+
+    # For each dimension in A, find the NN nearest neighbors in B and select the
+    # one with the greatest distance
+    # For each dimension in A, find the NN nearest neighbors in A and select the
+    # one with the greatest distance
+    data_dims = ('V', 'BV', 'pmRA', 'pmDE')
+    data_arrs = []
+    CI_arr = []
+    for dim in data_dims:
+        msk = dist_cent <= rad
+        dim_a_member = table_data[dim][msk]
+        dim_b_member = table_data[dim][~msk]
+        dist_a_b = np.abs(dim_a_member[:, np.newaxis] - dim_b_member)
+        dist_a_a = np.abs(dim_a_member[:, np.newaxis] - dim_a_member)
+
+        dist_a_b.sort()
+        dist_a_a.sort()
+
+        # Calculate the average neighbor density associated with each star of A
+        # in B, and idem for A in A
+        d_ab, d_aa = [], []
+        for i in range(len(dim_a_member)):
+            # Distances to the NN neighbor
+            rad_ab = dist_a_b[i][NN - 1]
+            rad_aa = dist_a_a[i][NN]
+
+            # Store local densities for this star in both regions
+            d_ab.append(NN / (np.pi * rad_ab**2))
+            d_aa.append(NN / (np.pi * rad_aa**2))
+
+        # Use weighted average, where the weights are the distances to the
+        # mean of the B region values (field region)
+        weights = abs(np.array(dim_a_member) - np.mean(dim_b_member))
+        d_ab_m = np.average(d_ab, weights=weights)
+        d_aa_m = np.average(d_aa, weights=weights)
+
+        # Final CI. Divide by the number of stars within the cluster region
+        # to normalize.
+        CI = (d_ab_m / d_aa_m) / len(d_ab)
+        print("{}_CI = {:.2f}".format(dim, CI))
+        CI_arr.append('{:.2f}'.format(CI))
+
+        # Store for plotting
+        data_arrs.append([dim_a_member, dim_b_member, CI])
+    return(CI_arr, data_dims, data_arrs)
+
+def makePlot_2(CI_coord, data_dims, data_arrs):
+    """
+    """
+    fig = plt.figure(figsize=(10, 10))
+    for i, (arrA, arrB, CI) in enumerate(data_arrs):
+
+        ax = int("22" + str(i + 1))
+        plt.subplot(ax)
+        plt.title("CI={:.2f}".format(CI))
+        plt.hist(arrA, 25, alpha=.5, color='r', density=True,
+                 label="r<rad")
+        plt.hist(arrB, 25, alpha=.5, color='b', density=True,
+                 label="r>rad")
+        plt.xlabel(data_dims[i])
+        plt.legend()
+
+    fig.tight_layout()
+    plt.savefig("CI_analysis_" + str(CI_coord) + ".png", dpi=150, bbox_inches='tight')
 
 if __name__ == '__main__':
     main()

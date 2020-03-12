@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
 
-def main(file_name, CI):
+def main(file_name):
     """
     Calls the container functions.
     Define membership probability as the function that depends of the distances to two defined centroids.
@@ -102,6 +102,12 @@ def main(file_name, CI):
     d1, d2 = cent_dist_1.T, cent_dist_2.T
     data_n, _ = norm_data([memb_prob, nn_avrg_dist], 100.)
     memb_prob, nn_avrg_dist = data_n.T
+    for i in range(len(stars)):
+        if memb_prob[i] <= 0.01:
+            memb_prob[i] = 0.01
+        if memb_prob[i] == 1:
+            memb_prob[i] = 0.99
+    
 
     # Estimate the x,y limits in the upper left corner that 
     # delimitate the most probable members.
@@ -133,15 +139,15 @@ def main(file_name, CI):
     print(cent, rad, crdens, frdens)
 
     # Store the selected member stars in an output file.
-    storeMembs(file_name, memb_ID, CI)
+    # storeMembs(file_name, memb_ID, CI)
 
     # Generate plot
-    plot_memb(
-        file_name, CI, memb_prob, nn_avrg_dist, memb_x, memb_y, memb_V,
-        memb_BV, memb_pmRA, memb_pmDE, memb_color, field_x, field_y, field_V,
-        field_BV, field_pmRA, field_pmDE, xy_lim, cent, rad, d1, d2)
+    #plot_memb(
+    #    file_name, CI, memb_prob, nn_avrg_dist, memb_x, memb_y, memb_V,
+    #    memb_BV, memb_pmRA, memb_pmDE, memb_color, field_x, field_y, field_V,
+    #    field_BV, field_pmRA, field_pmDE, xy_lim, cent, rad, d1, d2)
     
-    return ID, coord_x, coord_y, memb_prob
+    return ID, memb_prob
 
 '''
 def readData(file_name):
@@ -174,14 +180,14 @@ def readData(file_name):
     var6 and var7 : list
         proper motions
     """
+def readData(file_name):
     data = Table.read(file_name, format='ascii')
-    data = data['DR2Name', '_x', '_y', 'Gmag', 'BP-RP', 'pmRA', 'pmDE', 'Plx']
-    data.remove_rows(np.where([c.data for c in data.mask.itercols()])[-1])
-    msk = data['Gmag'] < 18
-    data = data[msk]
+    data = data['ID', 'x', 'y', 'V', 'BV', 'pmRA', 'pmDE']
+    # data.remove_rows(np.where([c.data for c in data.mask.itercols()])[-1])
+    # msk = data['Gmag'] < 16
+    # data = data[msk]
+    return data['ID'], data['x'], data['y'], data['V'], data['BV'], data['pmRA'], data['pmDE']
 
-    return data['DR2Name'], data['_x'], data['_y'], data['Gmag'],\
-        data['BP-RP'], data['pmRA'], data['pmDE']
 
 def norm_data(data_arr, nstd=3.):
     """
@@ -210,7 +216,7 @@ def norm_data(data_arr, nstd=3.):
         msk = (arr > dmin) & (arr < dmax)
         msk_all.append(msk.data)
 
-    msk_data = np.logical_and.reduce(msk_all) #que hacia esto?
+    msk_data = np.logical_and.reduce(msk_all) 
 
     data_norm = []
     for arr in data_arr:
@@ -496,4 +502,4 @@ def plot_memb(
 
 
 if __name__ == '__main__':
-    main('input/NGC2516.dat', .6)
+    main()

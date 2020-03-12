@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import time
 from scipy import spatial
 
-def main(file_name='input/0.5_0.95_0.18_0.06_0.44.dat'):
+def main(file_name):
     # Read data
     ID, coord_x, coord_y, V, BV, pmRA, pmDE = read_data(file_name)
 
@@ -38,7 +38,7 @@ def main(file_name='input/0.5_0.95_0.18_0.06_0.44.dat'):
     # Select possible member stars and field stars to generate KDE
     opt_max = np.inf
     p_dif_max = 0.
-    for i in np.arange(1, 95, 1):
+    for i in np.arange(2, 95, 1):
         p = np.percentile(vol, i) 
         msk_memb = vol <= p
         id_memb = ID[msk_memb]
@@ -118,26 +118,29 @@ def main(file_name='input/0.5_0.95_0.18_0.06_0.44.dat'):
     print('prob_field_mean:', prob_field_mean)
     print('membership:', len(x_memb))
 
-    fig = plt.figure()
-    plt.subplot(221)
-    plt.hist(probability)
+    #fig = plt.figure()
+    #plt.subplot(221)
+    #plt.hist(probability)
   
-    plt.subplot(222)
-    plt.scatter(x_memb, y_memb, s=20., c=prob, lw=.5, edgecolor='k')
-    plt.colorbar(aspect=90, pad=0.01)
-    
-    plt.subplot(223)
-    plt.scatter(pmra_memb, pmde_memb, s=20., c=prob, lw=.5, edgecolor='k')
-    plt.colorbar(aspect=90, pad=0.01)
+    #plt.subplot(222)
+    #plt.scatter(x_memb, y_memb, s=20., c=prob, lw=.5, edgecolor='k')
+    #plt.colorbar(aspect=90, pad=0.01)
+    #plt.show()
 
-    plt.subplot(224)
-    plt.scatter(BV_memb, V_memb, s=20., c=prob, lw=.5, edgecolor='k')
-    plt.gca().invert_yaxis()
-    plt.colorbar(aspect=90, pad=0.01)
-    plt.savefig('V1' + file_name.replace('input/', '').replace('.dat', '') + '.png', dpi=150, bbox_inches='tight')
+    
+    #plt.subplot(223)
+    #plt.scatter(pmra_memb, pmde_memb, s=20., c=prob, lw=.5, edgecolor='k')
+    #plt.colorbar(aspect=90, pad=0.01)
+    #plt.show()
+    #plt.subplot(224)
+    #plt.scatter(BV_memb, V_memb, s=20., c=prob, lw=.5, edgecolor='k')
+    #plt.gca().invert_yaxis()
+    #plt.colorbar(aspect=90, pad=0.01)
+    #plt.show()
+    #plt.savefig('V1' + file_name.replace('input/', '').replace('.dat', '') + '.png', dpi=150, bbox_inches='tight')
  
     
-    return(ID, coord_x, coord_y, probability)
+    return(ID, probability)
 
 def read_data(file_name):
     data = Table.read(file_name, format='ascii')

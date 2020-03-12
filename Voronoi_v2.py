@@ -38,7 +38,7 @@ def main(file_name):
     # Select possible member stars and field stars to generate KDE
     opt_max = np.inf
     p_dif_max = 0.
-    for i in np.arange(0.2, 90, 0.1):
+    for i in np.arange(2, 90, 1):
         p = np.percentile(vol, i) 
         msk_memb = vol <= p
         id_memb = ID[msk_memb]
@@ -118,10 +118,11 @@ def main(file_name):
     print('prob_field_mean:', prob_field_mean)
     print(len(x_memb))
 
+    '''
     fig = plt.figure()
     plt.subplot(221)
     plt.hist(probability)
-    # plt.show()
+    plt.show()
     plt.subplot(222)
     plt.scatter(x_memb, y_memb, s=20., c=prob, lw=.5, edgecolor='k')
     plt.colorbar(aspect=90, pad=0.01)
@@ -138,8 +139,9 @@ def main(file_name):
     plt.colorbar(aspect=90, pad=0.01)
     plt.savefig('V-BV.png', dpi=150, bbox_inches='tight')
     # plt.show()
+    '''
     
-    return(ID, coord_x, coord_y, probability)
+    return(ID, probability)
 
 def read_data(file_name):
     data = Table.read(file_name, format='ascii')

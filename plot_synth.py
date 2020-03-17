@@ -6,10 +6,10 @@ import numpy as np
 def main():
     data = Table.read('values.dat', format='ascii')
     data = data['N_m', 'N_f', 'CI', 'CI_V', 'CI_BV', 'CI_pmRA', 'CI_pmDE', 'MI_v1',
-        'MI_v2', 'MI_ma', 'MI_rd', 'MI_p05']
-    CI, MI_v1, MI_v2, MI_ma, MI_rd, MI_p05 = data['CI'], data['MI_v1'], data['MI_v2'], data['MI_ma'], data['MI_rd'], data['MI_p05']
+             'MI_ma', 'MI_rd', 'MI_p05', 'MI_UP']
+    CI, MI_v1, MI_ma, MI_rd, MI_p05, MI_UP = data['CI'], data['MI_v1'], data['MI_ma'], data['MI_rd'], data['MI_p05'], data['MI_UP']
     plt.scatter(CI-0.01, -np.log(-MI_v1), c='red', label='Voronoi_v1', s=5.)
-    plt.scatter(CI-0.02, -np.log(-MI_v2), c='blue', label='Voronoi_v2', s=5.)
+    plt.scatter(CI-0.02, -np.log(-MI_UP), c='blue', label='UPMASK', s=5.)
     plt.scatter(CI, -np.log(-MI_ma), c='green', label='Memb_algor', s=5.)
     plt.scatter(CI+0.01, -np.log(-MI_rd), c='violet', label='Random', s=5.)
     plt.scatter(CI+0.02, -np.log(-MI_p05), c='cyan', label='P05', s=5.)

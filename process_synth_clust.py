@@ -3,6 +3,7 @@ import Voronoi_v1
 import Voronoi_v2
 import random_memb
 import P05
+import UP
 from aux_funcs import generate_synth_clust
 import numpy as np
 from astropy.table import Table
@@ -16,12 +17,12 @@ def ls(ruta = Path.cwd()):
     return [arch.name for arch in Path('input').iterdir() if arch.is_file()]
 
 def main():
-    methods = ('Voronoi_v1', 'Voronoi_v2', 'memb_algor', 'random_memb', 'P05')
+    methods = ('Voronoi_v1', 'memb_algor', 'random_memb', 'P05', 'UPMASK')
     CI, CI_V, CI_BV, CI_pmRA, CI_pmDE = [], [], [], [], []
     N_m, N_f = [], []
-    MI_v1, MI_v2, MI_ma, MI_rd, MI_p05 = [], [], [], [], []
-    p_m_v1, p_m_v2, p_m_ma, p_m_rd, p_m_p05 = [], [], [], [], []
-    p_f_v1, p_f_v2, p_f_ma, p_f_rd, p_f_p05 = [], [], [], [], []
+    MI_v1, MI_ma, MI_rd, MI_p05, MI_UP = [], [], [], [], []
+    p_m_v1, p_m_ma, p_m_rd, p_m_p05, p_m_UP = [], [], [], [], []
+    p_f_v1, p_f_ma, p_f_rd, p_f_p05, p_f_UP = [], [], [], [], []
     arch = ls('input')
     for file_name in arch:
         CI.append(float(file_name[:3]))
@@ -40,12 +41,14 @@ def main():
                 p_f_v1.append(p_f)
                 N_m.append(n_m)
                 N_f.append(n_f)
+                '''
             if met == 'Voronoi_v2':
                 ID, memb_prob = Voronoi_v2.main('input/' + file_name)
                 MI, p_m, p_f, n_m, n_f = member_index(ID, memb_prob)
                 MI_v2.append(MI)
                 p_m_v2.append(p_m)
                 p_f_v2.append(p_f)
+                '''
             if met == 'memb_algor':
                 ID, memb_prob_ma = memb_algor.main('input/' + file_name)
                 MI, p_m, p_f, n_m, n_f = member_index(ID, memb_prob_ma)
@@ -67,8 +70,15 @@ def main():
                 p_m_p05.append(p_m)
                 p_f_p05.append(p_f)
 
+            if met == 'UPMASK':
+                ID, memb_prob = UP.main('input_up/up-' + file_name)
+                MI, p_m, p_f, n_m, n_f = member_index(ID, memb_prob)
+                MI_UP.append(MI)
+                p_m_UP.append(p_m)
+                p_f_UP.append(p_f)
+
             
-    ascii.write([N_m, N_f, CI, CI_V, CI_BV, CI_pmRA, CI_pmDE, MI_v1, MI_v2, MI_ma, MI_rd, MI_p05], 'values.dat', names=['N_m', 'N_f', 'CI', 'CI_V', 'CI_BV', 'CI_pmRA', 'CI_pmDE', 'MI_v1', 'MI_v2', 'MI_ma', 'MI_rd', 'MI_p05'], overwrite=True)
+    ascii.write([N_m, N_f, CI, CI_V, CI_BV, CI_pmRA, CI_pmDE, MI_v1, MI_ma, MI_rd, MI_p05, MI_UP], 'values.dat', names=['N_m', 'N_f', 'CI', 'CI_V', 'CI_BV', 'CI_pmRA', 'CI_pmDE', 'MI_v1', 'MI_ma', 'MI_rd', 'MI_p05', 'MI_UP'], overwrite=True)
 
 
 def member_index(ID, memb_prob):

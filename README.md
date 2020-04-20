@@ -34,6 +34,29 @@ For each percentile value, the probability given by the Bayes Theorem is calcula
 
 Finally, that percentile value that minimizes the difference between both groups is selected and the probability found for it is considered as the final membership probability.
 
+# Voronoi_v3
+
+Same as Voronoi_v1 but using 
+
+### Clustering performance evaluation
+
+* Anderson-Darling
+> Does not work, and also requires 1-D arrays (i.e., must flatten the arrays prior to feeding them).
+
+- https://scikit-learn.org/stable/modules/clustering.html#clustering-performance-evaluation
+
+- https://www.researchgate.net/post/Can_you_suggest_indexes_measures_for_evaluating_unsupervised_clustering_quality_than_the_usual_Silhouette_width
+
+* Silhouette Coefficient
+* Calinski-Harabasz Index
+* Davies-Bouldin Index (hard clustering?)
+*  FBcubed? ()
+
+List with **many** indexes:
+
+https://stats.stackexchange.com/a/79080/10416
+
+
 # Aux_func/generate_synth_clust
 The purpose of this script is to generate, from a synthetic cluster, other synthetic clusters with different contamination index values.
 The contamination index (CI) is a measure of the field star contamination present in the region of the stellar cluster and an CI value is defined for each stellar parameter.

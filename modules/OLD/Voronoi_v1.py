@@ -38,7 +38,7 @@ def main(file_name):
     # Select possible member stars and field stars to generate KDE
     opt_max = np.inf
     p_dif_max = 0.
-    for i in np.arange(2, 95, 1):
+    for i in np.arange(.5, 25, 1):
         p = np.percentile(vol, i) 
         msk_memb = vol <= p
         id_memb = ID[msk_memb]

@@ -1,25 +1,26 @@
 
 import numpy as np
 from scipy.spatial import distance
+from scipy import stats
 from astropy.table import Table, vstack
 from astropy.io import ascii
 import matplotlib.pyplot as plt
 
+seed = np.random.randint(100000)
+print(seed)
+np.random.seed(seed)
 
-def main(CI=0.8):
+
+def main(CI=0.35):
     """
-
-    xy_range : float
-      The x,y range of the total frame in pixels.
-    cl_area: float
-      The area of the cluster region. Set to be a circle of r=250 px.
-    CI : float < 1.
-      The contamination index. Set to be 0.6 to match Haffner 14.
+    CI : float, 0.<CI<1.
+      The contamination index.
     """
 
     # Hardcoded parameters: cluster's center and radius, and frame's lengths
     # in x & y.
     cl_cent, cl_rad, xy_range = [(1024., 1024.)], 250., 2048.
+    data_dims = ('ID', 'x', 'y', 'V', 'BV', 'pmRA', 'pmDE')
 
     # Read input synthetic cluster data
     data = ascii.read('synth_clust_input.dat')
@@ -53,28 +54,26 @@ def main(CI=0.8):
     # Write final combined data to file
     tabl_cl = Table(
         [membs_ID, membs_x, membs_y, membs_V, membs_BV, pms_membs[0],
-         pms_membs[1]], names=('ID', 'x', 'y', 'V', 'BV', 'pmRA', 'pmDE'))
+         pms_membs[1]], names=data_dims)
     tabl_fl = Table(
         [field_ID, x_fl, y_fl, field_V_N, field_BV_N, pms_field[0],
-         pms_field[1]], names=('ID', 'x', 'y', 'V', 'BV', 'pmRA', 'pmDE'))
-    
+         pms_field[1]], names=data_dims)
+
     # Generate plot
     makePlot(
         cl_cent, cl_rad, CI, membs_x, membs_y, membs_V, membs_BV, x_fl, y_fl,
         field_BV_N, field_V_N, pms_membs, pms_field, dmean)
-    
-    # Generate CI for another dimensions
-    table_data = vstack([tabl_cl, tabl_fl])
-    CI_array, data_dims, data_arrs = CI_2(cl_rad, cl_cent, table_data, NN=10)
 
-    # Gererate plor for another dimensions
-    makePlot_2(CI, data_dims, data_arrs)
+    # Generate CI for other dimensions
+    table_data = vstack([tabl_cl, tabl_fl])
+    CI_array, data_arrs = CI_AD(cl_rad, cl_cent, table_data, data_dims[2:])
+
+    # Generate plot for other dimensions
+    makePlot_2(CI, data_dims[2:], data_arrs)
 
     # Write final data
-    ascii.write(
-        vstack([tabl_cl, tabl_fl]), str(CI) + '_' + str(CI_array[0]) + '_' + str(CI_array[1]) 
-        + '_' + str(CI_array[2]) + '_' + str(CI_array[3]) + '.dat',
-        overwrite=True)
+    fname = "{:.2f}_{:1.2f}_{:1.2f}_{:1.2f}_{:1.2f}.dat".format(CI, *CI_array)
+    ascii.write(vstack([tabl_cl, tabl_fl]), fname, overwrite=True)
 
     print("Finished")
 
@@ -108,7 +107,7 @@ def estimateNfield(N_membs, CI, tot_area, cl_area):
     """
 
     # Number of field stars in the cluster area
-    N_field_in_clreg = N_membs / ((1. / CI) - 1.)         #CONSULTAR
+    N_field_in_clreg = N_membs / ((1. / CI) - 1.)
 
     # Field stars density
     field_dens = N_field_in_clreg / cl_area
@@ -146,7 +145,7 @@ def generateFieldPhot(N_field, field_V, field_BV):
 
 def generatePMs(
     N_membs, N_field, fm1=-5., fm2=5., fstd1=1., fstd2=5., cm1=.05,
-        cm2=.1, nstd=3.):
+        cm2=.1, nstd=2.):
     """
     Given a 'data' array read from a cluster file, generate proper motions
     from a bi-variate Gaussian with reasonable mean and standard deviation
@@ -276,57 +275,30 @@ def makePlot(
     plt.savefig(
         'synth_clust_out_' + str(CI) + '.png', dpi=150, bbox_inches='tight')
 
-def CI_2(rad, cent, table_data, NN=10):
+
+def CI_AD(rad, cent, table_data, data_dims):
 
     # Select stars from cluster area (A) and field area (B)
     coord_x, coord_y = table_data['x'], table_data['y']
     coords = np.array((coord_x, coord_y)).T
     dist_cent = distance.cdist(cent, coords, 'euclidean')[0]
 
-    # For each dimension in A, find the NN nearest neighbors in B and select the
-    # one with the greatest distance
-    # For each dimension in A, find the NN nearest neighbors in A and select the
-    # one with the greatest distance
-    data_dims = ('V', 'BV', 'pmRA', 'pmDE')
     data_arrs = []
     CI_arr = []
     for dim in data_dims:
         msk = dist_cent <= rad
         dim_a_member = table_data[dim][msk]
         dim_b_member = table_data[dim][~msk]
-        dist_a_b = np.abs(dim_a_member[:, np.newaxis] - dim_b_member)
-        dist_a_a = np.abs(dim_a_member[:, np.newaxis] - dim_a_member)
 
-        dist_a_b.sort()
-        dist_a_a.sort()
-
-        # Calculate the average neighbor density associated with each star of A
-        # in B, and idem for A in A
-        d_ab, d_aa = [], []
-        for i in range(len(dim_a_member)):
-            # Distances to the NN neighbor
-            rad_ab = dist_a_b[i][NN - 1]
-            rad_aa = dist_a_a[i][NN]
-
-            # Store local densities for this star in both regions
-            d_ab.append(NN / (np.pi * rad_ab**2))
-            d_aa.append(NN / (np.pi * rad_aa**2))
-
-        # Use weighted average, where the weights are the distances to the
-        # mean of the B region values (field region)
-        weights = abs(np.array(dim_a_member) - np.mean(dim_b_member))
-        d_ab_m = np.average(d_ab, weights=weights)
-        d_aa_m = np.average(d_aa, weights=weights)
-
-        # Final CI. Divide by the number of stars within the cluster region
-        # to normalize.
-        CI = (d_ab_m / d_aa_m) / len(d_ab)
-        print("{}_CI = {:.2f}".format(dim, CI))
-        CI_arr.append('{:.2f}'.format(CI))
+        AD = stats.anderson_ksamp([dim_a_member, dim_b_member])[0]
+        AD = np.clip(AD, a_min=0., a_max=99)
+        CI_arr.append(AD)
 
         # Store for plotting
-        data_arrs.append([dim_a_member, dim_b_member, CI])
-    return(CI_arr, data_dims, data_arrs)
+        data_arrs.append([dim_a_member, dim_b_member, AD])
+
+    return CI_arr, data_arrs
+
 
 def makePlot_2(CI_coord, data_dims, data_arrs):
     """
@@ -336,16 +308,24 @@ def makePlot_2(CI_coord, data_dims, data_arrs):
 
         ax = int("22" + str(i + 1))
         plt.subplot(ax)
-        plt.title("CI={:.2f}".format(CI))
-        plt.hist(arrA, 25, alpha=.5, color='r', density=True,
-                 label="r<rad")
-        plt.hist(arrB, 25, alpha=.5, color='b', density=True,
-                 label="r>rad")
+        Amin, Amax = arrA.min(), arrA.max()
+        Bmin, Bmax = arrB.min(), arrB.max()
+        ABmin, ABmax = min(Amin, Bmin), max(Amax, Bmax)
+        edges = np.linspace(ABmin, ABmax, 25)
+        plt.hist(
+            arrA, edges, alpha=.5, color='r', density=True, label="r<rad")
+        plt.hist(
+            arrB, edges, alpha=.5, color='b', density=True, label="r>rad")
+
+        AD = stats.anderson_ksamp([arrA, arrB])[0]
+
+        plt.title("CI={:.2f} | AD={:.2f}".format(CI, AD))
         plt.xlabel(data_dims[i])
         plt.legend()
 
     fig.tight_layout()
     plt.savefig("CI_analysis_" + str(CI_coord) + ".png", dpi=150, bbox_inches='tight')
+
 
 if __name__ == '__main__':
     main()

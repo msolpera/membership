@@ -6,9 +6,8 @@ from sklearn.decomposition import PCA
 
 
 def main(
-    ID, xy, data, data_err, resampleFlag, clust_method, kM_N_membs,
-    kM_N_cl_max, kM_n_init, kM_max_iter, PCAflag, PCAdims, N_C_ran, method,
-        vol_cummul, C_thresh, otlrFlag, probs):
+    ID, xy, data, data_err, resampleFlag, PCAflag, PCAdims, clust_method,
+        otlrFlag, C_thresh, unif_method, RK_rad, clust_params, vol_cummul):
     """
     """
 
@@ -26,9 +25,8 @@ def main(
     while True:
 
         C_masks, N_clusts = inner.main(
-            clust_xy, clust_data, clust_method, kM_N_membs, kM_N_cl_max,
-            kM_n_init, kM_max_iter, N_C_ran, method, vol_cummul, C_thresh,
-            probs)
+            clust_xy, clust_data, clust_method, otlrFlag, C_thresh,
+            unif_method, RK_rad, clust_params, vol_cummul)
 
         if not C_masks:
             # No more clusters to reject
@@ -38,12 +36,13 @@ def main(
         msk_all = np.logical_and.reduce(C_masks)
 
         # This mask leaves too few stars and too many clusters --> Break
-        if clust_data[msk_all].shape[0] < kM_N_membs:
+        if clust_data[msk_all].shape[0] < int(clust_params['N_membs']):
             # If there are more than 4 (HARDCODED) clusters defined at this
             # point, reject this run.
             if N_clusts > 4:
                 nostars_flag = True
-            print(" N stars<{:.0f} Breaking".format(kM_N_membs))
+            print(" N stars<{:.0f} Breaking".format(int(
+                clust_params['N_membs'])))
             break
 
         # Remove stars identified as field stars from the frame and move on
@@ -80,10 +79,11 @@ def dimReduc(cl_data, PCAflag, PCAdims):
         if PCAdims == 'all':
             PCAdims = cl_data.shape[1]
         else:
-            print("Selecting N={} features".format(PCAdims))
+            PCAdims = int(PCAdims)
 
         pca = PCA(n_components=PCAdims)
         cl_data_pca = pca.fit(cl_data).transform(cl_data)
+        print("Selected N={} PCA features".format(PCAdims))
     else:
         cl_data_pca = cl_data
 

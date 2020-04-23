@@ -9,8 +9,8 @@ from . import compFunc
 
 
 def CCalibrate(
-    clust_xy, clust_data, vol_cummul, N_C_ran, kM_N_membs, kM_N_cl_max,
-        kM_n_init, kM_max_iter, method):
+    clust_xy, cl_data, clust_method, vol_cummul, N_C_ran, kM_N_membs,
+        kM_N_cl_max, kM_n_init, kM_max_iter, method):
     """
     """
 
@@ -23,11 +23,12 @@ def CCalibrate(
     # plt.plot(xx,yy)
 
     print("Calibrating C threshold")
-    from .inner import kMeansClust
+    from .inner import clustAlgor
 
     # Obtain all the clusters in the input data using kMeans
-    clusts_msk = kMeansClust(
-        clust_data, kM_N_membs, kM_N_cl_max, kM_n_init, kM_max_iter)
+    clusts_msk = clustAlgor(
+        cl_data, clust_method, kM_N_membs, kM_N_cl_max, kM_n_init, kM_max_iter,
+        [])
 
     C_vals = []
     for i, cl_msk in enumerate(clusts_msk):

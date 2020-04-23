@@ -1,8 +1,9 @@
 
+import configparser
 from modules.dataRead import read_data
 from modules import member_index
 # import modules.Voronoi_v4 as V5
-import modules.Voronoi_v5 as V5
+import modules.pyUPMASK as V5
 import modules.random_memb as RND
 import modules.UP as UPMASK
 from pathlib import Path
@@ -11,7 +12,7 @@ from pathlib import Path
 def main():
     """
     """
-    methods = ('Voronoi_v5',) # 'random_memb', ('UPMASK',)
+    methods = ('pyUPMASK',) # 'random_memb', ('UPMASK',)
 
     # Create final table file
     with open("final_table.dat", "w") as f_out:
@@ -19,13 +20,9 @@ def main():
             'N_m,N_f,CI,CI_V,CI_BV,CI_pmRA,CI_pmDE,' +
             'C_V,P_V,L_V,C_R,P_R L_R,C_U,P_U,L_U\n')
 
-    # Column names
-    # For our synthetic clusters
-    data_cols = ('pmRA', 'pmDE') #  , 'V', 'BV')
-    data_errs = ('BV', 'BV') #  , 'BV', 'BV')
-    # For UPMASK's synthetic clusters
-    # data_cols = ('V', 'B_V', 'U_B', 'V_I')
-    # data_errs = ('V', 'B_V', 'U_B', 'V_I')
+    ID_c, x_c, y_c, data_cols, data_errs, OL_runs, resampleFlag, PCAflag,\
+        PCAdims, otlrFlag, prob_cnvrg, clust_method, otlrFlag, C_thresh,\
+        unif_method, RK_rad, clust_params = readINI()
 
     arch = readFiles('input')
     for file_name in arch:
@@ -43,13 +40,16 @@ def main():
 
         # Read data, normalized without outliers.
         ID, xy, data, data_err = read_data(
-            'input/' + file_name, data_cols, data_errs)
+            'input/' + file_name, ID_c, x_c, y_c, data_cols, data_errs)
 
         for met in methods:
             print('\nMethod:', met)
 
-            if met == 'Voronoi_v5':
-                memb_prob = V5.main(ID, xy, data, data_err)
+            if met == 'pyUPMASK':
+                memb_prob = V5.main(
+                    ID, xy, data, data_err, OL_runs, resampleFlag, PCAflag,
+                    PCAdims, prob_cnvrg, clust_method, otlrFlag, C_thresh,
+                    unif_method, RK_rad, clust_params)
                 C, P, log_MI, Nm, Nf = member_index.main(ID, memb_prob)
                 MI_v5 = [C, P, log_MI]
 
@@ -72,6 +72,41 @@ def main():
         with open("final_table.dat", "a") as f_out:
             f_out.write(",".join(str(_) for _ in data_lst))
             f_out.write("\n")
+
+
+def readINI():
+    """
+    """
+    # Read .ini file
+    in_params = configparser.ConfigParser()
+    in_params.read('params.ini')
+
+    # Data columns
+    ID_c, x_c, y_c = in_params['Data columns']['ID_coords'].split()
+    data_cols = in_params['Data columns']['data'].split()
+    data_errs = in_params['Data columns']['uncert'].split()
+
+    # Arguments for the Outer Loop
+    OL_runs, resampleFlag, PCAflag, PCAdims, otlrFlag, prob_cnvrg =\
+        int(in_params['Outer loop']['OL_runs']),\
+        bool(in_params['Outer loop']['resampleFlag']),\
+        bool(in_params['Outer loop']['PCAflag']),\
+        in_params['Outer loop']['PCAdims'],\
+        bool(in_params['Outer loop']['otlrFlag']),\
+        float(in_params['Outer loop']['prob_cnvrg'])
+
+    # Arguments for the Inner Loop
+    clust_method, C_thresh, unif_method, RK_rad =\
+        in_params['Inner loop']['clust_method'],\
+        float(in_params['Inner loop']['C_thresh']),\
+        in_params['Inner loop']['unif_method'],\
+        float(in_params['Inner loop']['RK_rad'])
+
+    clust_params = in_params['General clustering parameters']
+
+    return ID_c, x_c, y_c, data_cols, data_errs,\
+        OL_runs, resampleFlag, PCAflag, PCAdims, otlrFlag, prob_cnvrg,\
+        clust_method, otlrFlag, C_thresh, unif_method, RK_rad, clust_params
 
 
 def readFiles(ruta=Path.cwd()):

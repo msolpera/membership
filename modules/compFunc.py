@@ -1,11 +1,12 @@
 
 import numpy as np
+from scipy.stats import kstest
 from astropy.stats import RipleysKEstimator
 import warnings
 from .voronoiVols import voronoi_CDF2vols, voronoi_vols2CDF
 
 
-def main(method, N_C_ran, xy, vol_cummul, vol_d):
+def main(method, RK_rad, xy, vol_cummul, vol_d, N_C_ran=100):
     """
     Use the selected test to evaluate how similar the Voronoi areas for the
     analyzed cluster are compared to a random uniform distribution.
@@ -41,10 +42,9 @@ def main(method, N_C_ran, xy, vol_cummul, vol_d):
             for _ in range(N_C_ran):
                 # Sample areas for random uniform (x, y) data with matching
                 # number of elements.
-                # IMPORTANT: This assumes that the (x, y) data is
-                # normalized to (0, 1) in both dimensions!
                 xy_u = np.random.uniform(0., 1., xy.shape)
                 vol_u1 = voronoi_CDF2vols(xy_u, vol_cummul)
+                # xy_u = np.random.uniform(0., 1., xy.shape)
                 vol_u2 = voronoi_CDF2vols(xy_u, vol_cummul)
                 C_u = anderson_ksamp_new([vol_u1, vol_u2])
                 C_d1 = anderson_ksamp_new([vol_d, vol_u1])
@@ -67,6 +67,7 @@ def main(method, N_C_ran, xy, vol_cummul, vol_d):
                 # number of elements.
                 xy_u = np.random.uniform(0., 1., xy.shape)
                 vol_u1 = voronoi_CDF2vols(xy_u, vol_cummul)
+                xy_u = np.random.uniform(0., 1., xy.shape)
                 vol_u2 = voronoi_CDF2vols(xy_u, vol_cummul)
                 C_u = anderson_ksamp_new([vol_u1, vol_u2])
                 C_d1 = anderson_ksamp_new([vol_d, vol_u1])
@@ -79,41 +80,28 @@ def main(method, N_C_ran, xy, vol_cummul, vol_d):
     elif method == 'KS':
         # Bootstrap resample of the volumes
         vol_d = np.random.choice(vol_d, vol_d.size)
-        C_s = kstest(vol_d, voronoi_vols2CDF, args=(vol_cummul,))
+        # You reject the null hypothesis that the two samples were drawn
+        # from the same distribution if the p-value is *less* than your
+        # significance level --> A *large* p-value implies the samples were
+        # drawn from the same distribution.
+
+        # C_s = kstest(vol_d, voronoi_vols2CDF, args=(vol_cummul,))
+        C_s = 1. - kstest(vol_d, voronoi_vols2CDF, args=(vol_cummul,),
+                          alternative='less')[1]
 
     elif method == 'RK':
         # https://stats.stackexchange.com/a/122816/10416
         Kest = RipleysKEstimator(area=1, x_max=1, y_max=1, x_min=0, y_min=0)
-        rad = .5
         C_vals = []
         for _ in range(N_C_ran):
             xy_u = np.random.uniform(0., 1., xy.shape)
-            C_vals.append(Kest(xy_u, (rad,)))
+            C_vals.append(Kest(xy_u, (RK_rad,)))
 
         # When the observed K value is larger than the expected K value for
         # a particular distance, the distribution is more clustered than a
         # random distribution at that distance
         mean, std = np.mean(C_vals), np.std(C_vals)
-        C_s = (Kest(xy, (rad,)) - mean) / std
-
-    # if C_s > 3.:
-    #     # from scipy.spatial.distance import cdist
-    #     # from .voronoiVols import voronoi_CDF2vols
-    #     from scipy.spatial import Voronoi, voronoi_plot_2d
-    #     import matplotlib.pyplot as plt
-
-    #     vor = Voronoi(xy)
-
-    #     plt.subplot(221)
-    #     plt.scatter(xy.T[0], xy.T[1], c=vol_d)
-    #     plt.colorbar()
-    #     ax = plt.subplot(222)
-    #     voronoi_plot_2d(vor, ax=ax)
-    #     plt.subplot(223)
-    #     plt.hist(C_vals, 25)
-    #     plt.axvline(x=C_vol_d, c='g', zorder=5)
-    #     plt.axvline(x=mean, c='r', zorder=5)
-    #     plt.axvline(x=mean - std, ls='--', c='r', zorder=5)
+        C_s = (Kest(xy, (RK_rad,)) - mean) / std
 
     return C_s
 
@@ -189,16 +177,16 @@ def anderson_ksamp_new(samples):
     return A2
 
 
-def kstest(rvs, cdf, args=()):
-    """
-    """
+# def kstest(rvs, cdf, args=()):
+#     """
+#     """
 
-    vals = np.sort(rvs)
-    N = len(vals)
-    cdfvals = cdf(vals, *args)
+#     vals = np.sort(rvs)
+#     N = len(vals)
+#     cdfvals = cdf(vals, *args)
 
-    Dplus = (np.arange(1.0, N + 1) / N - cdfvals).max()
-    Dmin = (cdfvals - np.arange(0.0, N) / N).max()
+#     Dplus = (np.arange(1.0, N + 1) / N - cdfvals).max()
+#     Dmin = (cdfvals - np.arange(0.0, N) / N).max()
 
-    D = np.max([Dplus, Dmin])
-    return D
+#     D = np.max([Dplus, Dmin])
+#     return D

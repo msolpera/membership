@@ -4,20 +4,20 @@ from astropy.table import Table
 from sklearn.preprocessing import MinMaxScaler
 
 
-def read_data(file_name, data_cols, data_errs):
+def read_data(file_name, ID_c, x_c, y_c, data_cols, data_errs):
     """
     """
 
     data = Table.read(file_name, format='ascii')
     print("\nN={} stars read".format(len(data)))
-    # data = data['ID', 'x', 'y', 'V', 'BV', 'pmRA', 'pmDE']
+
     # data.remove_rows(np.where([c.data for c in data.mask.itercols()])[-1])
     # msk = data['Gmag'] < 16
     # data = data[msk]
 
     # Separate data into groups
-    ID_data, xy_data, cl_data, data_err = data['ID'],\
-        np.array([data['x'], data['y']]).T,\
+    ID_data, xy_data, cl_data, data_err = data[ID_c],\
+        np.array([data[x_c], data[y_c]]).T,\
         np.array([data[_] for _ in data_cols]).T,\
         np.array([data[_] for _ in data_errs]).T
 
@@ -27,10 +27,6 @@ def read_data(file_name, data_cols, data_errs):
 
     xy_data = MinMaxScaler().fit(xy_data).transform(xy_data)
     print("Coordinates data to normalized [0, 1]")
-
-    # Voronoi_v4 <-- Not really needed since we are now using Voronoi on (x,y)
-    # exclusively
-    # cl_data, data_err = dataNorm(cl_data, data_err)
 
     return ID_data, xy_data, cl_data, data_err
 

@@ -117,6 +117,7 @@ def vor_2d_cummltv(vol_max=5., N_CDF=10000):
     with a step of 'N_CDF'. This is the CDF for the *normalized* 2D Voronoi
     areas.
     """
+    print("Generating Voronoi 2D CDF")
     xx = np.linspace(0., vol_max, N_CDF)
     cummul = []
     for v in xx:

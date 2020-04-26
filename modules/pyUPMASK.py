@@ -1,15 +1,14 @@
 
 import numpy as np
-from .voronoiVols import vor_2d_cummltv
 from . import outer
-from .extras import CCalibrate, probCnvrg
+from .extras import probCnvrg
 import time as t
 
 
 def main(
     ID, xy, data, data_err, OL_runs, resampleFlag, PCAflag, PCAdims,
-    prob_cnvrg, clust_method, otlrFlag, C_thresh, unif_method, RK_rad,
-        clust_params, cl_method_pars):
+    prob_cnvrg, clust_method, otlrFlag, RK_rad, C_thresh, clust_params,
+        cl_method_pars):
     """
     C_thresh : Any cluster with a smaller value will be classified as being
                 composed of field stars and discarded.
@@ -23,23 +22,8 @@ def main(
 
     print("Data dimensions: {}\n".format(data.shape[1]))
 
-    # Empirical CDF for the normalized 2D Voronoi areas
-    vol_cummul = [] #vor_2d_cummltv()
-
-    # if C_thresh is None:
-    #     # Auto-calibrate the C_thresh
-    #     from .extras import reSampleData
-    #     from .outer import dimReduc
-    #     data2 = reSampleData(False, data, [])
-    #     data2 = dimReduc(data2, True, 'all')
-    #     C_thresh = CCalibrate(
-    #         xy, data2, clust_method, vol_cummul, N_C_ran, kM_N_membs,
-    #         kM_N_cl_max, kM_n_init, kM_max_iter, method)
-
     print("\nClustering method : {}".format(clust_method))
-    print("Reject method     : {}".format(unif_method))
-    if unif_method == 'RK':
-        print("  RK rad          : {:.2f}".format(RK_rad))
+    print("RK rad            : {:.2f}".format(RK_rad))
     print("Threshold         : {:.1f}".format(C_thresh))
 
     # Initial null probabilities for all stars in the frame.
@@ -52,8 +36,8 @@ def main(
         # Store all probabilities obtained in this run
         probs = outer.main(
             ID, xy, data, data_err, resampleFlag, PCAflag, PCAdims,
-            clust_method, otlrFlag, C_thresh, unif_method, RK_rad,
-            clust_params, cl_method_pars, vol_cummul)
+            clust_method, otlrFlag, RK_rad, C_thresh, clust_params,
+            cl_method_pars)
         if probs:
             probs_all.append(probs)
 

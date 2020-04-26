@@ -23,7 +23,7 @@ def main():
 
     ID_c, x_c, y_c, data_cols, data_errs, OL_runs, resampleFlag, PCAflag,\
         PCAdims, otlrFlag, prob_cnvrg, clust_method, otlrFlag, C_thresh,\
-        unif_method, RK_rad, clust_params, cl_method_pars = readINI()
+        RK_rad, clust_params, cl_method_pars = readINI()
 
     arch = readFiles('input')
     for file_name in arch:
@@ -49,8 +49,8 @@ def main():
             if met == 'pyUPMASK':
                 memb_prob = V5.main(
                     ID, xy, data, data_err, OL_runs, resampleFlag, PCAflag,
-                    PCAdims, prob_cnvrg, clust_method, otlrFlag, C_thresh,
-                    unif_method, RK_rad, clust_params, cl_method_pars)
+                    PCAdims, prob_cnvrg, clust_method, otlrFlag, RK_rad,
+                    C_thresh, clust_params, cl_method_pars)
                 C, P, log_MI, Nm, Nf = member_index.main(ID, memb_prob)
                 MI_v5 = [C, P, log_MI]
 
@@ -113,20 +113,18 @@ def readINI():
         'N_membs': vtype(in_params['Inner loop']['N_membs']),
         'N_cl_max': vtype(in_params['Inner loop']['N_cl_max'])}
 
-    clust_method, C_thresh, unif_method, RK_rad =\
+    clust_method, C_thresh, RK_rad =\
         vtype(in_params['Inner loop']['clust_method']),\
         vtype(in_params['Inner loop']['C_thresh']),\
-        vtype(in_params['Inner loop']['unif_method']),\
         vtype(in_params['Inner loop']['RK_rad'])
 
     cl_method_pars = {}
     for key, val in in_params['Clustering parameters'].items():
         cl_method_pars[key] = vtype(val)
 
-    return ID_c, x_c, y_c, data_cols, data_errs,\
-        OL_runs, resampleFlag, PCAflag, PCAdims, otlrFlag, prob_cnvrg,\
-        clust_method, otlrFlag, C_thresh, unif_method, RK_rad, clust_params,\
-        cl_method_pars
+    return ID_c, x_c, y_c, data_cols, data_errs, OL_runs, resampleFlag,\
+        PCAflag, PCAdims, otlrFlag, prob_cnvrg, clust_method, otlrFlag,\
+        C_thresh, RK_rad, clust_params, cl_method_pars
 
 
 def readFiles(ruta=Path.cwd()):

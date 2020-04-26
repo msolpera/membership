@@ -1,16 +1,14 @@
 
 import numpy as np
 from . import inner
-from .extras import reSampleData, outlierRjct
-from sklearn.decomposition import PCA
+from .extras import reSampleData, dimReduc, outlierRjct
 
 
 def main(
     ID, xy, data, data_err, resampleFlag, PCAflag, PCAdims, clust_method,
-    otlrFlag, C_thresh, unif_method, RK_rad, clust_params, cl_method_pars,
-        vol_cummul):
+        otlrFlag, RK_rad, C_thresh, clust_params, cl_method_pars):
     """
-    Perform the outer loop: inner loop until no more clusters are rejected
+    Perform the outer loop: inner loop until all "fake" clusters are rejected
     """
 
     # Make a copy of the original data to avoid over-writing it
@@ -29,8 +27,8 @@ def main(
         _iter += 1
 
         C_masks, N_clusts = inner.main(
-            clust_xy, clust_data, clust_method, C_thresh, unif_method, RK_rad,
-            clust_params, cl_method_pars, vol_cummul)
+            clust_xy, clust_data, clust_method, RK_rad, C_thresh,
+            clust_params, cl_method_pars,)
 
         # No clusters were rejected in this iteration. Break
         if N_clusts == len(C_masks):
@@ -78,24 +76,3 @@ def main(
         probs = outlierRjct(clust_xy, probs, otlrFlag)
 
     return probs
-
-
-def dimReduc(cl_data, PCAflag, PCAdims):
-    """
-    Perform PCA and feature reduction
-
-    all: use all available dimensions
-    """
-    if PCAflag:
-        if PCAdims == 'all':
-            PCAdims = cl_data.shape[1]
-        else:
-            PCAdims = int(PCAdims)
-
-        pca = PCA(n_components=PCAdims)
-        cl_data_pca = pca.fit(cl_data).transform(cl_data)
-        print("Selected N={} PCA features".format(PCAdims))
-    else:
-        cl_data_pca = cl_data
-
-    return cl_data_pca

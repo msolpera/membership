@@ -2,14 +2,12 @@
 import numpy as np
 import sklearn.cluster as skclust
 import sklearn.mixture as skmixture
-# from scipy.cluster.vq import kmeans2
-from .voronoiVols import voronoi_volumes
-from . import compFunc
+from astropy.stats import RipleysKEstimator
 
 
 def main(
-    clust_xy, clust_data, clust_method, C_thresh, unif_method,
-        RK_rad, clust_params, cl_method_pars, vol_cummul):
+    clust_xy, clust_data, clust_method, RK_rad, C_thresh, clust_params,
+        cl_method_pars):
     """
     Perform the inner loop: cluster --> reject
     """
@@ -22,8 +20,7 @@ def main(
     print("  Identified {} clusters".format(len(clusts_msk)))
 
     # Reject "field" clusters and return their stored masks
-    C_masks = rjctField(
-        unif_method, RK_rad, vol_cummul, C_thresh, clust_xy, clusts_msk)
+    C_masks = rjctField(clust_xy, clusts_msk, RK_rad, C_thresh)
 
     return C_masks, len(clusts_msk)
 
@@ -32,58 +29,6 @@ def clustAlgor(clust_data, clust_method, clust_params, cl_method_pars):
     """
     Find 'n_clusters' in the 'data' array using kMeans.
     """
-
-    # DEPRECATED
-    # if kinit_method == 'voronoi_1':
-    #     # Select the centers after clustering the most dense cells. Not
-    #     # good performance apparently
-    #     data_vols = voronoi_volumes(clust_data[:, :3], False)
-    #     msk = data_vols < np.median(data_vols)
-    #     if n_clusters > msk.sum():
-    #         centroid, n_clusters = clust_data[msk], msk.sum()
-    #     else:
-    #         centroid, _ = kmeans2(clust_data[msk], n_clusters)
-    #     cents, n_init = centroid, 1
-    # elif kinit_method == 'voronoi_2':
-    #     # This selects the points with the smallest Voronoi volumes as the
-    #     # centers. Bad purity
-    #     data_vols = voronoi_volumes(clust_data[:, :3], False)
-    #     idx = np.argpartition(data_vols, n_clusters)[:n_clusters]
-    #     cents, n_init = clust_data[idx], 1
-    # elif kinit_method == 'iterative':
-        #     # Run after the first outer loop, each first iteration of the inner
-        #     # loop. The idea is to use the stars identified as members in the
-        #     # previous iteration to estimate the center of the cluster, using
-        #     # random centers for the rest of the 'n_clusters'.
-        #     # It is not clear if it works or not. E.g., for the synth clust
-        #     # with CI=0.8 the k-means++ method gives:
-        #     # C=0.595, P=0.000, log_MI=-538
-        #     # and this one:
-        #     # C=0.608, P=-0.067, log_MI=-480
-        #     if probs and len(probs) == clust_data.shape[0]:
-        #         print("iterating probs")
-        #         data_vols = voronoi_volumes(clust_data[:, :3], False)
-        #         vals, weights = [], []
-        #         for i, p in enumerate(probs):
-        #             if p > .5:
-        #                 vals.append(clust_data[i])
-        #                 weights.append(1. / data_vols[i])
-
-        #         k_cent = np.average(vals, axis=0, weights=weights)
-
-        #         # Assign rest of centers randomly
-        #         centers = np.random.uniform(
-        #             clust_data.min(0), clust_data.max(0),
-        #             [n_clusters - 1, clust_data.shape[1]])
-
-        #         # Assign rest of centers using Voronoi (worse P)
-        #         # idx = np.argpartition(
-        #         #    data_vols, n_clusters - 1)[:n_clusters - 1]
-        #         # centers = data[idx]
-
-        #         cents, n_init = np.concatenate([centers, [k_cent]]), 1
-        #     else:
-        #         cents, n_init = 'k-means++', n_init
 
     if clust_method == 'KMeans':
         model = skclust.KMeans()
@@ -157,7 +102,6 @@ def clustAlgor(clust_data, clust_method, clust_params, cl_method_pars):
         # import matplotlib.pyplot as plt
         # plt.scatter(range(len(mult)), mult[idx_s])
 
-
     # Set parameters for the method (if any)
     if cl_method_pars:
         model.set_params(**cl_method_pars)
@@ -198,20 +142,24 @@ def clustAlgor(clust_data, clust_method, clust_params, cl_method_pars):
 
     # print(model.inertia_)
 
-    # Scipy's implementation of kmeans. It is much slower
-    # centroid, labels = kmeans2(data, n_clusters, iter=max_iter)
-
     # Separate the labels that point to each cluster found
     clusts_msk = [(labels == _) for _ in range(labels.min(), labels.max() + 1)]
 
     return clusts_msk
 
 
-def rjctField(unif_method, RK_rad, vol_cummul, C_thresh, clust_xy, clusts_msk):
+def rjctField(clust_xy, clusts_msk, RK_rad, C_thresh, N_C_ran=100):
     """
-    Iterate over all the clusters defined by the kMeans algorithm, storing
-    those masks that point to clusters rejected as not real clusters.
+    Iterate over all the clusters defined by the clustering algorithm, storing
+    those masks that point to clusters that survived the test with unniform
+    random 2D fields in (x, y.
     """
+
+    # Test how similar this cluster's (x, y) distribution is compared
+    # to a uniform random distribution using Ripley's K.
+    # https://stats.stackexchange.com/a/122816/10416
+    # Define the (x, y) area with sides [0, 1]
+    Kest = RipleysKEstimator(area=1, x_max=1, y_max=1, x_min=0, y_min=0)
 
     C_masks = []
     # For each cluster found by the kMeans, check if it is composed
@@ -225,18 +173,21 @@ def rjctField(unif_method, RK_rad, vol_cummul, C_thresh, clust_xy, clusts_msk):
             # mark its stars as field stars
             C_s = -np.inf
         else:
-            # Obtain the Voronoi areas in (x, y) for the stars in this cluster
-            vol_d = voronoi_volumes(clust_xy[cl_msk])
+            C_vals = []
+            for _ in range(N_C_ran):
+                xy_u = np.random.uniform(0., 1., clust_xy[cl_msk].shape)
+                C_vals.append(Kest(xy_u, (RK_rad,)))
 
-            # Test how similar this cluster's area distribution is compared to
-            # the areas of a a uniform random distribution.
-            C_s = compFunc.main(
-                unif_method, RK_rad, clust_xy[cl_msk], vol_cummul, vol_d)
+            # When the observed K value is larger than the expected K value for
+            # a particular distance, the distribution is more clustered than a
+            # random distribution at that distance
+            mean, std = np.mean(C_vals), np.std(C_vals)
+            C_s = (Kest(clust_xy[cl_msk], (RK_rad,)) - mean) / std
 
         # Smaller C_s values point to samples that come from a uniform
         # distribution in (x, y), i.e., a "cluster" made up of field
-        # stars. Hence, we keep as "true" clusters those with larger C_s values
-        # than C_thresh.
+        # stars. Hence, we keep as "true" clusters those with C_s values
+        # larger than C_thresh.
         if C_s >= C_thresh:
             # Store mask that points to stars that should be *kept*
             print("   Cluster {} survived (C_s={:.2f}), N={}".format(

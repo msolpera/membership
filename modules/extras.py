@@ -1,52 +1,9 @@
 
 import numpy as np
-from astropy.stats import sigma_clipped_stats
 from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
 from sklearn.neighbors import LocalOutlierFactor
 from sklearn.ensemble import IsolationForest
-from .voronoiVols import voronoi_volumes
-from . import compFunc
-
-
-def CCalibrate(
-    clust_xy, cl_data, clust_method, vol_cummul, N_C_ran, kM_N_membs,
-        kM_N_cl_max, kM_n_init, kM_max_iter, method):
-    """
-    """
-
-    # vol_d = voronoi_volumes(clust_xy)
-    # import matplotlib.pyplot as plt
-    # from .voronoiVols import vor_2d_poisson
-    # xx =  np.linspace(0., 5., 1000)
-    # yy = vor_2d_poisson(xx)
-    # plt.hist(vol_d/vol_d.mean(), 100, alpha=.25, color='b',density=True)
-    # plt.plot(xx,yy)
-
-    print("Calibrating C threshold")
-    from .inner import clustAlgor
-
-    # Obtain all the clusters in the input data using kMeans
-    clusts_msk = clustAlgor(
-        cl_data, clust_method, kM_N_membs, kM_N_cl_max, kM_n_init, kM_max_iter,
-        [])
-
-    C_vals = []
-    for i, cl_msk in enumerate(clusts_msk):
-        if cl_msk.sum() >= 5:
-            xy = clust_xy[cl_msk]
-            vol_d = voronoi_volumes(xy)
-            C_vals.append(compFunc.main(
-                method, N_C_ran, xy, vol_cummul, vol_d))
-
-    # Using this median gives good results.
-    mean, median, std = sigma_clipped_stats(C_vals)
-    print(mean, median, std)
-    # print(np.median(C_vals), np.mean(C_vals), np.std(C_vals))
-    C_thresh = np.mean(C_vals)
-    import pdb; pdb.set_trace()  # breakpoint 0c2ef80c //
-
-
-    return C_thresh
 
 
 def reSampleData(resampleFlag, data, data_err, standard_scale=True):
@@ -65,6 +22,27 @@ def reSampleData(resampleFlag, data, data_err, standard_scale=True):
             sampled_data)
 
     return sampled_data
+
+
+def dimReduc(cl_data, PCAflag, PCAdims):
+    """
+    Perform PCA and feature reduction
+
+    all: use all available dimensions
+    """
+    if PCAflag:
+        if PCAdims == 'all':
+            PCAdims = cl_data.shape[1]
+        else:
+            PCAdims = int(PCAdims)
+
+        pca = PCA(n_components=PCAdims)
+        cl_data_pca = pca.fit(cl_data).transform(cl_data)
+        print("Selected N={} PCA features".format(PCAdims))
+    else:
+        cl_data_pca = cl_data
+
+    return cl_data_pca
 
 
 def outlierRjct(clust_xy, probs, outrjctFlag=True, n_neighbors=50):

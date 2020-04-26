@@ -17,12 +17,11 @@ def main(
 
     # Set a random seed for reproducibility
     seed = np.random.randint(100000)
-    print("Random seed: {}".format(seed))
+    print("Random seed: {}\n".format(seed))
     np.random.seed(seed)
 
-    print("Data dimensions: {}\n".format(data.shape[1]))
-
-    print("\nClustering method : {}".format(clust_method))
+    print("Data dimensions   : {}".format(data.shape[1]))
+    print("Clustering method : {}".format(clust_method))
     print("RK rad            : {:.2f}".format(RK_rad))
     print("Threshold         : {:.1f}".format(C_thresh))
 

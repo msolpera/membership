@@ -98,9 +98,6 @@ def clustAlgor(clust_data, clust_method, clust_params, cl_method_pars):
         mult = dens * delta
         # Indexes that sort in descending order
         idx_s = np.argsort(-mult)
-        #
-        # import matplotlib.pyplot as plt
-        # plt.scatter(range(len(mult)), mult[idx_s])
 
     # Set parameters for the method (if any)
     if cl_method_pars:
@@ -122,6 +119,7 @@ def clustAlgor(clust_data, clust_method, clust_params, cl_method_pars):
             model.n_clusters = n_clusters
 
     elif clust_method == 'Voronoi':
+        # Locate the 'knee' in the curve, to estimate the number of clusters
         kneedle = KneeLocator(
             range(len(mult)), mult[idx_s], S=10, curve='convex',
             direction='decreasing')
@@ -139,8 +137,6 @@ def clustAlgor(clust_data, clust_method, clust_params, cl_method_pars):
             labels = model.fit_predict(clust_data)
         else:
             labels = model.labels_
-
-    # print(model.inertia_)
 
     # Separate the labels that point to each cluster found
     clusts_msk = [(labels == _) for _ in range(labels.min(), labels.max() + 1)]

@@ -7,8 +7,10 @@ from sklearn.decomposition import PCA
 
 def main(
     ID, xy, data, data_err, resampleFlag, PCAflag, PCAdims, clust_method,
-        otlrFlag, C_thresh, unif_method, RK_rad, clust_params, vol_cummul):
+    otlrFlag, C_thresh, unif_method, RK_rad, clust_params, cl_method_pars,
+        vol_cummul):
     """
+    Perform the outer loop: inner loop until no more clusters are rejected
     """
 
     # Make a copy of the original data to avoid over-writing it
@@ -20,35 +22,42 @@ def main(
     # Apply PCA and features reduction
     clust_data = dimReduc(clust_data, PCAflag, PCAdims)
 
-    nostars_flag = False
+    _iter, nostars_flag = 1, False
     # Keep calling the inner loop until all the "fake clusters" are rejected
     while True:
+        print("\n Iteration {}".format(_iter))
+        _iter += 1
 
         C_masks, N_clusts = inner.main(
-            clust_xy, clust_data, clust_method, otlrFlag, C_thresh,
-            unif_method, RK_rad, clust_params, vol_cummul)
+            clust_xy, clust_data, clust_method, C_thresh, unif_method, RK_rad,
+            clust_params, cl_method_pars, vol_cummul)
 
-        if not C_masks:
-            # No more clusters to reject
+        # No clusters were rejected in this iteration. Break
+        if N_clusts == len(C_masks):
+            print(" All clusters ({} stars) survived".format(
+                clust_xy.shape[0]))
             break
 
-        # Combine all the masks
-        msk_all = np.logical_and.reduce(C_masks)
+        # Combine all the masks using a logical OR
+        msk_all = np.logical_or.reduce(C_masks)
 
-        # This mask leaves too few stars and too many clusters --> Break
+        # Applying 'msk_all' results in too few stars distributed in too many
+        # clusters. Break
         if clust_data[msk_all].shape[0] < int(clust_params['N_membs']):
             # If there are more than 4 (HARDCODED) clusters defined at this
             # point, reject this run.
             if N_clusts > 4:
                 nostars_flag = True
-            print(" N stars<{:.0f} Breaking".format(int(
+            print(" N_stars<{:.0f} Breaking".format(int(
                 clust_params['N_membs'])))
             break
 
-        # Remove stars identified as field stars from the frame and move on
-        # to the next iteration
+        # Keep only stars identified as members and move on to the next
+        # iteration
         clust_ID, clust_xy, clust_data = clust_ID[msk_all],\
             clust_xy[msk_all], clust_data[msk_all]
+        print(" A total of {} stars survived in {} clusters".format(
+            msk_all.sum(), len(C_masks)))
 
     probs = []
     if nostars_flag is False:
@@ -64,7 +73,7 @@ def main(
         # DELETE
         from . import member_index
         C, P, log_MI = member_index.main(ID, probs)[:3]
-        print("C={:.3f}, P={:.3f}, log_MI={:.0f}".format(C, P, log_MI))
+        print("\n(DELETE THIS) C={:.3f}, P={:.3f}, log_MI={:.0f}".format(C, P, log_MI))
 
         probs = outlierRjct(clust_xy, probs, otlrFlag)
 
@@ -73,6 +82,8 @@ def main(
 
 def dimReduc(cl_data, PCAflag, PCAdims):
     """
+    Perform PCA and feature reduction
+
     all: use all available dimensions
     """
     if PCAflag:

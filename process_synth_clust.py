@@ -1,5 +1,6 @@
 
 import configparser
+from distutils.util import strtobool
 from modules.dataRead import read_data
 from modules import member_index
 # import modules.Voronoi_v4 as V5
@@ -22,7 +23,7 @@ def main():
 
     ID_c, x_c, y_c, data_cols, data_errs, OL_runs, resampleFlag, PCAflag,\
         PCAdims, otlrFlag, prob_cnvrg, clust_method, otlrFlag, C_thresh,\
-        unif_method, RK_rad, clust_params = readINI()
+        unif_method, RK_rad, clust_params, cl_method_pars = readINI()
 
     arch = readFiles('input')
     for file_name in arch:
@@ -49,7 +50,7 @@ def main():
                 memb_prob = V5.main(
                     ID, xy, data, data_err, OL_runs, resampleFlag, PCAflag,
                     PCAdims, prob_cnvrg, clust_method, otlrFlag, C_thresh,
-                    unif_method, RK_rad, clust_params)
+                    unif_method, RK_rad, clust_params, cl_method_pars)
                 C, P, log_MI, Nm, Nf = member_index.main(ID, memb_prob)
                 MI_v5 = [C, P, log_MI]
 
@@ -77,6 +78,18 @@ def main():
 def readINI():
     """
     """
+
+    def vtype(var):
+        tp, v = var.split('_')
+        if tp == 'int':
+            return int(v)
+        elif tp == 'float':
+            return float(v)
+        elif tp == 'bool':
+            return bool(strtobool(v))
+        elif tp == 'str':
+            return v
+
     # Read .ini file
     in_params = configparser.ConfigParser()
     in_params.read('params.ini')
@@ -88,25 +101,32 @@ def readINI():
 
     # Arguments for the Outer Loop
     OL_runs, resampleFlag, PCAflag, PCAdims, otlrFlag, prob_cnvrg =\
-        int(in_params['Outer loop']['OL_runs']),\
-        bool(in_params['Outer loop']['resampleFlag']),\
-        bool(in_params['Outer loop']['PCAflag']),\
-        in_params['Outer loop']['PCAdims'],\
-        bool(in_params['Outer loop']['otlrFlag']),\
-        float(in_params['Outer loop']['prob_cnvrg'])
+        vtype(in_params['Outer loop']['OL_runs']),\
+        vtype(in_params['Outer loop']['resampleFlag']),\
+        vtype(in_params['Outer loop']['PCAflag']),\
+        vtype(in_params['Outer loop']['PCAdims']),\
+        vtype(in_params['Outer loop']['otlrFlag']),\
+        vtype(in_params['Outer loop']['prob_cnvrg'])
 
     # Arguments for the Inner Loop
-    clust_method, C_thresh, unif_method, RK_rad =\
-        in_params['Inner loop']['clust_method'],\
-        float(in_params['Inner loop']['C_thresh']),\
-        in_params['Inner loop']['unif_method'],\
-        float(in_params['Inner loop']['RK_rad'])
+    clust_params = {
+        'N_membs': vtype(in_params['Inner loop']['N_membs']),
+        'N_cl_max': vtype(in_params['Inner loop']['N_cl_max'])}
 
-    clust_params = in_params['General clustering parameters']
+    clust_method, C_thresh, unif_method, RK_rad =\
+        vtype(in_params['Inner loop']['clust_method']),\
+        vtype(in_params['Inner loop']['C_thresh']),\
+        vtype(in_params['Inner loop']['unif_method']),\
+        vtype(in_params['Inner loop']['RK_rad'])
+
+    cl_method_pars = {}
+    for key, val in in_params['Clustering parameters'].items():
+        cl_method_pars[key] = vtype(val)
 
     return ID_c, x_c, y_c, data_cols, data_errs,\
         OL_runs, resampleFlag, PCAflag, PCAdims, otlrFlag, prob_cnvrg,\
-        clust_method, otlrFlag, C_thresh, unif_method, RK_rad, clust_params
+        clust_method, otlrFlag, C_thresh, unif_method, RK_rad, clust_params,\
+        cl_method_pars
 
 
 def readFiles(ruta=Path.cwd()):

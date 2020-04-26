@@ -74,7 +74,8 @@ def outlierRjct(clust_xy, probs, outrjctFlag=True, n_neighbors=50):
     """
 
     if outrjctFlag is False:
-        print("No outlier re-classification")
+        # print("No outlier re-classification")
+        pass
 
     elif clust_xy.shape[0] < n_neighbors:
         print("Not enough stars (<{}) to perform outlier rejection".format(

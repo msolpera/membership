@@ -1,6 +1,5 @@
 
 import numpy as np
-from scipy.stats import kstest
 from astropy.stats import RipleysKEstimator
 import warnings
 from .voronoiVols import voronoi_CDF2vols, voronoi_vols2CDF
@@ -85,7 +84,11 @@ def main(method, RK_rad, xy, vol_cummul, vol_d, N_C_ran=100):
         # significance level --> A *large* p-value implies the samples were
         # drawn from the same distribution.
 
-        # C_s = kstest(vol_d, voronoi_vols2CDF, args=(vol_cummul,))
+        # # Return D statistic
+        # C_s = kstest_new(vol_d, voronoi_vols2CDF, args=(vol_cummul,))
+
+        # Return 1. - p-value
+        from scipy.stats import kstest
         C_s = 1. - kstest(vol_d, voronoi_vols2CDF, args=(vol_cummul,),
                           alternative='less')[1]
 
@@ -177,16 +180,16 @@ def anderson_ksamp_new(samples):
     return A2
 
 
-# def kstest(rvs, cdf, args=()):
-#     """
-#     """
+def kstest_new(rvs, cdf, args=()):
+    """
+    """
 
-#     vals = np.sort(rvs)
-#     N = len(vals)
-#     cdfvals = cdf(vals, *args)
+    vals = np.sort(rvs)
+    N = len(vals)
+    cdfvals = cdf(vals, *args)
 
-#     Dplus = (np.arange(1.0, N + 1) / N - cdfvals).max()
-#     Dmin = (cdfvals - np.arange(0.0, N) / N).max()
+    Dplus = (np.arange(1.0, N + 1) / N - cdfvals).max()
+    Dmin = (cdfvals - np.arange(0.0, N) / N).max()
 
-#     D = np.max([Dplus, Dmin])
-#     return D
+    D = np.max([Dplus, Dmin])
+    return D

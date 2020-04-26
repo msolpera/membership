@@ -2,7 +2,7 @@
 import numpy as np
 from scipy import integrate
 from astropy.stats import sigma_clipped_stats
-from scipy.spatial import Voronoi, ConvexHull # , cKDTree
+from scipy.spatial import Voronoi, ConvexHull
 
 
 def voronoi_volumes(points, vertx_clip=True):

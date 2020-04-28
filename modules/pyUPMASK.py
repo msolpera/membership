@@ -7,8 +7,8 @@ import time as t
 
 def main(
     ID, xy, data, data_err, OL_runs, resampleFlag, PCAflag, PCAdims,
-    prob_cnvrg, clust_method, otlrFlag, RK_rad, C_thresh, clust_params,
-        cl_method_pars):
+    prob_cnvrg, clust_method, otlrFlag, RK_rad, RK_mode, C_thresh,
+        clust_params, cl_method_pars):
     """
     C_thresh : Any cluster with a smaller value will be classified as being
                 composed of field stars and discarded.
@@ -21,8 +21,13 @@ def main(
     np.random.seed(seed)
 
     print("Data dimensions   : {}".format(data.shape[1]))
+    print("Stars per cluster : {}".format(clust_params['N_membs']))
     print("Clustering method : {}".format(clust_method))
+    if cl_method_pars:
+        for key, val in cl_method_pars.items():
+            print(" {:<16} : {}".format(key, val))
     print("RK rad            : {:.2f}".format(RK_rad))
+    print("RK mode           : {}".format(RK_mode))
     print("Threshold         : {:.1f}".format(C_thresh))
 
     # Initial null probabilities for all stars in the frame.
@@ -35,7 +40,7 @@ def main(
         # Store all probabilities obtained in this run
         probs = outer.main(
             ID, xy, data, data_err, resampleFlag, PCAflag, PCAdims,
-            clust_method, otlrFlag, RK_rad, C_thresh, clust_params,
+            clust_method, otlrFlag, RK_rad, RK_mode, C_thresh, clust_params,
             cl_method_pars)
         if probs:
             probs_all.append(probs)

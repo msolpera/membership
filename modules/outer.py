@@ -6,7 +6,7 @@ from .extras import reSampleData, dimReduc, outlierRjct
 
 def main(
     ID, xy, data, data_err, resampleFlag, PCAflag, PCAdims, clust_method,
-        otlrFlag, RK_rad, C_thresh, clust_params, cl_method_pars):
+        otlrFlag, RK_rad, RK_mode, C_thresh, clust_params, cl_method_pars):
     """
     Perform the outer loop: inner loop until all "fake" clusters are rejected
     """
@@ -20,14 +20,14 @@ def main(
     # Apply PCA and features reduction
     clust_data = dimReduc(clust_data, PCAflag, PCAdims)
 
-    _iter, nostars_flag = 1, False
     # Keep calling the inner loop until all the "fake clusters" are rejected
+    _iter, nostars_flag = 1, False
     while True:
         print("\n Iteration {}".format(_iter))
         _iter += 1
 
         C_masks, N_clusts = inner.main(
-            clust_xy, clust_data, clust_method, RK_rad, C_thresh,
+            clust_xy, clust_data, clust_method, RK_rad, RK_mode, C_thresh,
             clust_params, cl_method_pars,)
 
         # No clusters were rejected in this iteration. Break

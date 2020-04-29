@@ -16,7 +16,7 @@ def main(
     start_t = t.time()
 
     # Set a random seed for reproducibility
-    seed = 6509 #np.random.randint(100000)
+    seed = np.random.randint(100000)
     print("Random seed: {}\n".format(seed))
     np.random.seed(seed)
 
@@ -35,11 +35,9 @@ def main(
     # Initial null probabilities for all stars in the frame.
     probs_old, runs_old = np.zeros(len(ID)), 0
     probs_all = []
-    for C_thresh in np.linspace(1., 3., 20):
-    # for _ in range(OL_runs):
+    for _ in range(OL_runs):
         print("\n-----------------------------------------------------------")
-        # print("Run {}".format(_ + 1))
-        print("Run {}".format(C_thresh))
+        print("Run {}".format(_ + 1))
 
         # Store all probabilities obtained in this run
         probs = outer.main(
@@ -48,20 +46,7 @@ def main(
             cl_method_pars)
 
         if probs:
-            # probs_all.append(probs)
-            #
-            probs_inter = []
-            for i, st in enumerate(clust_ID):
-                if st in ID:
-                    j = np.where(st == ID)[0][0]
-                    probs_inter.append(probs[j])
-                else:
-                    probs_inter.append(0.)
-
-            probs_all.append(probs_inter)
-
-            msk = np.array(probs) > .5
-            ID, xy, data, data_err = [_[msk] for _ in (ID, xy, data, data_err)]
+            probs_all.append(probs)
 
         # DELETE
         if probs_all:

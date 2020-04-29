@@ -7,19 +7,12 @@ from astropy.stats import RipleysKEstimator
 
 def main(
     clust_xy, clust_data, clust_method, RK_rad, RK_mode, C_thresh,
-        clust_params, cl_method_pars, probs_outer):
+        clust_params, cl_method_pars):
     """
     Perform the inner loop: cluster --> reject
     """
     print("  Performing clustering on array of shape ({}, {})".format(
         *clust_data.shape))
-
-    # for memb_val in (0., 1.):
-    #     idx = np.where(probs_outer == memb_val)
-    #     N_s = idx[0].size
-    #     if N_s > 0:
-    # print("  Processing prob={} stars (N={})".format(memb_val, N_s))
-    # xy, data = clust_xy[idx], clust_data[idx]
 
     # Obtain all the clusters in the input data using kMeans
     clusts_msk = clustAlgor(

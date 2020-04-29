@@ -16,7 +16,7 @@ def main(
     start_t = t.time()
 
     # Set a random seed for reproducibility
-    seed = np.random.randint(100000)
+    seed = 6509 #np.random.randint(100000)
     print("Random seed: {}\n".format(seed))
     np.random.seed(seed)
 
@@ -30,27 +30,47 @@ def main(
     print("RK mode           : {}".format(RK_mode))
     print("Threshold         : {:.1f}".format(C_thresh))
 
+    clust_ID = np.array(list(ID))
+
     # Initial null probabilities for all stars in the frame.
     probs_old, runs_old = np.zeros(len(ID)), 0
-    probs_outer, probs_all = np.zeros(data.shape[0]), []
-    for _ in range(OL_runs):
+    probs_all = []
+    for C_thresh in np.linspace(1., 3., 20):
+    # for _ in range(OL_runs):
         print("\n-----------------------------------------------------------")
-        print("Run {}".format(_ + 1))
+        # print("Run {}".format(_ + 1))
+        print("Run {}".format(C_thresh))
 
         # Store all probabilities obtained in this run
         probs = outer.main(
             ID, xy, data, data_err, resampleFlag, PCAflag, PCAdims,
             clust_method, otlrFlag, RK_rad, RK_mode, C_thresh, clust_params,
-            cl_method_pars, probs_outer)
+            cl_method_pars)
+
         if probs:
-            probs_outer = np.array(probs)
-            probs_all.append(probs)
+            # probs_all.append(probs)
+            #
+            probs_inter = []
+            for i, st in enumerate(clust_ID):
+                if st in ID:
+                    j = np.where(st == ID)[0][0]
+                    probs_inter.append(probs[j])
+                else:
+                    probs_inter.append(0.)
+
+            probs_all.append(probs_inter)
+
+            msk = np.array(probs) > .5
+            ID, xy, data, data_err = [_[msk] for _ in (ID, xy, data, data_err)]
 
         # DELETE
         if probs_all:
             from . import member_index
-            C, P, log_MI = member_index.main(ID, np.mean(probs_all, 0))[:3]
-            print("(DELETE THIS) C={:.3f}, P={:.3f}, log_MI={:.0f}".format(C, P, log_MI))
+            C, P, log_MI = member_index.main(
+                clust_ID, np.mean(probs_all, 0))[:3]
+            print("(DELETE THIS) C={:.3f}, P={:.3f}, log_MI={:.0f}".format(
+                C, P, log_MI))
+        # DELETE
 
         p_dist = [
             (np.mean(probs_all, 0) > _).sum() for _ in (.1, .3, .5, .7, .9)]

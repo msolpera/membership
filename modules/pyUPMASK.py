@@ -32,7 +32,7 @@ def main(
 
     # Initial null probabilities for all stars in the frame.
     probs_old, runs_old = np.zeros(len(ID)), 0
-    probs_all = []
+    probs_outer, probs_all = np.zeros(data.shape[0]), []
     for _ in range(OL_runs):
         print("\n-----------------------------------------------------------")
         print("Run {}".format(_ + 1))
@@ -41,8 +41,9 @@ def main(
         probs = outer.main(
             ID, xy, data, data_err, resampleFlag, PCAflag, PCAdims,
             clust_method, otlrFlag, RK_rad, RK_mode, C_thresh, clust_params,
-            cl_method_pars)
+            cl_method_pars, probs_outer)
         if probs:
+            probs_outer = np.array(probs)
             probs_all.append(probs)
 
         # DELETE

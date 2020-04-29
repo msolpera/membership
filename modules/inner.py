@@ -7,12 +7,19 @@ from astropy.stats import RipleysKEstimator
 
 def main(
     clust_xy, clust_data, clust_method, RK_rad, RK_mode, C_thresh,
-        clust_params, cl_method_pars):
+        clust_params, cl_method_pars, probs_outer):
     """
     Perform the inner loop: cluster --> reject
     """
     print("  Performing clustering on array of shape ({}, {})".format(
         *clust_data.shape))
+
+    # for memb_val in (0., 1.):
+    #     idx = np.where(probs_outer == memb_val)
+    #     N_s = idx[0].size
+    #     if N_s > 0:
+    # print("  Processing prob={} stars (N={})".format(memb_val, N_s))
+    # xy, data = clust_xy[idx], clust_data[idx]
 
     # Obtain all the clusters in the input data using kMeans
     clusts_msk = clustAlgor(
@@ -110,7 +117,11 @@ def clustAlgor(clust_data, clust_method, clust_params, cl_method_pars):
         # Indexes that sort in descending order
         idx_s = np.argsort(-mult)
 
-    if clust_method == 'KMeansSwap':
+    elif clust_method == 'HDBSCAN':
+        import hdbscan
+        model = hdbscan.HDBSCAN()
+
+    elif clust_method == 'KMeansSwap':
         model = skclust.KMeans()
         # Number of clusters: min is 2, max is N_cl_max
         n_clusters = max(2, min(
@@ -138,6 +149,7 @@ def clustAlgor(clust_data, clust_method, clust_params, cl_method_pars):
         # Reset this parameter
         model.max_iter = 300
 
+    #
     # Set parameters for the method (if any)
     if cl_method_pars and clust_method not in ('Voronoi', 'KMeansSwap'):
         if clust_method == 'DBSCAN':
@@ -171,22 +183,24 @@ def clustAlgor(clust_data, clust_method, clust_params, cl_method_pars):
             direction='decreasing')
         n_clusters = max(2, min(int(kneedle.knee), clust_params['N_cl_max']))
 
-    if clust_method == 'Voronoi':
-        # Obtain labels
-        labels = np.argmin(dist[idx_s[:n_clusters], :], 0)
-        # import matplotlib.pyplot as plt
-        # for lb in set(labels):
-        #     msk = labels == lb
-        #     plt.scatter(clust_data.T[1][msk], clust_data.T[0][msk], alpha=.5)
-    else:
+    #
+    # Fit the model
+    if clust_method != 'Voronoi':
         # Fit the model
         model.fit(clust_data)
 
-        # Extract the labels
-        if clust_method in ('GaussianMixture', 'BayesianGaussianMixture'):
-            labels = model.fit_predict(clust_data)
-        else:
-            labels = model.labels_
+    # Extract the labels
+    if clust_method in ('GaussianMixture', 'BayesianGaussianMixture'):
+        labels = model.fit_predict(clust_data)
+    elif clust_method == 'Voronoi':
+        labels = np.argmin(dist[idx_s[:n_clusters], :], 0)
+    else:
+        labels = model.labels_
+
+    # import matplotlib.pyplot as plt
+    # for lb in set(labels):
+    #     msk = labels == lb
+    #     plt.scatter(clust_data.T[1][msk], clust_data.T[0][msk], alpha=.5)
 
     # Separate the labels that point to each cluster found
     clusts_msk = [(labels == _) for _ in range(labels.min(), labels.max() + 1)]

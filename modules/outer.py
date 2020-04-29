@@ -6,7 +6,8 @@ from .extras import reSampleData, dimReduc, outlierRjct
 
 def main(
     ID, xy, data, data_err, resampleFlag, PCAflag, PCAdims, clust_method,
-        otlrFlag, RK_rad, RK_mode, C_thresh, clust_params, cl_method_pars):
+    otlrFlag, RK_rad, RK_mode, C_thresh, clust_params, cl_method_pars,
+        probs_outer):
     """
     Perform the outer loop: inner loop until all "fake" clusters are rejected
     """
@@ -28,7 +29,7 @@ def main(
 
         C_masks, N_clusts = inner.main(
             clust_xy, clust_data, clust_method, RK_rad, RK_mode, C_thresh,
-            clust_params, cl_method_pars,)
+            clust_params, cl_method_pars, probs_outer)
 
         # No clusters were rejected in this iteration. Break
         if N_clusts == len(C_masks):

@@ -26,7 +26,7 @@ def main(
         print("\n Iteration {}".format(_iter))
         _iter += 1
 
-        C_masks, probs_gmm, N_clusts = inner.main(
+        C_masks, N_clusts = inner.main(
             clust_xy, clust_data, clust_method, RK_rad, RK_mode, C_thresh,
             clust_params, cl_method_pars)
 
@@ -52,8 +52,8 @@ def main(
 
         # Keep only stars identified as members and move on to the next
         # iteration
-        clust_ID, clust_xy, clust_data, probs_gmm = clust_ID[msk_all],\
-            clust_xy[msk_all], clust_data[msk_all], probs_gmm[msk_all]
+        clust_ID, clust_xy, clust_data = clust_ID[msk_all],\
+            clust_xy[msk_all], clust_data[msk_all]
         print(" A total of {} stars survived in {} clusters".format(
             msk_all.sum(), len(C_masks)))
 
@@ -64,9 +64,7 @@ def main(
         # a probability of '0'.
         for st in ID:
             if st in clust_ID:
-                j = np.where(st == clust_ID)[0][0]
-                probs.append(probs_gmm[j])
-                # probs.append(1.)
+                probs.append(1.)
             else:
                 probs.append(0.)
 

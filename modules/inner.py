@@ -15,14 +15,14 @@ def main(
         *clust_data.shape))
 
     # Obtain all the clusters in the input data using kMeans
-    clusts_msk, probs_gmm = clustAlgor(
+    clusts_msk = clustAlgor(
         clust_data, clust_method, clust_params, cl_method_pars)
     print("  Identified {} clusters".format(len(clusts_msk)))
 
     # Reject "field" clusters and return their stored masks
     C_masks = rjctField(clust_xy, clusts_msk, RK_rad, RK_mode, C_thresh)
 
-    return C_masks, probs_gmm, len(clusts_msk)
+    return C_masks, len(clusts_msk)
 
 
 def clustAlgor(clust_data, clust_method, clust_params, cl_method_pars):
@@ -185,7 +185,7 @@ def clustAlgor(clust_data, clust_method, clust_params, cl_method_pars):
     # Extract the labels
     if clust_method in ('GaussianMixture', 'BayesianGaussianMixture'):
         labels = model.predict(clust_data)
-        probs_gmm = model.predict_proba(clust_data).max(1)
+        # probs_gmm = model.predict_proba(clust_data).max(1)
     elif clust_method == 'Voronoi':
         labels = np.argmin(dist[idx_s[:n_clusters], :], 0)
     else:
@@ -199,7 +199,7 @@ def clustAlgor(clust_data, clust_method, clust_params, cl_method_pars):
     # Separate the labels that point to each cluster found
     clusts_msk = [(labels == _) for _ in range(labels.min(), labels.max() + 1)]
 
-    return clusts_msk, probs_gmm
+    return clusts_msk
 
 
 def rjctField(clust_xy, clusts_msk, RK_rad, RK_mode, C_thresh, N_C_ran=100):

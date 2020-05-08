@@ -25,8 +25,14 @@ def read_data(file_name, ID_c, x_c, y_c, data_cols, data_errs):
     ID_data, xy_data, cl_data, data_err = ID_data[msk_data],\
         xy_data[msk_data], cl_data[msk_data], data_err[msk_data]
 
+    _xrange, _yrange = np.ptp(xy_data, 0)
+    perc_sq = abs(1. - _xrange / _yrange)
+    if perc_sq > .05:
+        print((
+            "WARNING: (x, y) frame deviates from a square region "
+            "by {:.0f}%").format(perc_sq * 100.))
     xy_data = MinMaxScaler().fit(xy_data).transform(xy_data)
-    print("Coordinates data to normalized [0, 1]")
+    print("Coordinates data scaled to [0, 1]")
 
     return ID_data, xy_data, cl_data, data_err
 

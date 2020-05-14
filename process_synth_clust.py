@@ -1,7 +1,6 @@
 
-import configparser
-from distutils.util import strtobool
 from modules.dataRead import read_data
+import modules.readINI as rINI
 from modules import member_index
 # import modules.Voronoi_v4 as V5
 import modules.pyUPMASK as V5
@@ -21,9 +20,9 @@ def main():
             'N_m,N_f,CI,CI_V,CI_BV,CI_pmRA,CI_pmDE,' +
             'C_V,P_V,L_V,C_R,P_R L_R,C_U,P_U,L_U\n')
 
-    ID_c, x_c, y_c, data_cols, data_errs, OL_runs, resampleFlag, PCAflag,\
-        PCAdims, otlrFlag, prob_cnvrg, clust_method, otlrFlag, C_thresh,\
-        RK_rad, RK_mode, clust_params, cl_method_pars = readINI()
+    ID_c, x_c, y_c, data_cols, data_errs, verbose, OL_runs, resampleFlag,\
+        PCAflag, PCAdims, prob_cnvrg, clust_method, C_thresh, RK_rad,\
+        RK_mode, clust_params, cl_method_pars = rINI.main()
 
     arch = readFiles('input')
     for file_name in arch:
@@ -48,9 +47,9 @@ def main():
 
             if met == 'pyUPMASK':
                 memb_prob = V5.main(
-                    ID, xy, data, data_err, OL_runs, resampleFlag, PCAflag,
-                    PCAdims, prob_cnvrg, clust_method, otlrFlag, RK_rad,
-                    RK_mode, C_thresh, clust_params, cl_method_pars)
+                    ID, xy, data, data_err, verbose, OL_runs, resampleFlag,
+                    PCAflag, PCAdims, prob_cnvrg, clust_method,
+                    RK_rad, RK_mode, C_thresh, clust_params, cl_method_pars)
                 C, P, log_MI, Nm, Nf = member_index.main(ID, memb_prob)
                 MI_v5 = [C, P, log_MI]
 
@@ -73,59 +72,6 @@ def main():
         with open("final_table.dat", "a") as f_out:
             f_out.write(",".join(str(_) for _ in data_lst))
             f_out.write("\n")
-
-
-def readINI():
-    """
-    """
-
-    def vtype(var):
-        tp, v = var.split('_')
-        if tp == 'int':
-            return int(v)
-        elif tp == 'float':
-            return float(v)
-        elif tp == 'bool':
-            return bool(strtobool(v))
-        elif tp == 'str':
-            return v
-
-    # Read .ini file
-    in_params = configparser.ConfigParser()
-    in_params.read('params.ini')
-
-    # Data columns
-    ID_c, x_c, y_c = in_params['Data columns']['ID_coords'].split()
-    data_cols = in_params['Data columns']['data'].split()
-    data_errs = in_params['Data columns']['uncert'].split()
-
-    # Arguments for the Outer Loop
-    OL_runs, resampleFlag, PCAflag, PCAdims, otlrFlag, prob_cnvrg =\
-        vtype(in_params['Outer loop']['OL_runs']),\
-        vtype(in_params['Outer loop']['resampleFlag']),\
-        vtype(in_params['Outer loop']['PCAflag']),\
-        vtype(in_params['Outer loop']['PCAdims']),\
-        vtype(in_params['Outer loop']['otlrFlag']),\
-        vtype(in_params['Outer loop']['prob_cnvrg'])
-
-    # Arguments for the Inner Loop
-    clust_params = {
-        'N_membs': vtype(in_params['Inner loop']['N_membs']),
-        'N_cl_max': vtype(in_params['Inner loop']['N_cl_max'])}
-
-    clust_method, C_thresh, RK_rad, RK_mode =\
-        vtype(in_params['Inner loop']['clust_method']),\
-        vtype(in_params['Inner loop']['C_thresh']),\
-        vtype(in_params['Inner loop']['RK_rad']),\
-        vtype(in_params['Inner loop']['RK_mode'])
-
-    cl_method_pars = {}
-    for key, val in in_params['Clustering parameters'].items():
-        cl_method_pars[key] = vtype(val)
-
-    return ID_c, x_c, y_c, data_cols, data_errs, OL_runs, resampleFlag,\
-        PCAflag, PCAdims, otlrFlag, prob_cnvrg, clust_method, otlrFlag,\
-        C_thresh, RK_rad, RK_mode, clust_params, cl_method_pars
 
 
 def readFiles(ruta=Path.cwd()):

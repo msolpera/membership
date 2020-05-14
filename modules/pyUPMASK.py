@@ -1,19 +1,34 @@
 
+import os
 import numpy as np
+from astropy.io import ascii
+from astropy.stats import RipleysKEstimator
 from . import outer
 from .extras import probCnvrg
 import time as t
 
 
 def main(
-    ID, xy, data, data_err, OL_runs, resampleFlag, PCAflag, PCAdims,
-    prob_cnvrg, clust_method, otlrFlag, RK_rad, RK_mode, C_thresh,
-        clust_params, cl_method_pars):
+    ID, xy, data, data_err, verbose, OL_runs, resampleFlag, PCAflag, PCAdims,
+    prob_cnvrg, clust_method, RK_rad, RK_mode, C_thresh, clust_params,
+        cl_method_pars):
     """
     C_thresh : Any cluster with a smaller value will be classified as being
                 composed of field stars and discarded.
     """
     start_t = t.time()
+
+    # Set print() according to the 'verbose' parameter
+    if verbose == 0:
+        prfl = open(os.devnull, 'w')
+    else:
+        prfl = None
+
+    RK_vals = RKDict(RK_rad)
+
+    # TODO: make this more general?
+    # Define the (x, y) area with sides [0, 1]
+    Kest = RipleysKEstimator(area=1)  # , x_max=1, y_max=1, x_min=0, y_min=0)
 
     # Set a random seed for reproducibility
     seed = np.random.randint(100000)
@@ -27,8 +42,8 @@ def main(
         for key, val in cl_method_pars.items():
             print(" {:<16} : {}".format(key, val))
     print("RK rad            : {:.2f}".format(RK_rad))
-    print("RK mode           : {}".format(RK_mode))
-    print("Threshold         : {:.1f}".format(C_thresh))
+    # print("RK mode           : {}".format(RK_mode))
+    print("Threshold         : {:.2f}".format(C_thresh))
 
     clust_ID = np.array(list(ID))
 
@@ -42,8 +57,8 @@ def main(
         # Store all probabilities obtained in this run
         probs = outer.main(
             ID, xy, data, data_err, resampleFlag, PCAflag, PCAdims,
-            clust_method, otlrFlag, RK_rad, RK_mode, C_thresh, clust_params,
-            cl_method_pars)
+            clust_method, RK_rad, RK_vals, Kest, C_thresh,
+            clust_params, cl_method_pars, prfl)
 
         if probs:
             probs_all.append(probs)
@@ -53,7 +68,7 @@ def main(
             from . import member_index
             C, P, log_MI = member_index.main(
                 clust_ID, np.mean(probs_all, 0))[:3]
-            print("(DELETE THIS) C={:.3f}, P={:.3f}, log_MI={:.0f}".format(
+            print("C={:.3f}, P={:.3f}, log_MI={:.0f}".format(
                 C, P, log_MI))
         # DELETE
 
@@ -77,6 +92,22 @@ def main(
     print("Minutes consumed: {:.1f}".format((t.time() - start_t) / 60.))
 
     return probs_mean
+
+
+def RKDict(RK_rad):
+    """
+    Read the table with Ripley's K function pre-processed data.
+    """
+    # Read table with Ripley's K stored data
+    RK_data = ascii.read("modules/RK_data.dat")
+
+    # Generate the final dictionary with 'N' as keys, and (mean, std) as values
+    keys = RK_data['N']
+    vals = np.array(
+        [RK_data[str(RK_rad) + '_m'].data, RK_data[str(RK_rad) + '_s'].data]).T
+    RK_vals = dict(zip(keys, vals))
+
+    return RK_vals
 
 
 if __name__ == '__main__':

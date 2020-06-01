@@ -7,6 +7,13 @@ from pathlib import Path
 def main():
     """
     """
+    # # Print metrics for a given file in a selected folder
+    # folder = 'output'
+    # arch = readFiles(folder)
+    # from astropy.io import ascii
+    # data = ascii.read(folder + '/' + arch[1])
+    # member_index(data['ID'], data['probability'])
+
     methods = ('pyUPMASK', 'UPMASK') # 'random_memb',  ('UPMASK',)
 
     # Create final table file
@@ -57,11 +64,11 @@ def main():
         #     f_out.write("\n")
 
 
-def readFiles(ruta=Path.cwd()):
+def readFiles(folder='input'):
     """
-    Read files from the input folder
+    Read files from the given folder
     """
-    return [arch.name for arch in Path('input').iterdir() if arch.is_file()]
+    return [arch.name for arch in Path(folder).iterdir() if arch.is_file()]
 
 
 def member_index(ID, memb_prob, MP_cut=(.5, .9)):

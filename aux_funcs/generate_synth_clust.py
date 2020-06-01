@@ -7,11 +7,11 @@ from astropy.io import ascii
 import matplotlib.pyplot as plt
 
 seed = np.random.randint(100000)
-print(seed)
+print("Random seed:", seed)
 np.random.seed(seed)
 
 
-def main(CI=0.35):
+def main(CI=0.85):
     """
     CI : float, 0.<CI<1.
       The contamination index.
@@ -66,10 +66,10 @@ def main(CI=0.35):
 
     # Generate CI for other dimensions
     table_data = vstack([tabl_cl, tabl_fl])
-    CI_array, data_arrs = CI_AD(cl_rad, cl_cent, table_data, data_dims[2:])
+    CI_array, data_arrs = CI_AD(cl_rad, cl_cent, table_data, data_dims[3:])
 
     # Generate plot for other dimensions
-    makePlot_2(CI, data_dims[2:], data_arrs)
+    makePlot_2(CI, data_dims[3:], data_arrs)
 
     # Write final data
     fname = "{:.2f}_{:1.2f}_{:1.2f}_{:1.2f}_{:1.2f}.dat".format(CI, *CI_array)
@@ -291,7 +291,7 @@ def CI_AD(rad, cent, table_data, data_dims):
         dim_b_member = table_data[dim][~msk]
 
         AD = stats.anderson_ksamp([dim_a_member, dim_b_member])[0]
-        AD = np.clip(AD, a_min=0., a_max=99)
+        AD = np.clip(AD, a_min=0., a_max=999)
         CI_arr.append(AD)
 
         # Store for plotting
@@ -317,14 +317,13 @@ def makePlot_2(CI_coord, data_dims, data_arrs):
         plt.hist(
             arrB, edges, alpha=.5, color='b', density=True, label="r>rad")
 
-        AD = stats.anderson_ksamp([arrA, arrB])[0]
-
-        plt.title("CI={:.2f} | AD={:.2f}".format(CI, AD))
+        plt.title("CI={:.2f}".format(CI))
         plt.xlabel(data_dims[i])
         plt.legend()
 
     fig.tight_layout()
-    plt.savefig("CI_analysis_" + str(CI_coord) + ".png", dpi=150, bbox_inches='tight')
+    plt.savefig("CI_analysis_" + str(CI_coord) + ".png",
+                dpi=150, bbox_inches='tight')
 
 
 if __name__ == '__main__':

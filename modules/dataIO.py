@@ -136,12 +136,12 @@ def dwrite(file_name, full_data, msk_data, probs_all, probs_mean):
     """
     fout = './output/' + file_name
     for i, p in enumerate(probs_all):
-        # Fill masked data with '0'
-        p0 = np.zeros(len(full_data))
+        # Fill masked data with '-1'
+        p0 = np.zeros(len(full_data)) - 1.
         p0[msk_data] = p
         full_data.add_column(Column(np.round(p0, 2), name='prob' + str(i)))
 
-    pf = np.zeros(len(full_data))
+    pf = np.zeros(len(full_data)) - 1.
     pf[msk_data] = probs_mean
     full_data.add_column(Column(np.round(pf, 2), name='probs_final'))
 

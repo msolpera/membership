@@ -34,7 +34,7 @@ def main():
             oultr_method, stdRegion_nstd)
 
         # Remove outliers
-        ID, xy, data, data_err = dmask(
+        msk_data, ID, xy, data, data_err = dmask(
             cl_ID, cl_xy, cl_data, cl_errs, oultr_method, stdRegion_nstd)
 
         # Normalize (x, y) data to [0, 1]
@@ -53,7 +53,7 @@ def main():
             probs_mean = probs_all[0]
 
         # Write final data to file
-        dwrite(file_name, full_data, probs_all, probs_mean)
+        dwrite(file_name, full_data, msk_data, probs_all, probs_mean)
 
 
 def dataProcess(

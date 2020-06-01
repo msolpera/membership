@@ -113,7 +113,7 @@ def dmask(ID, xy, pdata, perrs, oultr_method, stdRegion_nstd):
     if oultr_method == 'stdregion':
         print(" N_std             : {}".format(stdRegion_nstd))
 
-    return ID_data, xy_data, cl_data, data_err
+    return msk_data, ID_data, xy_data, cl_data, data_err
 
 
 def dxynorm(xy_data):
@@ -131,14 +131,19 @@ def dxynorm(xy_data):
     return xy
 
 
-def dwrite(file_name, full_data, probs_all, probs_mean):
+def dwrite(file_name, full_data, msk_data, probs_all, probs_mean):
     """
     """
     fout = './output/' + file_name
     for i, p in enumerate(probs_all):
-        full_data.add_column(Column(np.round(p, 2), name='prob' + str(i)))
+        # Fill masked data with '0'
+        p0 = np.zeros(len(full_data))
+        p0[msk_data] = p
+        full_data.add_column(Column(np.round(p0, 2), name='prob' + str(i)))
 
-    full_data.add_column(Column(np.round(probs_mean, 2), name='probs_final'))
+    pf = np.zeros(len(full_data))
+    pf[msk_data] = probs_mean
+    full_data.add_column(Column(np.round(pf, 2), name='probs_final'))
 
     ascii.write(full_data, fout, overwrite=True)
 

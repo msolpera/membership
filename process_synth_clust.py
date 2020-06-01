@@ -7,12 +7,6 @@ from pathlib import Path
 def main():
     """
     """
-    # # Print metrics for a given file in a selected folder
-    # folder = 'output'
-    # arch = readFiles(folder)
-    # from astropy.io import ascii
-    # data = ascii.read(folder + '/' + arch[1])
-    # member_index(data['ID'], data['probability'])
 
     methods = ('pyUPMASK', 'UPMASK') # 'random_memb',  ('UPMASK',)
 

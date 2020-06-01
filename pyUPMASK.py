@@ -52,6 +52,10 @@ def main():
         else:
             probs_mean = probs_all[0]
 
+        # DELETE
+        from process_synth_clust import member_index
+        member_index(cl_ID, probs_mean)
+
         # Write final data to file
         dwrite(file_name, full_data, msk_data, probs_all, probs_mean)
 

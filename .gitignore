@@ -3,6 +3,7 @@
 *.pyc
 *.png
 *.dat
+*.ipynb*/
 /input/*
 /output/*
 .vscode/

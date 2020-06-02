@@ -28,7 +28,8 @@ def readINI():
     in_params.read('params.ini')
 
     # Data columns
-    ID_c, x_c, y_c = in_params['Data columns']['ID_coords'].split()
+    ID_c = in_params['Data columns']['ID']
+    x_c, y_c = in_params['Data columns']['xy_coords'].split()
     data_cols = in_params['Data columns']['data'].split()
     oultr_method = vtype(in_params['Data columns']['oultr_method'])
     stdRegion_nstd = vtype(in_params['Data columns']['stdRegion_nstd'])
@@ -82,11 +83,15 @@ def dread(
     """
 
     data = Table.read(file_name, format='ascii')
-    print("\nStars read         : {}".format(len(data)))
+    N_d = len(data)
+    print("\nStars read         : {}".format(N_d))
 
     # Separate data into groups
-    ID_data, xy_data, cl_data = data[ID_c],\
-        np.array([data[x_c], data[y_c]]).T,\
+    if ID_c == 'None':
+        ID_data = np.arange(1, N_d + 1)
+    else:
+        ID_data = data[ID_c]
+    xy_data, cl_data = np.array([data[x_c], data[y_c]]).T,\
         np.array([data[_] for _ in data_cols]).T
 
     cl_errs = np.array([])

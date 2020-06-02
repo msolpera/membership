@@ -65,54 +65,6 @@ def readFiles(folder='input'):
     return [arch.name for arch in Path(folder).iterdir() if arch.is_file()]
 
 
-def member_index(ID, memb_prob, MP_cut=(.5, .9)):
-    """
-    Obtain the Completeness (C), Purity (P), and Misclassification (M) using
-    a cut on MP of 'MP_cut'.
-    Also obtain the Logarithmic Scoring Rule (log_MI) which requires no cut.
-    """
-    # Avoid numerical errors with 0. and 1.
-    memb_prob = np.clip(memb_prob, a_min=0.01, a_max=0.99)
-
-    for MP in MP_cut:
-
-        log_MI = 0.
-        N_true, N_missed, N_selected, N_interlopers, N_field =\
-            0., 0., 0., 0., 0.
-        for i in range(len(memb_prob)):
-            if str(ID[i])[0] == '1':
-                N_true += 1.
-                log_MI += np.log(memb_prob[i])
-                if memb_prob[i] >= MP:
-                    N_selected += 1
-                else:
-                    N_missed += 1
-            else:
-                N_field += 1
-                log_MI += np.log(1. - memb_prob[i])
-                if memb_prob[i] >= MP:
-                    N_interlopers += 1
-
-        # Make it so that 1 is the maximum (best) value, and shorten the range
-        # with the logarithm
-        L = 1. - np.log(1. - log_MI)
-
-        # Completeness
-        C = (N_true - N_missed) / N_true  # = N_selected / N_true
-        # Purity
-        if N_selected > 0:
-            P = (N_selected - N_interlopers) / N_selected
-        else:
-            P = -np.inf
-        # Misclassification
-        M = 1. - (N_missed + N_interlopers) / N_true
-
-        print("MP_cut={:.2f} -> C={:.3f}, P={:.3f}, M={:.3f}, L={:.3f}".format(
-            MP, C, P, M, L))
-
-    return C, P, M, L, N_true, N_field
-
-
 def RND(ID):
     memb_prob = np.random.uniform(0., 1., len(ID))
     return memb_prob

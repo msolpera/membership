@@ -54,8 +54,10 @@ def main():
 
         # TODO
         # DELETE
-        from process_synth_clust import member_index
-        member_index(cl_ID, probs_mean)
+        from aux_funcs.UPMASK.plot_RESULTS import getMetrics
+        pf = np.zeros(len(full_data)) - 1.
+        pf[msk_data] = probs_mean
+        getMetrics(full_data["field"], pf, .9, ID_col=False)
         # DELETE
 
         # Write final data to file

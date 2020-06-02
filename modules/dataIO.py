@@ -34,7 +34,9 @@ def readINI():
     stdRegion_nstd = vtype(in_params['Data columns']['stdRegion_nstd'])
 
     # Arguments for the Outer Loop
-    verbose, OL_runs, resampleFlag, PCAflag, PCAdims, GUMM_flag, GUMM_perc =\
+    rnd_seed, verbose, OL_runs, resampleFlag, PCAflag, PCAdims, GUMM_flag,\
+        GUMM_perc =\
+        vtype(in_params['Outer loop']['rnd_seed']),\
         vtype(in_params['Outer loop']['verbose']),\
         vtype(in_params['Outer loop']['OL_runs']),\
         vtype(in_params['Outer loop']['resampleFlag']),\
@@ -68,7 +70,7 @@ def readINI():
         cl_method_pars[key] = vtype(val)
 
     return ID_c, x_c, y_c, data_cols, data_errs, oultr_method, stdRegion_nstd,\
-        verbose, OL_runs, resampleFlag, PCAflag, PCAdims, GUMM_flag,\
+        rnd_seed, verbose, OL_runs, resampleFlag, PCAflag, PCAdims, GUMM_flag,\
         GUMM_perc, N_membs, clust_method, clRjctMethod, RK_rad, C_thresh,\
         cl_method_pars
 

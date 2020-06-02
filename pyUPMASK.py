@@ -16,7 +16,7 @@ def main():
     Path('./output').mkdir(parents=True, exist_ok=True)
 
     ID_c, x_c, y_c, data_cols, data_errs, oultr_method, stdRegion_nstd,\
-        verbose, OL_runs, resampleFlag, PCAflag, PCAdims, GUMM_flag,\
+        rnd_seed, verbose, OL_runs, resampleFlag, PCAflag, PCAdims, GUMM_flag,\
         GUMM_perc, N_membs, clust_method, clRjctMethod, RK_rad, C_thresh,\
         cl_method_pars = readINI()
 
@@ -41,9 +41,9 @@ def main():
         xy01 = dxynorm(xy)
 
         probs_all = dataProcess(
-            ID, xy01, data, data_err, verbose, OL_runs, resampleFlag, PCAflag,
-            PCAdims, GUMM_flag, GUMM_perc, N_membs, clust_method, clRjctMethod,
-            RK_rad, C_thresh, cl_method_pars)
+            ID, xy01, data, data_err, rnd_seed, verbose, OL_runs, resampleFlag,
+            PCAflag, PCAdims, GUMM_flag, GUMM_perc, N_membs, clust_method,
+            clRjctMethod, RK_rad, C_thresh, cl_method_pars)
 
         if OL_runs > 1:
             # Obtain the mean of all runs. This are the final probabilities
@@ -63,8 +63,8 @@ def main():
 
 
 def dataProcess(
-    ID, xy, data, data_err, verbose, OL_runs, resampleFlag, PCAflag, PCAdims,
-    GUMM_flag, GUMM_perc, N_membs, clust_method, clRjctMethod, RK_rad,
+    ID, xy, data, data_err, rnd_seed, verbose, OL_runs, resampleFlag, PCAflag,
+    PCAdims, GUMM_flag, GUMM_perc, N_membs, clust_method, clRjctMethod, RK_rad,
         C_thresh, cl_method_pars):
     """
     """
@@ -102,7 +102,10 @@ def dataProcess(
         print("Apply GUMM         : {:.2f}".format(GUMM_flag))
         print(" GUMM percentile   : {:.2f}".format(GUMM_perc))
     # Set a random seed for reproducibility
-    seed = np.random.randint(100000)
+    if rnd_seed == 'None':
+        seed = np.random.randint(100000)
+    else:
+        seed = int(rnd_seed)
     print("Random seed        : {}".format(seed))
     np.random.seed(seed)
 

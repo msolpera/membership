@@ -18,9 +18,9 @@ def main(
     clust_ID, clust_xy = np.array(list(ID)), np.array(list(xy))
 
     # Re-sample the data using its uncertainties?
-    clust_data = reSampleData(resampleFlag, data, data_err)
+    clust_data = reSampleData(resampleFlag, data, data_err, prfl)
     # Apply PCA and features reduction
-    clust_data = dimReduc(clust_data, PCAflag, PCAdims)
+    clust_data = dimReduc(clust_data, PCAflag, PCAdims, prfl)
     # clust_data = np.array(list(data))
 
     # Keep calling the inner loop until all the "fake clusters" are rejected
@@ -67,12 +67,12 @@ def main(
 
     if GUMM_flag:
         # Perform a cleaning on the final list of stars selected as members.
-        probs = GUMMtrain(GUMM_perc, clust_xy, probs)
+        probs = GUMMtrain(GUMM_perc, clust_xy, probs, prfl)
 
     return probs, RK_vals
 
 
-def reSampleData(resampleFlag, data, data_err, standard_scale=True):
+def reSampleData(resampleFlag, data, data_err, prfl, standard_scale=True):
     """
     Re-sample the data given its uncertainties using a normal distribution
     """
@@ -84,21 +84,23 @@ def reSampleData(resampleFlag, data, data_err, standard_scale=True):
         sampled_data = np.array(list(data))
 
     if standard_scale:
-        print("Standard scale: removed mean and scaled to unit variance")
+        print(
+            "Standard scale: removed mean and scaled to unit variance",
+            file=prfl)
         sampled_data = StandardScaler().fit(sampled_data).transform(
             sampled_data)
 
     return sampled_data
 
 
-def dimReduc(cl_data, PCAflag, PCAdims):
+def dimReduc(cl_data, PCAflag, PCAdims, prfl):
     """
     Perform PCA and feature reduction
     """
     if PCAflag:
         pca = PCA(n_components=PCAdims)
         cl_data_pca = pca.fit(cl_data).transform(cl_data)
-        print("Selected N={} PCA features".format(PCAdims))
+        print("Selected N={} PCA features".format(PCAdims), file=prfl)
     else:
         cl_data_pca = cl_data
 

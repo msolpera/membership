@@ -3,7 +3,7 @@ import numpy as np
 from scipy.stats import multivariate_normal
 
 
-def GUMMtrain(GUMM_perc, clust_xy, probs, n_epochs=1000, stable_per=.1):
+def GUMMtrain(GUMM_perc, clust_xy, probs, prfl, n_epochs=1000, stable_per=.1):
     """
     Fit a model composed of a 2D Gaussian and a 2D uniform distribution in a
     square region with [0., 1.] range.
@@ -26,7 +26,7 @@ def GUMMtrain(GUMM_perc, clust_xy, probs, n_epochs=1000, stable_per=.1):
                 N_probs += 1
             j += 1
     print(" \nUsing GUMM values for P<={:.2f} (N={})".format(
-        GUMM_prob, N_probs))
+        GUMM_prob, N_probs), file=prfl)
 
     return probs
 

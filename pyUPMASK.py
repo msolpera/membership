@@ -52,9 +52,11 @@ def main():
         else:
             probs_mean = probs_all[0]
 
+        # TODO
         # DELETE
         from process_synth_clust import member_index
         member_index(cl_ID, probs_mean)
+        # DELETE
 
         # Write final data to file
         dwrite(file_name, full_data, msk_data, probs_all, probs_mean)
@@ -67,6 +69,8 @@ def dataProcess(
     """
     """
     start_t = t.time()
+
+    # TODO this should be handled by the logging() module
     # Set print() according to the 'verbose' parameter
     if verbose == 0:
         prfl = open(os.devnull, 'w')
@@ -74,6 +78,8 @@ def dataProcess(
         prfl = None
 
     if clRjctMethod in ('kdetest', 'kdetestpy'):
+        # Initiate empty RK_vals dictionary that will be filled by the
+        # selected 'clRjctMethod'
         RK_vals, Kest = {}, None
     elif clRjctMethod == 'rkfunc':
         # Read K values from table
@@ -81,8 +87,10 @@ def dataProcess(
         # Define RK test with an area of 1.
         Kest = RipleysKEstimator(area=1)
 
-    print("Apply PCA          : {}".format(PCAflag))
     print("Data dimensions    : {}".format(data.shape[1]))
+    if PCAflag:
+        print("Apply PCA          : {}".format(PCAflag))
+        print(" PCA N_dims        : {}".format(PCAdims))
     print("Stars per cluster  : {}".format(N_membs))
     print("Clustering method  : {}".format(clust_method))
     if cl_method_pars:
@@ -91,7 +99,8 @@ def dataProcess(
     print("RK rad             : {:.2f}".format(RK_rad))
     print("Threshold          : {:.2f}".format(C_thresh))
     if GUMM_flag:
-        print("GUMM_perc          : {:.2f}".format(GUMM_perc))
+        print("Apply GUMM         : {:.2f}".format(GUMM_flag))
+        print(" GUMM percentile   : {:.2f}".format(GUMM_perc))
     # Set a random seed for reproducibility
     seed = np.random.randint(100000)
     print("Random seed        : {}".format(seed))
@@ -111,20 +120,12 @@ def dataProcess(
         if probs:
             probs_all.append(probs)
         else:
-            print("No probability values were obtained")
+            print("No probability values were obtained", file=prfl)
 
         p_dist = [
             (np.mean(probs_all, 0) > _).sum() for _ in (.1, .3, .5, .7, .9)]
         print("Stars with P>(.1, .3, .5, .7, .9): {}, {}, {}, {}, {}".format(
-            *p_dist))
-
-        # # Break out if/when probabilities converge
-        # cnvrg_flag, probs_old, runs_old = probCnvrg(
-        #     probs_all, probs_old, prob_cnvrg, runs_old)
-        # if cnvrg_flag:
-        #     print("Probabilities converged to {}%. Breaking".format(
-        #         prob_cnvrg))
-        #     break
+            *p_dist), file=prfl)
 
     elapsed = t.time() - start_t
     if elapsed > 60.:
@@ -158,47 +159,6 @@ def readFiles():
     Read files from the input folder
     """
     return [arch.name for arch in Path('input').iterdir() if arch.is_file()]
-
-
-# def KDEDict():
-#     """
-#     """
-#     # from scipy.stats import gaussian_kde
-#     # # bandwidth = 1.
-#     # RK_vals = {'N': [], 'mean': [], 'std': []}
-#     # for N in range(5, 200):
-#     #     print(N)
-#     #     dist_u = []
-#     #     for _ in range(50):
-#     #         # Generate random uniform 2D distribution
-#     #         xy_u = np.random.uniform(0., 1., (N, 2))
-#     #         xmin, xmax, ymin, ymax = 0., 1., 0., 1.
-#     #         xx, yy = np.mgrid[xmin:xmax:50j, ymin:ymax:50j]
-#     #         positions = np.vstack([xx.ravel(), yy.ravel()])
-#     #         kde = gaussian_kde(xy_u.T) #, bw_method=bandwidth)
-#     #         kde2dmap = kde.evaluate(positions)
-#     #         dist_u.append((kde2dmap.max() - kde2dmap.mean()) / kde2dmap.std())
-#     #     RK_vals['N'].append(N)
-#     #     RK_vals['mean'].append(np.mean(dist_u))
-#     #     RK_vals['std'].append(np.std(dist_u))
-
-#     # # Store in data file
-#     # from astropy.table import Table
-#     # tt = Table(RK_vals)
-#     # # ascii.write(
-#     # #     tt, "modules/KDE_table_{}.dat".format(str(bandwidth)), format='csv',
-#     # #     overwrite=True)
-#     # ascii.write(tt, "modules/KDE_table.dat", format='csv', overwrite=True)
-
-#     # Read table with Ripley's K stored data
-#     KDE_data = ascii.read("modules/KDE_table.dat")
-
-#     # Generate the final dictionary with 'N' as keys, and (mean, std) as values
-#     keys = KDE_data['N']
-#     vals = np.array([KDE_data['mean'], KDE_data['std']]).T
-#     KDE_data = dict(zip(keys, vals))
-
-#     return KDE_data
 
 
 if __name__ == '__main__':

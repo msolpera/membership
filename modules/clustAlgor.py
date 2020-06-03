@@ -13,7 +13,7 @@ def voronoi(clust_data, n_clusters):
     """
 
     # Obtain Voronoi volumes
-    vol_v = voronoi_volumes(clust_data, False)
+    vol_v = voronoi_volumes(clust_data)
     # Convert to densities
     dens = 1. / vol_v
 

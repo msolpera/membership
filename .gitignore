@@ -7,6 +7,7 @@
 /input/*
 /output/*
 .vscode/
+params.ini
 #
 # Do not ignore this
 !/input/README.md

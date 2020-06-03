@@ -61,15 +61,16 @@ resampleFlag = bool_False
 PCAflag      = bool_True
 #
 # Number of dimensions to keep
-PCAdims      = int_4
+PCAdims      = int_2
 
 # Apply Gaussian-Uniform Mixture Model cleaning?
 #
 GUMM_flag    = bool_True
 #
 # Percentile used to decide which stars will have their probability values
-# replaced by the GUMM probabilities.
-GUMM_perc    = float_80
+# replaced by the GUMM probabilities. A value closer to 0 improves the
+# completeness at the expense of the purity and vice-versa.
+GUMM_perc    = float_75
 
 
 

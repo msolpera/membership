@@ -5,13 +5,18 @@ from astropy.io import ascii
 from astropy.table import Table
 from astropy.table import Column
 
-N_max, N_runs = 500, 100
+"""
+Generate a table with the results of applying Ripley's K function over
+2D uniform random fields created with different number of elements.
+"""
+
+N_max, N_runs = 2000, 1000
 
 Kest = RipleysKEstimator(area=1)  # , x_max=1, y_max=1, x_min=0, y_min=0)
 N_vals = np.arange(5, N_max)
 
 data_dict = {}
-for RK_rad in (.5,): #(.1, .2, .3, .4, .5, .6, .7, .8, .9):
+for RK_rad in (.1, .2, .3, .4, .5, .6, .7, .8, .9):
     print(RK_rad)
     data_dict[str(RK_rad) + '_m'] = []
     data_dict[str(RK_rad) + '_s'] = []

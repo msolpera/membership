@@ -84,7 +84,7 @@ def dread(
 
     data = Table.read(file_name, format='ascii')
     N_d = len(data)
-    print("\nStars read         : {}".format(N_d))
+    print("Stars read         : {}".format(N_d))
 
     # Separate data into groups
     if ID_c == 'None':
@@ -97,6 +97,7 @@ def dread(
     cl_errs = np.array([])
     if data_errs:
         cl_errs = np.array([data[_] for _ in data_errs]).T
+    print("Data dimensions    : {}".format(cl_data.shape[1]))
 
     return data, ID_data, xy_data, cl_data, cl_errs
 

@@ -26,7 +26,7 @@ def main():
 
         if file_name.startswith("README"):
             continue
-        print("\nProcessing: {}".format(file_name))
+        print("\nProcessing         : {}".format(file_name))
 
         # Original data
         full_data, cl_ID, cl_xy, cl_data, cl_errs = dread(
@@ -89,7 +89,6 @@ def dataProcess(
         # Define RK test with an area of 1.
         Kest = RipleysKEstimator(area=1)
 
-    print("Data dimensions    : {}".format(data.shape[1]))
     if PCAflag:
         print("Apply PCA          : {}".format(PCAflag))
         print(" PCA N_dims        : {}".format(PCAdims))
@@ -98,7 +97,9 @@ def dataProcess(
     if cl_method_pars:
         for key, val in cl_method_pars.items():
             print(" {:<17} : {}".format(key, val))
-    print("RK rad             : {:.2f}".format(RK_rad))
+    print("Rejection method   : {}".format(clRjctMethod))
+    if clRjctMethod == 'rkfunc':
+        print(" RK rad            : {:.2f}".format(RK_rad))
     print("Threshold          : {:.2f}".format(C_thresh))
     if GUMM_flag:
         print("Apply GUMM         : {:.2f}".format(GUMM_flag))

@@ -11,7 +11,7 @@ print("Random seed:", seed)
 np.random.seed(seed)
 
 
-def main(CI=0.85):
+def main(CI):
     """
     CI : float, 0.<CI<1.
       The contamination index.
@@ -36,7 +36,7 @@ def main(CI=0.85):
     tot_area = xy_range**2
 
     # Estimate number of members given the CI
-    N_field = estimateNfield(N_membs, CI, tot_area, cl_area)
+    N_field = estimateNfield(N_membs, CI)
 
     # Generate field stars IDs
     field_ID = generateFielfIDs(N_field)
@@ -72,7 +72,7 @@ def main(CI=0.85):
     makePlot_2(CI, data_dims[3:], data_arrs)
 
     # Write final data
-    fname = "{:.2f}_{:1.2f}_{:1.2f}_{:1.2f}_{:1.2f}.dat".format(CI, *CI_array)
+    fname = "synth_clusts/" + "{:.2f}_{:1.2f}_{:1.2f}_{:1.2f}_{:1.2f}.dat".format(CI, *CI_array)
     ascii.write(vstack([tabl_cl, tabl_fl]), fname, overwrite=True)
 
     print("Finished")
@@ -100,12 +100,12 @@ def membSeparate(data):
     return membs_ID, membs_x, membs_y, membs_V, membs_BV, field_V, field_BV
 
 
-def estimateNfield(N_membs, CI, tot_area, cl_area):
+def estimateNfield(N_membs, CI):
     """
     Estimate the total number of field stars that should be generated so
     that the CI is respected.
     """
-
+    '''
     # Number of field stars in the cluster area
     N_field_in_clreg = N_membs / ((1. / CI) - 1.)
 
@@ -114,6 +114,9 @@ def estimateNfield(N_membs, CI, tot_area, cl_area):
 
     # Total number of field stars in the entire frame
     N_field = int(field_dens * tot_area)
+    '''
+    # Total number of field stars in the entire frame
+    N_field = int(CI*N_membs)
 
     return N_field
 

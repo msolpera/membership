@@ -9,7 +9,7 @@ def main():
     """
     """
     # List of clusters already process with pyUPMASK or UPMASK
-    clusts_lst = ["./aux_funcs/UPMASK/up-RESULTS.dat"]
+    clusts_lst = ["./output/up-RESULTS.dat", "./output/oc_12_500_1500_1.5_p019_0800_1.dat"]
 
     final_dct = {
         'Name': [], 'CI': [], 'LSR': [], 'BSL': [], 'AUC': [],

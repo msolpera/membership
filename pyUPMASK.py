@@ -52,14 +52,6 @@ def main():
         else:
             probs_mean = probs_all[0]
 
-        # TODO
-        # DELETE
-        from aux_funcs.UPMASK.plot_RESULTS import getMetrics
-        pf = np.zeros(len(full_data)) - 1.
-        pf[msk_data] = probs_mean
-        getMetrics(full_data["field"], pf, .9, ID_col=False)
-        # DELETE
-
         # Write final data to file
         dwrite(file_name, full_data, msk_data, probs_all, probs_mean)
 
@@ -102,7 +94,7 @@ def dataProcess(
         print(" RK rad            : {:.2f}".format(RK_rad))
     print("Threshold          : {:.2f}".format(C_thresh))
     if GUMM_flag:
-        print("Apply GUMM         : {:.2f}".format(GUMM_flag))
+        print("Apply GUMM         : {}".format(GUMM_flag))
         print(" GUMM percentile   : {:.2f}".format(GUMM_perc))
     # Set a random seed for reproducibility
     if rnd_seed == 'None':

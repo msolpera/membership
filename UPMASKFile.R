@@ -863,19 +863,19 @@ create_randomKde2d <- function(nstars, maxX, maxY, nKde=50, printPlots=FALSE, sh
 # photometricDataIndexes <- c(8,22)
 # photometricErrorDataIndexes <- c(9,23)
 
-# filenameWithPathInput <- "input/0.80_0.49_0.49_0.33_0.29.dat"
-# sep <- " "
-# positionDataIndexes <- c(2,3)
-# photometricDataIndexes <- c(6,7)
-# photometricErrorDataIndexes <- c(4,5)
+filenameWithPathInput <- "input/oc_12_500_1500_1.5_p019_0800_1.dat"
+sep <- " "
+positionDataIndexes <- c(2,3)
+photometricDataIndexes <- c(4,5,6,7,8,9)
+photometricErrorDataIndexes <- c(4,5,6,7,8,9)
 
-filenameWithPathInput <- "input/oc_12_500_4000_4.0_p019_0920_3.dat"
-sep <- ""
-positionDataIndexes <- c(1,2)
-photometricDataIndexes <- c(3,5,7,9,11,13,15,17)
-photometricErrorDataIndexes <- c(4,6,8,10,12,14,16,18)
+# filenameWithPathInput <- "input/oc_12_500_1500_1.5_p019_0800_1.dat"
+# sep <- ""
+# positionDataIndexes <- c(1,2)
+# photometricDataIndexes <- c(3,5,7,9,11,13,15,17)
+# photometricErrorDataIndexes <- c(4,6,8,10,12,14,16,18)
 
-filenameWithPathOuput <- file.path(getwd(), "up-RESULTS.dat")
+filenameWithPathOuput <- file.path(getwd(), "output/up-RESULTS.dat")
 fileWithHeader <- TRUE
 
 nDimsToKeep <- 4

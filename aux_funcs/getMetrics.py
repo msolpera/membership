@@ -1,4 +1,5 @@
 
+from pathlib import Path
 from astropy.io import ascii
 import numpy as np
 from sklearn.metrics import log_loss, brier_score_loss, roc_auc_score,\
@@ -7,20 +8,22 @@ from sklearn.metrics import log_loss, brier_score_loss, roc_auc_score,\
 
 def main():
     """
-    """
-    # List of clusters already process with pyUPMASK or UPMASK
-    clusts_lst = ["./output/up-RESULTS.dat", "./output/oc_12_500_1500_1.5_p019_0800_1.dat"]
+    Process clusters already process with pyUPMASK or UPMASK.
 
+    Files are read from the 'output/' folder.
+    """
     final_dct = {
         'Name': [], 'CI': [], 'LSR': [], 'BSL': [], 'AUC': [],
         'MCC_5': [], 'TPR_5': [], 'PPV_5': [],
         'MCC_9': [], 'TPR_9': [], 'PPV_9': []}
 
-    for fpath in clusts_lst:
+    for fpath in Path('../output').iterdir():
+        fname = '_'.join(fpath.name.split('/')[-1].split('.')[:-1])
+        print(fname)
+
         data = ascii.read(fpath)
         metrics_dct = getMetrics(data, verbose=False)
 
-        fname = fpath.split('/')[-1].split('.')[0]
         final_dct['Name'].append(fname)
         for k, v in metrics_dct.items():
             final_dct[k].append(metrics_dct[k])

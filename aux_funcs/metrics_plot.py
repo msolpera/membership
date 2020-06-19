@@ -107,10 +107,19 @@ def main():
         'PPV_9': [loss_PHOT[8], emp_PHOT[8], win_PHOT[8]]
     }
 
-    ax = plt.subplot(211)
+    # Combine photometric and PMS data
+    category_names_comb = ['Loss', 'Tie', 'Win']
+    Results_comb = {}
+    for k, v in Results_PM.items():
+        Results_comb[k] = np.array(v) + np.array(Results_PHOT[k])
+
+    plt.suptitle("Tie range: [{}, {}]".format(tie_min, tie_max))
+    ax = plt.subplot(311)
     survey(ax, Results_PM, category_names_PM)
-    ax = plt.subplot(212)
+    ax = plt.subplot(312)
     survey(ax, Results_PHOT, category_names_PHOT)
+    ax = plt.subplot(313)
+    survey(ax, Results_comb, category_names_comb)
     plt.show()
 
 

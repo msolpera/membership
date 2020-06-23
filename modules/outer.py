@@ -21,7 +21,6 @@ def main(
     clust_data = reSampleData(resampleFlag, data, data_err, prfl)
     # Apply PCA and features reduction
     clust_data = dimReduc(clust_data, PCAflag, PCAdims, prfl)
-    # clust_data = np.array(list(data))
 
     # Keep calling the inner loop until all the "fake clusters" are rejected
     _iter = 1

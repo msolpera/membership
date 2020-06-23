@@ -95,7 +95,7 @@ def dataProcess(
     print("Threshold          : {:.2f}".format(C_thresh))
     if GUMM_flag:
         print("Apply GUMM         : {}".format(GUMM_flag))
-        print(" GUMM percentile   : {:.2f}".format(GUMM_perc))
+        print(" GUMM percentile   : {}".format(GUMM_perc))
     # Set a random seed for reproducibility
     if rnd_seed == 'None':
         seed = np.random.randint(100000)

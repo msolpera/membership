@@ -11,7 +11,9 @@ from .outlierRjct import stdRegion, sklearnMethod
 
 def readINI():
     """
+    Read .ini config file
     """
+
     def vtype(var):
         tp, v = var.split('_')
         if tp == 'int':
@@ -23,48 +25,46 @@ def readINI():
         elif tp == 'str':
             return v
 
-    # Read .ini file
     in_params = configparser.ConfigParser()
     in_params.read('params.ini')
 
     # Data columns
-    ID_c = in_params['Data columns']['ID']
-    x_c, y_c = in_params['Data columns']['xy_coords'].split()
-    data_cols = in_params['Data columns']['data'].split()
-    oultr_method = vtype(in_params['Data columns']['oultr_method'])
-    stdRegion_nstd = vtype(in_params['Data columns']['stdRegion_nstd'])
+    data_columns = in_params['Data columns']
+    ID_c = data_columns['ID']
+    x_c, y_c = data_columns['xy_coords'].split()
+    data_cols = data_columns['data'].split()
+    oultr_method = data_columns.get('oultr_method')
+    stdRegion_nstd = data_columns.getfloat('stdRegion_nstd')
 
     # Arguments for the Outer Loop
-    rnd_seed, verbose, OL_runs, resampleFlag, PCAflag, PCAdims, GUMM_flag,\
-        GUMM_perc =\
-        vtype(in_params['Outer loop']['rnd_seed']),\
-        vtype(in_params['Outer loop']['verbose']),\
-        vtype(in_params['Outer loop']['OL_runs']),\
-        vtype(in_params['Outer loop']['resampleFlag']),\
-        vtype(in_params['Outer loop']['PCAflag']),\
-        vtype(in_params['Outer loop']['PCAdims']),\
-        vtype(in_params['Outer loop']['GUMM_flag']),\
-        vtype(in_params['Outer loop']['GUMM_perc']),\
+    outer_loop = in_params['Outer loop']
+    rnd_seed, verbose, OL_runs, resampleFlag, PCAflag, PCAdims, GUMM_flag =\
+        outer_loop.get('rnd_seed'), outer_loop.getint('verbose'),\
+        outer_loop.getint('OL_runs'), outer_loop.getboolean('resampleFlag'),\
+        outer_loop.getboolean('PCAflag'), outer_loop.getint('PCAdims'),\
+        outer_loop.getboolean('GUMM_flag')
+    GUMM_perc = outer_loop.get('GUMM_perc')
+    if GUMM_perc != 'auto':
+        GUMM_perc = float(GUMM_perc)
 
     # Only read if the code is set to re-sample the data.
     data_errs = []
     if resampleFlag:
-        data_errs = in_params['Data columns']['uncert'].split()
+        data_errs = data_columns['uncert'].split()
 
     # Arguments for the Inner Loop
+    inner_loop = in_params['Inner loop']
     N_membs, clust_method, clRjctMethod, RK_rad, C_thresh =\
-        vtype(in_params['Inner loop']['N_membs']),\
-        vtype(in_params['Inner loop']['clust_method']),\
-        vtype(in_params['Inner loop']['clRjctMethod']),\
-        vtype(in_params['Inner loop']['RK_rad']),\
-        vtype(in_params['Inner loop']['C_thresh'])
+        inner_loop.getint('N_membs'), inner_loop.get('clust_method'),\
+        inner_loop.get('clRjctMethod'), inner_loop.getfloat('RK_rad'),\
+        inner_loop.getfloat('C_thresh')
 
     if clRjctMethod not in ('rkfunc', 'kdetest', 'kdetestpy'):
         raise ValueError("'{}' is not a valid choice for clRjctMethod".format(
             clRjctMethod))
     if RK_rad not in (.3, .5, .7):
         raise ValueError("RK radius must be one of the accepted "
-                         "values: (.1, .2, .3, .4, .5, .6, .7, .8, .9)")
+                         "values: (.3, .5, .7)")
 
     cl_method_pars = {}
     for key, val in in_params['Clustering parameters'].items():

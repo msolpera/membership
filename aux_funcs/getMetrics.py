@@ -6,7 +6,7 @@ from sklearn.metrics import log_loss, brier_score_loss, roc_auc_score,\
     matthews_corrcoef, recall_score, precision_score
 
 
-def main():
+def main(verbose=True):
     """
     Process clusters already process with pyUPMASK or UPMASK.
 
@@ -22,7 +22,7 @@ def main():
         print(fname)
 
         data = ascii.read(fpath)
-        metrics_dct = getMetrics(data, verbose=False)
+        metrics_dct = getMetrics(data)
 
         final_dct['Name'].append(fname)
         for k, v in metrics_dct.items():
@@ -71,8 +71,8 @@ def getMetrics(data, eps=1e-2, verbose=True):
     if verbose:
         print("N_field/N_membs={:.3f}".format(N_field / N_membs))
 
-    # Invert so that 1 is the maximum (best) value. Avoid numerical errors
-    # with 0. and 1 by clipping
+    # Invert so that 1 is the maximum (best) value. The 'eps' parameter is
+    # there to  prevent numerical errors with the logarithm of 0. or 1.
     LSR = 1. - log_loss(y_true, memb_prob, eps=eps)
     # Brier score loss. Invert so that 1 is the maximum (best) value.
     BSL = 1. - brier_score_loss(y_true, memb_prob)

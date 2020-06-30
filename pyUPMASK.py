@@ -26,7 +26,9 @@ def main():
 
         if file_name.startswith("README"):
             continue
-        print("\nProcessing         : {}".format(file_name))
+        print("\n\n")
+        print("===========================================================")
+        print("Processing         : {}".format(file_name))
 
         # Original data
         full_data, cl_ID, cl_xy, cl_data, cl_errs = dread(

@@ -2,36 +2,61 @@
 from pathlib import Path
 from astropy.io import ascii
 import numpy as np
-from sklearn.metrics import log_loss, brier_score_loss, roc_auc_score,\
+from sklearn.metrics import log_loss, brier_score_loss,\
     matthews_corrcoef, recall_score, precision_score
 
 
-def main(verbose=True):
+def main(verbose=False):
     """
-    Process clusters already process with pyUPMASK or UPMASK.
+    Obtain performance metrics for the clusters processed with pyUPMASK or
+    UPMASK.
 
-    Files are read from the 'output/' folder.
+    The input files (which are the outputs from pyUPMASk or UPMASK) are read
+    from the 'output/' folder.
     """
-    final_dct = {
-        'Name': [], 'CI': [], 'LSR': [], 'BSL': [], 'AUC': [],
-        'MCC_5': [], 'TPR_5': [], 'PPV_5': [],
-        'MCC_9': [], 'TPR_9': [], 'PPV_9': []}
 
-    for fpath in Path('../output').iterdir():
-        fname = '_'.join(fpath.name.split('/')[-1].split('.')[:-1])
-        print(fname)
+    mode = ('75perc', 'autoperc', 'marginC_autoperc', 'GUMMprobs_autoperc',
+            'autoperc_5', 'autoperc_10', 'marginNmemb_autoperc',
+            'norm_GUMMprobs_autoperc', 'marginC_2_autoperc', 'manualperc_1',
+            'autoperc_inner_GUMM', 'autoperc_inner_GUMM2',
+            'autoperc_inner_GUMM3', 'inner_GUMM_marginC')
+    # mode = ('UPMASK',)
+    features = ('PHOT', 'PM')
+    Hval = ('auto',)  # 'symm', 'SR05')
 
-        data = ascii.read(fpath)
-        metrics_dct = getMetrics(data)
+    for H in Hval:
+        print("\n{}".format(H))
+        for m in mode:
+            print(m)
+            for f in features:
+                print(f)
+                subfold = m + '/' + f
 
-        final_dct['Name'].append(fname)
-        for k, v in metrics_dct.items():
-            final_dct[k].append(metrics_dct[k])
+                final_dct = {
+                    'Name': [], 'CI': [], 'LSR': [], 'BSL': [], 'HMS': [],
+                    'MCC_5': [], 'TPR_5': [], 'PPV_5': [],
+                    'MCC_9': [], 'TPR_9': [], 'PPV_9': []}
 
-    ascii.write(final_dct, "metrics.dat", format='csv', overwrite=True)
+                outp = Path('../output/' + subfold)
+                for fpath in outp.iterdir():
+                    fname = '_'.join(fpath.name.split('/')[-1].split('.')[:-1])
+                    if fname == '':
+                        continue
+                    print("  ", fname)
+
+                    data = ascii.read(fpath)
+                    metrics_dct = getMetrics(data, H, verbose)
+
+                    final_dct['Name'].append(fname)
+                    for k, v in metrics_dct.items():
+                        final_dct[k].append(metrics_dct[k])
+
+                outf = Path('../output/').joinpath(
+                    'metrics_{}_{}_H_{}.dat'.format(f, m, H))
+                ascii.write(final_dct, outf, format='csv', overwrite=True)
 
 
-def getMetrics(data, eps=1e-2, verbose=True):
+def getMetrics(data, Hval, verbose, eps=1e-2):
     """
     Obtain performance metrics that require no probability cut, as well
     as others that do require one.
@@ -52,6 +77,7 @@ def getMetrics(data, eps=1e-2, verbose=True):
     try:
         # Processed with pyUPMASK
         memb_prob = data['probs_final']
+        # memb_prob = data['prob0']
         # pyUPMASK assigns P=-1 to outliers
         memb_prob = np.clip(memb_prob, a_min=0., a_max=1.)
     except KeyError:
@@ -77,13 +103,30 @@ def getMetrics(data, eps=1e-2, verbose=True):
     # Brier score loss. Invert so that 1 is the maximum (best) value.
     BSL = 1. - brier_score_loss(y_true, memb_prob)
     # Area Under the Receiver Operating Characteristic Curve (ROC AUC)
-    AUC = roc_auc_score(y_true, memb_prob)
+    # AUC = roc_auc_score(y_true, memb_prob)
+
+    from rpy2.robjects import r
+    from rpy2.robjects import numpy2ri
+    from rpy2.robjects.packages import importr
+    importr('hmeasure')
+    numpy2ri.activate()
+    r.assign('true_labels', np.array(y_true))
+    r.assign('scores', np.array([memb_prob.data, ]).T)
+    if Hval == 'auto':
+        # Auto severity.ratio (=N_1/N_0)
+        r('results <- HMeasure(true_labels, scores)')
+    elif Hval == 'symm':
+        # Symmetric severity.ratio
+        r('results <- HMeasure(true_labels, scores, severity.ratio=1)')
+    elif Hval == 'SR05':
+        r('results <- HMeasure(true_labels, scores, severity.ratio=0.5)')
+    HMS = list(r('results$metrics'))[0][0]
 
     if verbose:
-        print("LSR={:.3f}, BSL={:.3f}, AUC={:.3f}".format(LSR, BSL, AUC))
+        print("LSR={:.3f}, BSL={:.3f}, HMS={:.3f}".format(LSR, BSL, HMS))
 
     # Dictionary with metrics
-    metrics_dct = {'CI': N_field / N_membs, 'LSR': LSR, 'BSL': BSL, 'AUC': AUC}
+    metrics_dct = {'CI': N_field / N_membs, 'LSR': LSR, 'BSL': BSL, 'HMS': HMS}
 
     # Calculate the metrics below for the following probability cuts.
     Prob_cuts = (.5, .9)

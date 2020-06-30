@@ -54,6 +54,19 @@ def main(
         print(" A total of {} stars survived in {} clusters".format(
             msk_all.sum(), len(C_masks)), file=prfl)
 
+        # Clean using GUMM
+        if GUMM_flag:
+            probs = np.ones(clust_xy.shape[0])
+            probs = GUMMtrain(GUMM_perc, clust_xy, probs, prfl)
+            msk = probs > 0.
+            if msk.sum() > N_membs:
+                clust_ID, clust_xy, clust_data = clust_ID[msk], clust_xy[msk],\
+                    clust_data[msk]
+                print(" \nMarking {} stars with as non-members".format(
+                    msk.sum()), file=prfl)
+            else:
+                print(" \nNo stars marked as non-members by GUMM analysis")
+
     probs = []
     # Mark all the stars that survived in 'clust_ID' as members assigning
     # a probability of '1'. All others are field stars and are assigned
@@ -66,7 +79,14 @@ def main(
 
     if GUMM_flag:
         # Perform a cleaning on the final list of stars selected as members.
-        probs = GUMMtrain(GUMM_perc, clust_xy, probs, prfl)
+        probs_G = GUMMtrain(GUMM_perc, clust_xy, probs, prfl)
+        msk = np.array(probs_G) > 0.
+        if msk.sum() > N_membs:
+            probs = probs_G
+            print(" \nMarking {} stars with as non-members".format(
+                msk.sum()), file=prfl)
+        else:
+            print(" \nNo stars marked as non-members by GUMM analysis")
 
     return probs, RK_vals
 

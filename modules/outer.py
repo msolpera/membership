@@ -100,6 +100,8 @@ def dimReduc(cl_data, PCAflag, PCAdims, prfl):
         pca = PCA(n_components=PCAdims)
         cl_data_pca = pca.fit(cl_data).transform(cl_data)
         print("Selected N={} PCA features".format(PCAdims), file=prfl)
+        var_r = ["{:.2f}".format(_) for _ in pca.explained_variance_ratio_]
+        print(" Variance ratio: ", ", ".join(var_r))
     else:
         cl_data_pca = cl_data
 

@@ -1,7 +1,6 @@
 
 import numpy as np
 from scipy.stats import multivariate_normal
-from kneebow.rotor import Rotor
 
 
 def GUMMtrain(GUMM_perc, clust_xy, probs, prfl, n_epochs=1000, stable_per=.1):
@@ -19,6 +18,7 @@ def GUMMtrain(GUMM_perc, clust_xy, probs, prfl, n_epochs=1000, stable_per=.1):
 
     # Select the probability cut.
     if GUMM_perc == 'auto':
+        from kneebow.rotor import Rotor
         # Create the percentiles (/100.) vs provabilities array.
         percentiles = np.arange(.01, .99, .01)
         perc_probs = np.array([
@@ -26,12 +26,14 @@ def GUMMtrain(GUMM_perc, clust_xy, probs, prfl, n_epochs=1000, stable_per=.1):
         # Find 'knee' where the probabilities start climbing from near 0.
         rotor = Rotor()
         rotor.fit_rotate(perc_probs)
-        GUMM_prob = perc_probs.T[1][rotor.get_elbow_index()]
+        # Adding 5% to the probability selected here improves the results by
+        # making the cut less strict.
+        GUMM_prob = perc_probs.T[1][rotor.get_elbow_index()] + 0.05
 
     else:
         GUMM_prob = np.percentile(cl_probs, GUMM_perc)
 
-    j, N_probs = 0, 0
+    j = 0
     for i, p in enumerate(probs_GUMM):
         # If this was marked as a cluster star
         if p == 1.:
@@ -39,14 +41,9 @@ def GUMMtrain(GUMM_perc, clust_xy, probs, prfl, n_epochs=1000, stable_per=.1):
             if cl_probs[j] <= GUMM_prob:
                 # Mark star as non-member
                 probs_GUMM[i] = 0.
-                N_probs += 1
+            # else:
+            #     probs_GUMM[i] = cl_probs[j]
             j += 1
-
-    if N_probs > 0:
-        print(" \nMarking {} stars with P_GUMM<={:.3f} as non-members".format(
-            N_probs, GUMM_prob), file=prfl)
-    else:
-        print(" \nNo stars marked as non-members by GUMM analysis")
 
     return probs_GUMM
 

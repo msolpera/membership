@@ -11,14 +11,6 @@ def main(
     Perform the inner loop: cluster --> reject
     """
 
-    # # Apply PCA and features reduction
-    # print("SCALING + PCA INSIDE INNNER")
-    # from .extras import dimReduc
-    # from sklearn.preprocessing import StandardScaler
-    # clust_data = StandardScaler().fit(clust_data).transform(
-    #     clust_data)
-    # clust_data = dimReduc(clust_data, True, 'all')
-
     print("  Performing clustering on array of shape ({}, {})".format(
         *clust_data.shape), file=prfl)
 

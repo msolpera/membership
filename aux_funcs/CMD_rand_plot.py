@@ -12,8 +12,11 @@ generates a coordinates and CMD plot.
 A method for pyUPMASK and for the H measure metric need to be selected.
 """
 
-method = 'autoperc_inner_GUMM3'
+method = 'optm_GUMM'
 Hmethod = 'auto'
+# Probability cuts (use 0. for Voronoi)
+pyU_prob_min = .0
+UP_prob_min = .9
 
 print("Method: {}".format(method))
 
@@ -64,8 +67,8 @@ while True:
     plt.suptitle(file + ' N={}'.format(msk_real.sum()))
 
     plt.subplot(231)
-    msk_pyupmask = data_pyupmask['probs_final'] > .0
-    plt.title('pyUPMASK N={}'.format(msk_pyupmask.sum()))
+    msk_pyupmask = data_pyupmask['probs_final'] > pyU_prob_min
+    plt.title('pyUPMASK, P>={}, N={}'.format(pyU_prob_min, msk_pyupmask.sum()))
     plt.scatter(
         data_upmask['x'][msk_real], data_upmask['y'][msk_real],
         zorder=1, c='r', s=25)
@@ -94,8 +97,8 @@ while True:
     plt.axis('off')
 
     plt.subplot(234)
-    msk_upmask = data_upmask['probability'] >= .9
-    plt.title('UPMASK, P>=.9, N={}'.format(msk_upmask.sum()))
+    msk_upmask = data_upmask['probability'] >= UP_prob_min
+    plt.title('UPMASK, P>={}, N={}'.format(UP_prob_min, msk_upmask.sum()))
     plt.scatter(
         data_upmask['x'][msk_real], data_upmask['y'][msk_real],
         zorder=1, c='r', s=25)

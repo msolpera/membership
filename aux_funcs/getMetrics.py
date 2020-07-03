@@ -14,13 +14,8 @@ def main(verbose=False):
     The input files (which are the outputs from pyUPMASk or UPMASK) are read
     from the 'output/' folder.
     """
-
-    mode = ('75perc', 'autoperc', 'marginC_autoperc', 'GUMMprobs_autoperc',
-            'autoperc_5', 'autoperc_10', 'marginNmemb_autoperc',
-            'norm_GUMMprobs_autoperc', 'marginC_2_autoperc', 'manualperc_1',
-            'autoperc_inner_GUMM', 'autoperc_inner_GUMM2',
-            'autoperc_inner_GUMM3', 'inner_GUMM_marginC')
-    # mode = ('UPMASK',)
+    mode = ('UPMASK_600', 'pyUPMASK_600')
+    # mode = ('optm_GUMM',)
     features = ('PHOT', 'PM')
     Hval = ('auto',)  # 'symm', 'SR05')
 
@@ -51,7 +46,7 @@ def main(verbose=False):
                     for k, v in metrics_dct.items():
                         final_dct[k].append(metrics_dct[k])
 
-                outf = Path('../output/').joinpath(
+                outf = Path('../TEST_SYNTH_CLUSTS/test_results/').joinpath(
                     'metrics_{}_{}_H_{}.dat'.format(f, m, H))
                 ascii.write(final_dct, outf, format='csv', overwrite=True)
 

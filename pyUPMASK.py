@@ -109,7 +109,7 @@ def dataProcess(
     probs_all = []
     for _ in range(OL_runs):
         print("\n-----------------------------------------------------------")
-        print("Run {}".format(_ + 1))
+        print("OL run {}".format(_ + 1))
 
         # Store all probabilities obtained in this run
         probs, RK_vals = outer.main(

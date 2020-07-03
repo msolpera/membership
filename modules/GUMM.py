@@ -3,7 +3,7 @@ import numpy as np
 from scipy.stats import multivariate_normal
 
 
-def GUMMtrain(GUMM_perc, clust_xy, probs, prfl, n_epochs=1000, stable_per=.1):
+def GUMMProbs(clust_xy, prfl, n_epochs=1000, stable_per=.1):
     """
     Fit a model composed of a 2D Gaussian and a 2D uniform distribution in a
     square region with [0., 1.] range.
@@ -11,53 +11,13 @@ def GUMMtrain(GUMM_perc, clust_xy, probs, prfl, n_epochs=1000, stable_per=.1):
     Based on the GMM model implementation shown in:
     https://towardsdatascience.com/gaussian-mixture-models-explained-6986aaf5a95
     """
-    cl_probs = getProbs(clust_xy, n_epochs, stable_per)
-
-    # Don't overwrite 'probs'
-    probs_GUMM = probs.copy()
-
-    # Select the probability cut.
-    if GUMM_perc == 'auto':
-        from kneebow.rotor import Rotor
-        # Create the percentiles (/100.) vs provabilities array.
-        percentiles = np.arange(.01, .99, .01)
-        perc_probs = np.array([
-            percentiles, np.percentile(cl_probs, percentiles * 100.)]).T
-        # Find 'knee' where the probabilities start climbing from near 0.
-        rotor = Rotor()
-        rotor.fit_rotate(perc_probs)
-        # Adding 5% to the probability selected here improves the results by
-        # making the cut less strict.
-        GUMM_prob = perc_probs.T[1][rotor.get_elbow_index()] + 0.05
-
-    else:
-        GUMM_prob = np.percentile(cl_probs, GUMM_perc)
-
-    j = 0
-    for i, p in enumerate(probs_GUMM):
-        # If this was marked as a cluster star
-        if p == 1.:
-            # And its GUMM probability is below this threshold
-            if cl_probs[j] <= GUMM_prob:
-                # Mark star as non-member
-                probs_GUMM[i] = 0.
-            # else:
-            #     probs_GUMM[i] = cl_probs[j]
-            j += 1
-
-    return probs_GUMM
-
-
-def getProbs(xy, n_epochs, stable_per):
-    """
-    """
-    cluster = initialize_cluster(xy)
+    cluster = initialize_cluster(clust_xy)
 
     lkl_old, nstable = -np.inf, 0
     for i in range(n_epochs):
 
-        expectation_step(xy, cluster)
-        maximization_step(xy, cluster)
+        expectation_step(clust_xy, cluster)
+        maximization_step(clust_xy, cluster)
 
         likelihood = cluster['likelihood']
 
@@ -71,9 +31,11 @@ def getProbs(xy, n_epochs, stable_per):
             break
 
     # Extract probabilities associated to the 2D Gaussian
-    cl_probs = list(cluster['gamma_g'].flatten())
+    gumm_p = np.array(list(cluster['gamma_g'].flatten()))
 
-    return cl_probs
+    # cl_cent = cluster['mu']
+
+    return gumm_p
 
 
 def initialize_cluster(data):

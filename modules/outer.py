@@ -3,7 +3,8 @@ import numpy as np
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from . import inner
-from .GUMM import GUMMtrain
+from .GUMM import GUMMProbs
+from .GUMMExtras import GUMMProbCut, lowCIGUMMClean
 
 
 def main(
@@ -25,7 +26,7 @@ def main(
     # Keep calling the inner loop until all the "fake clusters" are rejected
     _iter = 1
     while True:
-        print("\n Iteration {}".format(_iter), file=prfl)
+        print("\n IL iteration {}".format(_iter), file=prfl)
         _iter += 1
 
         C_masks, RK_vals, N_clusts = inner.main(
@@ -41,10 +42,9 @@ def main(
         # Combine all the masks using a logical OR
         msk_all = np.logical_or.reduce(C_masks)
 
-        # Applying 'msk_all' results in too few stars distributed in too many
-        # clusters. Break
-        if clust_data[msk_all].shape[0] < int(N_membs):
-            print(" N_stars<{:.0f} Breaking".format(int(N_membs)), file=prfl)
+        # Applying 'msk_all' results in too few stars. Break
+        if clust_data[msk_all].shape[0] < N_membs:
+            print(" N_stars<{:.0f} Breaking".format(N_membs), file=prfl)
             break
 
         # Keep only stars identified as members and move on to the next
@@ -56,39 +56,38 @@ def main(
 
         # Clean using GUMM
         if GUMM_flag:
-            probs = np.ones(clust_xy.shape[0])
-            probs = GUMMtrain(GUMM_perc, clust_xy, probs, prfl)
-            msk = probs > 0.
+            gumm_p = GUMMProbs(clust_xy, prfl)
+            prob_cut = GUMMProbCut(GUMM_perc, gumm_p)
+            # Mark all stars as members
+            probs_cl = np.ones(len(clust_xy))
+            # Mark as non-members those below 'prob_cut'
+            probs_cl[gumm_p <= prob_cut] = 0.
+
+            # Keep only member stars for the next run (if enough stars remain
+            # in the list)
+            msk = probs_cl > 0.
             if msk.sum() > N_membs:
                 clust_ID, clust_xy, clust_data = clust_ID[msk], clust_xy[msk],\
                     clust_data[msk]
-                print(" \nMarking {} stars with as non-members".format(
+                print("GUMM analysis: reject {} stars as non-members".format(
                     msk.sum()), file=prfl)
-            else:
-                print(" \nNo stars marked as non-members by GUMM analysis")
 
-    probs = []
     # Mark all the stars that survived in 'clust_ID' as members assigning
     # a probability of '1'. All others are field stars and are assigned
     # a probability of '0'.
+    cl_probs = np.zeros(len(ID))
     for i, st in enumerate(ID):
         if st in clust_ID:
-            probs.append(1.)
-        else:
-            probs.append(0.)
+            cl_probs[i] = 1.
 
+    # Perform a final cleaning on the list of stars selected as members.
+    # Use the last list of coordinates and IDs from the inner loop.
     if GUMM_flag:
-        # Perform a cleaning on the final list of stars selected as members.
-        probs_G = GUMMtrain(GUMM_perc, clust_xy, probs, prfl)
-        msk = np.array(probs_G) > 0.
-        if msk.sum() > N_membs:
-            probs = probs_G
-            print(" \nMarking {} stars with as non-members".format(
-                msk.sum()), file=prfl)
-        else:
-            print(" \nNo stars marked as non-members by GUMM analysis")
+        # This is only ever used for *very* low contaminated clusters.
+        cl_probs = lowCIGUMMClean(
+            N_membs, GUMM_perc, ID, cl_probs, clust_ID, clust_xy, prfl)
 
-    return probs, RK_vals
+    return list(cl_probs), RK_vals
 
 
 def reSampleData(resampleFlag, data, data_err, prfl, standard_scale=True):
@@ -121,7 +120,7 @@ def dimReduc(cl_data, PCAflag, PCAdims, prfl):
         cl_data_pca = pca.fit(cl_data).transform(cl_data)
         print("Selected N={} PCA features".format(PCAdims), file=prfl)
         var_r = ["{:.2f}".format(_) for _ in pca.explained_variance_ratio_]
-        print(" Variance ratio: ", ", ".join(var_r))
+        print(" Variance ratio: ", ", ".join(var_r), file=prfl)
     else:
         cl_data_pca = cl_data
 

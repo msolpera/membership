@@ -6,24 +6,22 @@ from .GUMM import GUMMProbs
 def GUMMProbCut(GUMM_perc, gumm_p):
     """
     """
-    # from scipy.spatial import distance
-
     # Select the probability cut.
     if GUMM_perc == 'auto':
-        from kneebow.rotor import Rotor
         # Create the percentiles (/100.) vs provabilities array.
         percentiles = np.arange(.01, .99, .01)
         perc_probs = np.array([
             percentiles, np.percentile(gumm_p, percentiles * 100.)]).T
 
-        # Find 'knee' where the probabilities start climbing from near 0.
-        rotor = Rotor()
-        rotor.fit_rotate(perc_probs)
-        # Adding x% to the probability selected here improves the results by
-        # making the cut stricter.
-        prob_cut = perc_probs.T[1][rotor.get_elbow_index()] + 0.05
+        # Find 'elbow' where the probabilities start climbing from ~0.
+        prob_cut = rotate(perc_probs)
+
+        # Adding a small percentage to the selected probability improves the
+        # results by making the cut slightly stricter.
+        prob_cut += 0.05
 
         # import matplotlib.pyplot as plt
+        # from scipy.spatial import distance
         # plt.subplot(221)
         # plt.title("P<{:.4f}".format(prob_cut))
         # plt.scatter(*perc_probs.T)
@@ -63,6 +61,35 @@ def GUMMProbCut(GUMM_perc, gumm_p):
         prob_cut = np.percentile(gumm_p, GUMM_perc)
 
     return prob_cut
+
+
+def rotate(data):
+    """
+    Rotate a 2d vector.
+
+    (Very) Stripped down version of the great 'kneebow' package, by Georg
+    Unterholzner
+
+    https://github.com/georg-un/kneebow
+
+    data   : 2d numpy array. The data that should be rotated.
+    return : probability corresponding to the elbow.
+    """
+    # The angle of rotation in radians.
+    theta = np.arctan2(
+        data[-1, 1] - data[0, 1], data[-1, 0] - data[0, 0])
+
+    # Rotation matrix
+    co, si = np.cos(theta), np.sin(theta)
+    rot_matrix = np.array(((co, -si), (si, co)))
+
+    # Rotate data vector
+    rot_data = data.dot(rot_matrix)
+
+    # Find elbow index
+    elbow_idx = np.where(rot_data == rot_data.min())[0][0]
+
+    return data[elbow_idx][1]
 
 
 def lowCIGUMMClean(N_membs, GUMM_perc, ID, cl_probs, clust_ID, clust_xy, prfl):

@@ -17,7 +17,7 @@ Applies the GUMM after each inner loop to reject non-members. The GUMM after the
 Same as `autoperc_inner_GUMM` but adding back the GUMM after the outer loop.
 
 ## autoperc_inner_GUMM3
-Same as `autoperc_inner_GUMM2` but adding a 0.05 to the GUMM probability. Marginally better than `autoperc_inner_GUMM2`.
+Same as `autoperc_inner_GUMM2` but adding a 0.05 to the GUMM probability. Marginally better than `autoperc_inner_GUMM2` in PM, much better in PHOT.
 
 ## autoperc_inner_GUMM4
 Same as `autoperc_inner_GUMM2` but adding a 0.1 to the GUMM probability.
@@ -25,8 +25,47 @@ Same as `autoperc_inner_GUMM2` but adding a 0.1 to the GUMM probability.
 ## autoperc_inner_GUMM5
 Same as `autoperc_inner_GUMM2` but adding a 0.01 to the GUMM probability. Very similar to the results from `autoperc_inner_GUMM2` (expected).
 
+## autoperc_inner_GUMM6
+Same as `autoperc_inner_GUMM3` but:
+
+1. using `rad=0.5, C_thresh=0., Kest.poisson + mode=translation`
+Gives bad results
+
+2. using `rad=0.3, C_thresh=0., Kest.poisson + mode=none`
+Worse then before
+
+3. using `rad=0.3, C_thresh=1` and values from table (not `Ktest.Poisson`)
+PM results are better in summary (9 wins) but worse in combined metrics (~2.5). **Very** bad results for PHOT
+
+4. using Dixon's test statistic Lm, with 5% critical value as C_thresh, `rad = np.array([.1, .2, .3, .4, .5])`, and `mode=none` in `Kest.Lfunction`
+Similar results to `autoperc_inner_GUMM2` and `autoperc_inner_GUMM5`, slightly worse than `autoperc_inner_GUMM3`
+
+5. using `rad = np.array([.1, .2, .3, .4, .5])` and `mode='translation` with 5% critical value
+Results are far worse than before
+
+6. using `rad = np.linspace(.01, .25, 50)` and `mode='translation` with 5% critical value
+Better results than `autoperc_inner_GUMM3` in PM 5.56 (this is the only run with 9 wins in PM), slightly worse in PHOT 1.86 (6 wins)
+
+7. using `rad = np.linspace(.01, .25, 50)` and `mode=none` with 5% critical value
+Slightly worse than above (8 PM wins here)
+
+8. using `rad = np.linspace(.01, .25, 50)` and `mode='translation` with 1% critical value (`1.68 / cl_msk.sum()`)
+PM performance 6.17, PHOT performance 2.0 (similar to `autoperc_inner_GUMM5`, slightly worse than `autoperc_inner_GUMM3`) <-- **BEST**
+
+9. using `rad = np.linspace(.001, .25, 500), mode='translation` with 1% critical value
+PM performance 6.05, PHOT performance 1.98; i.e. very similar to the previous run (slightly worse)
+
+## autoperc_inner_GUMM7
+Uses `autoperc_inner_GUMM6` in mode 8., with `auto` Nmembs for Voronoi
+
 ## optm_GUMM
 Selects the GUMM probability cut by minimizing the difference between the (normalized) number of stars rejected and the average distance of the remaining stars to the center coordinates (obtained by the GUMM)
+
+
+
+
+
+
 
 
 # Good performers (GMM)
@@ -40,6 +79,8 @@ Same as `autoperc_GMM` but without the +0.05 added value to the GUMM prob (which
 ## autoperc_GMM3
 Same as `autoperc_GMM` but using `covariance_type=tied` and adding 0.01 to the GUMM probability (hence equivalent to `autoperc_inner_GUMM5`)
 
+## autoperc_GMM4
+Same as `autoperc_GMM3` but adding 0.05 to the GUMM probability (hence equivalent to `autoperc_inner_GUMM3`)
 
 
 # Bad performers

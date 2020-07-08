@@ -81,7 +81,7 @@ def dataProcess(
         # Read K values from table
         RK_vals = RKDict(RK_rad)
         # Define RK test with an area of 1.
-        Kest = RipleysKEstimator(area=1)
+        Kest = RipleysKEstimator(area=1, x_max=1, y_max=1, x_min=0, y_min=0)
 
     if PCAflag:
         print("Apply PCA          : {}".format(PCAflag))

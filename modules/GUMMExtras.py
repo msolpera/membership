@@ -63,7 +63,7 @@ def GUMMProbCut(GUMM_perc, gumm_p):
     return prob_cut
 
 
-def rotate(data):
+def rotate(data, retElbow=False):
     """
     Rotate a 2d vector.
 
@@ -88,6 +88,10 @@ def rotate(data):
 
     # Find elbow index
     elbow_idx = np.where(rot_data == rot_data.min())[0][0]
+
+    # Used by the Voronoi clustering algorithm to obtain the automatic Ncluster
+    if retElbow:
+        return elbow_idx
 
     return data[elbow_idx][1]
 

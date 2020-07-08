@@ -77,6 +77,9 @@ def rjctField(
         # distribution in (x, y), i.e., a "cluster" made up of field
         # stars. Hence, we keep as "true" clusters those with C_s values
         # larger than C_thresh.
+
+        C_thresh = 1.68 / cl_msk.sum()
+
         if C_s >= C_thresh:
             # Store mask that points to stars that should be *kept*
             print("   Cluster {} survived (C_s={:.2f}), N={}".format(
@@ -97,15 +100,19 @@ def rejctVal(xy, clRjctMethod, RK_rad, RK_vals, Kest):
         # to a uniform random distribution using Ripley's K.
         # https://stats.stackexchange.com/a/122816/10416
 
-        # Read stored value from table.
-        try:
-            mean, std = RK_vals[xy.shape[0]]
-        except KeyError:
-            # If the number of stars in this cluster is larger than the largest
-            # one stored, used the values for this largest value.
-            mean, std = list(RK_vals.values())[-1]
+        # # Read stored value from table.
+        # try:
+        #     mean, std = RK_vals[xy.shape[0]]
+        # except KeyError:
+        #     # If the number of stars in this cluster is larger than the largest
+        #     # one stored, used the values for this largest value.
+        #     mean, std = list(RK_vals.values())[-1]
 
-        C_s = (Kest(xy, (RK_rad,))[0] - mean) / std
+        # C_s = (Kest(xy, (RK_rad,))[0] - mean) / std
+
+        rad = np.linspace(.01, .25, 50)
+        L_t = Kest.Lfunction(xy, rad, mode='translation')
+        C_s = max(L_t - rad)
 
     elif clRjctMethod == "kdetest":
 

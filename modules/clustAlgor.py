@@ -3,6 +3,7 @@ import numpy as np
 import sklearn.cluster as skclust
 import sklearn.mixture as skmixture
 from scipy.spatial.distance import cdist
+from .GUMMExtras import rotate
 from .voronoiVols import voronoi_volumes
 
 
@@ -52,12 +53,20 @@ def voronoi(clust_data, n_clusters):
         # For this star, assign the largest distance.
         delta[idx_max] = delta.max()
 
-    #
+    # Density times delta
     mult = dens * delta
-    # Indexes that sort in descending order
+    # Indexes that sort 'mult' in descending order
     idx_s = np.argsort(-mult)
 
-    # Assign to each star a labels corresponding to the cluster that is
+    # Used internally for testing the auto selection of n_clusters
+    # n_clusters = 'auto'
+    if n_clusters == 'auto':
+        data = np.array([np.arange(mult.size), mult[np.argsort(mult)]]).T
+        elbow_idx = rotate(data, True)
+        n_clusters = data.shape[0] - elbow_idx
+        n_clusters = max(2, n_clusters)
+
+    # Assign to each star a label corresponding to the cluster that is
     # closest to it.
     if clust_data.shape[0] < 20000:
         labels = np.argmin(dist[idx_s[:n_clusters], :], 0)

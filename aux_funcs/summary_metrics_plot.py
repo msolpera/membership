@@ -12,40 +12,53 @@ def main():
     # Bad performers:
     # '75perc', 'marginNmemb_autoperc', 'marginC_2_autoperc',
     # 'GUMMprobs_autoperc', 'norm_GUMMprobs_autoperc', 'marginC_autoperc'
-    # 'manualperc_1'
+    # 'manualperc_1', 'optm_GUMM'
 
     # This performs identical to 'autoperc_inner_GUMM3'
     # 'inner_GUMM_marginC'
 
-    mode = (
-        'autoperc', 'autoperc_5', 'autoperc_10', 'autoperc_inner_GUMM',
-        'autoperc_inner_GUMM2', 'autoperc_inner_GUMM3',
-        'autoperc_inner_GUMM4', 'autoperc_inner_GUMM5', 'autoperc_GMM',
-        'autoperc_GMM2', 'autoperc_GMM3', 'optm_GUMM')
-    Hval = ('auto',)  # 'symm', 'SR05')
+    Hval = 'auto'  # 'symm', 'SR05')
+    N_UPMASK = ("25", "50")
 
     # Folder where the files are located
     fold = "../TEST_SYNTH_CLUSTS/test_results/"
 
-    for H in Hval:
-        print(H)
-        winloss_rates = {}
-        for m in mode:
-            print(" ", m)
-            pyUP_PHOT, pyUP_PM, UP_PHOT, UP_PM = readTables(fold, H, m)
+    for mode in ("GMM", "VOR"):
 
-            CI_PM, CI_PHOT, win_PHOT, loss_PHOT, win_PM, loss_PM = WinTieLoss(
-                tie_max, tie_min, pyUP_PHOT, pyUP_PM, UP_PHOT, UP_PM,
-                'summary')
+        if mode == 'GMM':
+            configs = (
+                'autoperc_GMM', 'autoperc_GMM2', 'autoperc_GMM3',
+                'autoperc_GMM4')
+        elif mode == "VOR":
+            configs = (
+                'autoperc', 'autoperc_5', 'autoperc_10', 'autoperc_inner_GUMM',
+                'autoperc_inner_GUMM2', 'autoperc_inner_GUMM3',
+                'autoperc_inner_GUMM4', 'autoperc_inner_GUMM5',
+                'autoperc_inner_GUMM6', 'autoperc_inner_GUMM7',)
 
-            winloss_rates[m] = (
-                win_PHOT.sum() / loss_PHOT.sum(), win_PM.sum() / loss_PM.sum(),
-                win_PHOT - loss_PHOT, win_PM - loss_PM)
+        for NU in N_UPMASK:
+            print(NU)
 
-        makePlot(fold, H, winloss_rates)
+            winloss_rates = {}
+            for m in configs:
+
+                pyUP_PHOT, pyUP_PM, UP_PHOT, UP_PM = readTables(
+                    fold, NU, Hval, m)
+
+                CI_PM, CI_PHOT, win_PHOT, loss_PHOT, win_PM, loss_PM =\
+                    WinTieLoss(
+                        tie_max, tie_min, pyUP_PHOT, pyUP_PM, UP_PHOT,
+                        UP_PM, 'summary')
+
+                winloss_rates[m] = (
+                    win_PHOT.sum() / loss_PHOT.sum(),
+                    win_PM.sum() / loss_PM.sum(),
+                    win_PHOT - loss_PHOT, win_PM - loss_PM)
+
+            makePlot(fold, Hval, mode, NU, winloss_rates)
 
 
-def makePlot(fold, H, winloss_rates):
+def makePlot(fold, H, mode, NU, winloss_rates):
     """
     Summary of the combined metrics for all the methods.
     """
@@ -53,14 +66,10 @@ def makePlot(fold, H, winloss_rates):
 
     min_y, max_y = np.inf, 0
     plt.subplot(211)
-    i = 0
     for k, v in winloss_rates.items():
-        yoff = -.1 if (i % 2) == 0 else .07
-        i += 1
-        xr, yr = np.random.uniform(.015, .02, 2)
-        plt.scatter(v[0] + xr, v[1] + yr, alpha=.7, s=50)
-        # plt.annotate(k, (v[0] - .025, v[1] + yoff))
-        plt.annotate(k, (v[0], v[1] + yoff))
+        plt.scatter(v[0], v[1], alpha=.7, s=50)
+        print(k, v[0], v[1])
+        plt.annotate(k, (v[0], v[1]))
         min_y = min(min_y, v[1] - .15)
         max_y = max(max_y, v[1] + .15)
     plt.xlabel("PHOT (W/L)")
@@ -97,7 +106,7 @@ def makePlot(fold, H, winloss_rates):
     plt.ylim(0, 10)
     plt.legend()
 
-    file_out = fold + 'plots/summary_{}.png'.format(H)
+    file_out = fold + 'plots/summary_{}_{}_{}.png'.format(H, mode, NU)
     fig.tight_layout()
     plt.savefig(file_out, dpi=150, bbox_inches='tight')
 

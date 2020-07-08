@@ -14,8 +14,8 @@ def main(verbose=False):
     The input files (which are the outputs from pyUPMASk or UPMASK) are read
     from the 'output/' folder.
     """
-    mode = ('UPMASK_600', 'pyUPMASK_600')
-    # mode = ('optm_GUMM',)
+    # mode = ('UPMASK_600', 'pyUPMASK_600')
+    mode = ('autoperc_inner_GUMM7',)
     features = ('PHOT', 'PM')
     Hval = ('auto',)  # 'symm', 'SR05')
 

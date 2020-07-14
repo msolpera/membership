@@ -15,7 +15,7 @@ def main(verbose=False):
     from the 'output/' folder.
     """
     # mode = ('UPMASK_600', 'pyUPMASK_600')
-    mode = ('autoperc_inner_GUMM7',)
+    mode = ('agglomerative_25',)
     features = ('PHOT', 'PM')
     Hval = ('auto',)  # 'symm', 'SR05')
 

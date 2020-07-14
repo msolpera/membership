@@ -30,7 +30,7 @@ def main():
     # 'autoperc_inner_GUMM4', 'autoperc_inner_GUMM5', 'autoperc_inner_GUMM6'
     # 'autoperc_GMM', 'autoperc_GMM2', 'autoperc_GMM3', 'autoperc_GMM4'
 
-    mode = ('autoperc_inner_GUMM3',)
+    mode = ('minibatch_vor',)
     Hval = ('auto',)  # 'symm', 'SR05')
     N_UPMASK = ("25", "50")
 
@@ -67,16 +67,18 @@ def readTables(fold, N_UPMASK, H, m):
 
     if m.endswith('600'):
         UP_PHOT = Table.read(
-            fold + 'metrics_PHOT_UPMASK_600_H_' + H + '.dat', format='ascii')
+            fold + '600/metrics_PHOT_UPMASK_600_H_' + H + '.dat',
+            format='ascii')
         UP_PM = Table.read(
-            fold + 'metrics_PM_UPMASK_600_H_' + H + '.dat', format='ascii')
+            fold + '600/metrics_PM_UPMASK_600_H_' + H + '.dat',
+            format='ascii')
     else:
         UP_PHOT = Table.read(
-            fold + 'metrics_UP-PHOT_H_' + H + '_{}.dat'.format(N_UPMASK),
-            format='ascii')
+            fold + '100_UPMASK_res/metrics_UP-PHOT_H_' + H + '_{}.dat'.format(
+                N_UPMASK), format='ascii')
         UP_PM = Table.read(
-            fold + 'metrics_UP-PM_H_' + H + '_{}.dat'.format(N_UPMASK),
-            format='ascii')
+            fold + '100_UPMASK_res/metrics_UP-PM_H_' + H + '_{}.dat'.format(
+                N_UPMASK), format='ascii')
 
     return pyUP_PHOT, pyUP_PM, UP_PHOT, UP_PM
 

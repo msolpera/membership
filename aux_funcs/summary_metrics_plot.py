@@ -12,7 +12,7 @@ def main():
     # Bad performers:
     # '75perc', 'marginNmemb_autoperc', 'marginC_2_autoperc',
     # 'GUMMprobs_autoperc', 'norm_GUMMprobs_autoperc', 'marginC_autoperc'
-    # 'manualperc_1', 'optm_GUMM'
+    # 'manualperc_1', 'optm_GUMM', 'autoperc', 'autoperc_5', 'autoperc_10',
 
     # This performs identical to 'autoperc_inner_GUMM3'
     # 'inner_GUMM_marginC'
@@ -23,18 +23,20 @@ def main():
     # Folder where the files are located
     fold = "../TEST_SYNTH_CLUSTS/test_results/"
 
-    for mode in ("GMM", "VOR"):
+    for mode in ("VOR",): # VOR, GMM
 
         if mode == 'GMM':
             configs = (
                 'autoperc_GMM', 'autoperc_GMM2', 'autoperc_GMM3',
-                'autoperc_GMM4')
+                'autoperc_GMM4', 'minibatch_50', 'minibatch_vor')
         elif mode == "VOR":
             configs = (
-                'autoperc', 'autoperc_5', 'autoperc_10', 'autoperc_inner_GUMM',
-                'autoperc_inner_GUMM2', 'autoperc_inner_GUMM3',
-                'autoperc_inner_GUMM4', 'autoperc_inner_GUMM5',
-                'autoperc_inner_GUMM6', 'autoperc_inner_GUMM7',)
+                'autoperc_inner_GUMM', 'autoperc_inner_GUMM2',
+                'autoperc_inner_GUMM3', 'autoperc_inner_GUMM4',
+                'autoperc_inner_GUMM5', 'autoperc_inner_GUMM6',
+                'autoperc_inner_GUMM7', 'voronoi_norm',
+                'voronoi_dist', 'voronoi_2idx', 'voronoi_kmeans',
+                'agglomerative_50', 'agglomerative_25')
 
         for NU in N_UPMASK:
             print(NU)
@@ -67,8 +69,11 @@ def makePlot(fold, H, mode, NU, winloss_rates):
     min_y, max_y = np.inf, 0
     plt.subplot(211)
     for k, v in winloss_rates.items():
+        win_phot, win_pm = (v[2] > 0.).sum(), (v[3] > 0.).sum()
+        print("{} NU={}: PM {:.2f} ({} wins), PHOT {:.2f} ({} wins)".format(
+            k, NU, v[1], win_pm, v[0], win_phot))
+
         plt.scatter(v[0], v[1], alpha=.7, s=50)
-        print(k, v[0], v[1])
         plt.annotate(k, (v[0], v[1]))
         min_y = min(min_y, v[1] - .15)
         max_y = max(max_y, v[1] + .15)

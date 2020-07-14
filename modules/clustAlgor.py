@@ -3,7 +3,7 @@ import numpy as np
 import sklearn.cluster as skclust
 import sklearn.mixture as skmixture
 from scipy.spatial.distance import cdist
-from .GUMMExtras import rotate
+# from .GUMMExtras import rotate
 from .voronoiVols import voronoi_volumes
 
 
@@ -12,22 +12,25 @@ def voronoi(clust_data, n_clusters):
     Adapted from: 'Clustering by fast search and find of density peaks',
     Rodriguez and Laio (2014)
     """
+    dmetric = 'euclidean'
+
+    N_stars = clust_data.shape[0]
 
     # Obtain Voronoi volumes
     vol_v = voronoi_volumes(clust_data)
     # Convert to densities
     dens = 1. / vol_v
 
-    # For each star, find the distance to the closest star that has a
+    # For each star, find the distance to the *closest* star that has a
     # larger density (stored in 'delta'). For the star with largest
     # density, assign the distance to the most distant star.
     delta = np.zeros(dens.size)
 
     # Only use for arrays with less than 20000 stars. Otherwise too much
     # memory is required.
-    if clust_data.shape[0] < 20000:
+    if N_stars < 20000:
         # Find the distances to all stars, for all stars
-        dist = cdist(clust_data, clust_data)
+        dist = cdist(clust_data, clust_data, metric=dmetric)
 
         for i, st_dens in enumerate(dens):
             msk = dens > st_dens
@@ -43,7 +46,7 @@ def voronoi(clust_data, n_clusters):
         # for st in clust_data:
         for i, st_dens in enumerate(dens):
             # Distance from 'st' to all other stars
-            dist = cdist([clust_data[i]], clust_data)
+            dist = cdist([clust_data[i]], clust_data, metric=dmetric)
             msk = dens > st_dens
             # Store the index of the star with the largest density.
             if msk.sum() == 0:
@@ -58,24 +61,34 @@ def voronoi(clust_data, n_clusters):
     # Indexes that sort 'mult' in descending order
     idx_s = np.argsort(-mult)
 
-    # Used internally for testing the auto selection of n_clusters
+    # # Used internally for testing the auto selection of n_clusters
     # n_clusters = 'auto'
-    if n_clusters == 'auto':
-        data = np.array([np.arange(mult.size), mult[np.argsort(mult)]]).T
-        elbow_idx = rotate(data, True)
-        n_clusters = data.shape[0] - elbow_idx
-        n_clusters = max(2, n_clusters)
+    # if n_clusters == 'auto':
+    #     data = np.array([np.arange(mult.size), mult[np.argsort(mult)]]).T
+    #     elbow_idx = rotate(data, True)
+    #     n_clusters = data.shape[0] - elbow_idx
+    #     n_clusters = max(2, n_clusters)
+
+    # Indexes for clusters
+    # if idx_s.size > N_stars / 3.:
+    #     cl_idx = idx_s[:n_clusters]
+    # else:
+    #     cl_idx = np.concatenate([idx_s[:n_clusters], idx_s[-n_clusters:]])
+    cl_idx = idx_s[:n_clusters]
+
+    # centers = clust_data[cl_idx]
+    # # cl_method_pars = {'init': centers, 'n_init': 1}
+    # cl_method_pars = {}
+    # labels = sklearnMethods('AgglomerativeClustering', cl_method_pars, clust_data, n_clusters)
 
     # Assign to each star a label corresponding to the cluster that is
     # closest to it.
-    if clust_data.shape[0] < 20000:
-        labels = np.argmin(dist[idx_s[:n_clusters], :], 0)
+    if N_stars < 20000:
+        labels = np.argmin(dist[cl_idx, :], 0)
     else:
-        # Indexes for clusters
-        cl_idx = idx_s[:n_clusters]
-        labels = np.empty(clust_data.shape[0], dtype=int)
+        labels = np.empty(N_stars, dtype=int)
         for i, st in enumerate(clust_data):
-            dist = cdist([st], clust_data)
+            dist = cdist([st], clust_data, metric=dmetric)
             labels[i] = np.argmin(dist[0][cl_idx])
 
     return labels
@@ -141,6 +154,7 @@ def sklearnMethods(clust_method, cl_method_pars, clust_data, n_clusters):
         distances = distances[:, 1]
         # import matplotlib.pyplot as plt
         # plt.plot(distances)
+        # TODO replace this package with the rotate() function
         # Finding eps with 'kneed'
         from kneed import KneeLocator
         S = cl_method_pars['knee_s']

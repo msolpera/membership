@@ -7,10 +7,10 @@ from .GUMM import GUMMProbs
 from .GUMMExtras import GUMMProbCut, lowCIGUMMClean
 
 
-def main(
+def loop(
     ID, xy, data, data_err, resampleFlag, PCAflag, PCAdims, GUMM_flag,
-    GUMM_perc, N_membs, clust_method, clRjctMethod, RK_rad, RK_vals,
-        Kest, C_thresh, cl_method_pars, prfl):
+    GUMM_perc, N_membs, clust_method, clRjctMethod, Kest, C_thresh,
+        cl_method_pars, prfl, prob_GUMM, KDE_vals):
     """
     Perform the outer loop: inner loop until all "fake" clusters are rejected
     """
@@ -29,9 +29,9 @@ def main(
         print("\n IL iteration {}".format(_iter), file=prfl)
         _iter += 1
 
-        C_masks, RK_vals, N_clusts = inner.main(
-            clust_xy, clust_data, N_membs, clust_method, clRjctMethod, RK_rad,
-            RK_vals, Kest, C_thresh, cl_method_pars, prfl)
+        C_masks, KDE_vals, N_clusts = inner.main(
+            clust_xy, clust_data, N_membs, clust_method, clRjctMethod,
+            KDE_vals, Kest, C_thresh, cl_method_pars, prfl)
 
         # No clusters were rejected in this iteration. Break
         if N_clusts == len(C_masks):
@@ -57,7 +57,7 @@ def main(
         # Clean using GUMM
         if GUMM_flag:
             gumm_p = GUMMProbs(clust_xy, prfl)
-            prob_cut = GUMMProbCut(GUMM_perc, gumm_p)
+            prob_cut = GUMMProbCut(GUMM_perc, gumm_p, prob_GUMM)
             # Mark all stars as members
             probs_cl = np.ones(len(clust_xy))
             # Mark as non-members those below 'prob_cut'
@@ -85,9 +85,9 @@ def main(
     if GUMM_flag:
         # This is only ever used for *very* low contaminated clusters.
         cl_probs = lowCIGUMMClean(
-            N_membs, GUMM_perc, ID, cl_probs, clust_ID, clust_xy, prfl)
+            N_membs, GUMM_perc, ID, cl_probs, clust_ID, clust_xy, prfl, prob_GUMM)
 
-    return list(cl_probs), RK_vals
+    return list(cl_probs), KDE_vals
 
 
 def reSampleData(resampleFlag, data, data_err, prfl, standard_scale=True):

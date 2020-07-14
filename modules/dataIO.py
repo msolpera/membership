@@ -1,5 +1,6 @@
 
 import numpy as np
+from pathlib import Path
 from astropy.io import ascii
 from astropy.table import Column
 from astropy.table import Table
@@ -38,9 +39,11 @@ def readINI():
 
     # Arguments for the Outer Loop
     outer_loop = in_params['Outer loop']
-    rnd_seed, verbose, OL_runs, resampleFlag, PCAflag, PCAdims, GUMM_flag =\
+    rnd_seed, verbose, OL_runs, parallel_flag, parallel_procs, resampleFlag,\
+        PCAflag, PCAdims, GUMM_flag =\
         outer_loop.get('rnd_seed'), outer_loop.getint('verbose'),\
-        outer_loop.getint('OL_runs'), outer_loop.getboolean('resampleFlag'),\
+        outer_loop.getint('OL_runs'), outer_loop.getboolean('parallel'),\
+        outer_loop.get('processes'), outer_loop.getboolean('resampleFlag'),\
         outer_loop.getboolean('PCAflag'), outer_loop.getint('PCAdims'),\
         outer_loop.getboolean('GUMM_flag')
     GUMM_perc = outer_loop.get('GUMM_perc')
@@ -54,35 +57,31 @@ def readINI():
 
     # Arguments for the Inner Loop
     inner_loop = in_params['Inner loop']
-    N_membs, clust_method, clRjctMethod, RK_rad, C_thresh =\
+    N_membs, clust_method, clRjctMethod, C_thresh =\
         inner_loop.getint('N_membs'), inner_loop.get('clust_method'),\
-        inner_loop.get('clRjctMethod'), inner_loop.getfloat('RK_rad'),\
-        inner_loop.getfloat('C_thresh')
+        inner_loop.get('clRjctMethod'), inner_loop.getfloat('C_thresh')
 
     if clRjctMethod not in ('rkfunc', 'kdetest', 'kdetestpy'):
         raise ValueError("'{}' is not a valid choice for clRjctMethod".format(
             clRjctMethod))
-    if RK_rad not in (.3, .5, .7):
-        raise ValueError("RK radius must be one of the accepted "
-                         "values: (.3, .5, .7)")
 
     cl_method_pars = {}
     for key, val in in_params['Clustering parameters'].items():
         cl_method_pars[key] = vtype(val)
 
     return ID_c, x_c, y_c, data_cols, data_errs, oultr_method, stdRegion_nstd,\
-        rnd_seed, verbose, OL_runs, resampleFlag, PCAflag, PCAdims, GUMM_flag,\
-        GUMM_perc, N_membs, clust_method, clRjctMethod, RK_rad, C_thresh,\
-        cl_method_pars
+        rnd_seed, verbose, OL_runs, parallel_flag, parallel_procs,\
+        resampleFlag, PCAflag, PCAdims, GUMM_flag, GUMM_perc, N_membs,\
+        clust_method, clRjctMethod, C_thresh, cl_method_pars
 
 
 def dread(
-    file_name, ID_c, x_c, y_c, data_cols, data_errs, oultr_method,
+    file_path, ID_c, x_c, y_c, data_cols, data_errs, oultr_method,
         stdRegion_nstd):
     """
     """
 
-    data = Table.read(file_name, format='ascii')
+    data = Table.read(file_path, format='ascii')
     N_d = len(data)
     print("Stars read         : {}".format(N_d))
 
@@ -139,10 +138,13 @@ def dxynorm(xy_data):
     return xy
 
 
-def dwrite(file_name, full_data, msk_data, probs_all, probs_mean):
+def dwrite(file_path, full_data, msk_data, probs_all, probs_mean, method_name):
     """
     """
-    fout = './output/' + file_name
+    # Create sub-folder if it does not exist
+    out_path = Path('output/' + method_name, *file_path.parts[1:])
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+
     for i, p in enumerate(probs_all):
         # Fill masked data with '-1'
         p0 = np.zeros(len(full_data)) - 1.
@@ -153,7 +155,7 @@ def dwrite(file_name, full_data, msk_data, probs_all, probs_mean):
     pf[msk_data] = probs_mean
     full_data.add_column(Column(np.round(pf, 2), name='probs_final'))
 
-    ascii.write(full_data, fout, overwrite=True)
+    ascii.write(full_data, out_path, overwrite=True)
 
 
 # def dataNorm(data_arr, err_data=None):

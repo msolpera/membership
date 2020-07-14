@@ -1,16 +1,16 @@
 
+import warnings
 import numpy as np
 from scipy.stats import gaussian_kde
 from . import clustAlgor
 
 
 def main(
-    clust_xy, clust_data, N_membs, clust_method, clRjctMethod, RK_rad,
-        RK_vals, Kest, C_thresh, cl_method_pars, prfl, N_cl_max=1000):
+    clust_xy, clust_data, N_membs, clust_method, clRjctMethod,
+        KDE_vals, Kest, C_thresh, cl_method_pars, prfl, N_cl_max=1000):
     """
     Perform the inner loop: cluster --> reject
     """
-
     print("  Performing clustering on array of shape ({}, {})".format(
         *clust_data.shape), file=prfl)
 
@@ -22,10 +22,11 @@ def main(
         labels = clustAlgor.voronoi(clust_data, n_clusters)
     elif clust_method == 'rkde':
         labels = clustAlgor.RKDE(clust_data, n_clusters)
-    # Not fully implemented yet
+    # TODO Not fully implemented yet
     elif clust_method[:4] != 'pycl':
         labels = clustAlgor.sklearnMethods(
             clust_method, cl_method_pars, clust_data, n_clusters)
+
     else:
         labels = clustAlgor.pycl(clust_data, n_clusters)
 
@@ -34,20 +35,20 @@ def main(
 
     # import matplotlib.pyplot as plt
     # for cl in clusts_msk:
-    #     plt.scatter(*clust_data[cl].T, alpha=.5)
+    #     plt.scatter(*clust_data[cl].T[:2], alpha=.25)
 
     print("  Identified {} clusters".format(len(clusts_msk)), file=prfl)
 
     # Reject "field" clusters and return their stored masks
     C_masks, RK_vals = rjctField(
-        clust_xy, clusts_msk, clRjctMethod, RK_rad, RK_vals, Kest, C_thresh,
+        clust_xy, clusts_msk, clRjctMethod, KDE_vals, Kest, C_thresh,
         prfl)
 
     return C_masks, RK_vals, len(clusts_msk)
 
 
 def rjctField(
-    clust_xy, clusts_msk, clRjctMethod, RK_rad, RK_vals, Kest, C_thresh, prfl,
+    clust_xy, clusts_msk, clRjctMethod, KDE_vals, Kest, C_thresh, prfl,
         minStars=5):
     """
     Iterate over all the clusters defined by the clustering algorithm, storing
@@ -70,15 +71,17 @@ def rjctField(
         if cl_msk.sum() < minStars:
             C_s = -np.inf
         else:
-            C_s, RK_vals = rejctVal(
-                clust_xy[cl_msk], clRjctMethod, RK_rad, RK_vals, Kest)
+            C_s, KDE_vals = rejctVal(
+                clust_xy[cl_msk], clRjctMethod, KDE_vals, Kest)
 
         # Smaller C_s values point to samples that come from a uniform
         # distribution in (x, y), i.e., a "cluster" made up of field
         # stars. Hence, we keep as "true" clusters those with C_s values
         # larger than C_thresh.
 
-        C_thresh = 1.68 / cl_msk.sum()
+        if clRjctMethod == 'rkfunc':
+            # 1% critical value. From Dixon (2001), 'Ripley's K function'
+            C_thresh = 1.68 / cl_msk.sum()
 
         if C_s >= C_thresh:
             # Store mask that points to stars that should be *kept*
@@ -86,10 +89,10 @@ def rjctField(
                 i, C_s, cl_msk.sum()), file=prfl)
             C_masks.append(cl_msk)
 
-    return C_masks, RK_vals
+    return C_masks, KDE_vals
 
 
-def rejctVal(xy, clRjctMethod, RK_rad, RK_vals, Kest):
+def rejctVal(xy, clRjctMethod, KDE_vals, Kest):
     """
     Test how similar this cluster's (x, y) distribution is compared
     to a uniform random distribution.
@@ -100,19 +103,23 @@ def rejctVal(xy, clRjctMethod, RK_rad, RK_vals, Kest):
         # to a uniform random distribution using Ripley's K.
         # https://stats.stackexchange.com/a/122816/10416
 
-        # # Read stored value from table.
-        # try:
-        #     mean, std = RK_vals[xy.shape[0]]
-        # except KeyError:
-        #     # If the number of stars in this cluster is larger than the largest
-        #     # one stored, used the values for this largest value.
-        #     mean, std = list(RK_vals.values())[-1]
-
-        # C_s = (Kest(xy, (RK_rad,))[0] - mean) / std
-
+        # Avoid large memory consumption if the data array is too big
+        if xy.shape[0] > 5000:
+            mode = "none"
+        else:
+            mode = 'translation'
         rad = np.linspace(.01, .25, 50)
-        L_t = Kest.Lfunction(xy, rad, mode='translation')
-        C_s = max(L_t - rad)
+
+        # Hide RunTimeWarning
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            L_t = Kest.Lfunction(xy, rad, mode=mode)
+
+        # Catch all-nans
+        if np.isnan(L_t).all():
+            C_s = -np.inf
+        else:
+            C_s = np.nanmax(abs(L_t - rad))
 
     elif clRjctMethod == "kdetest":
 
@@ -137,7 +144,7 @@ def rejctVal(xy, clRjctMethod, RK_rad, RK_vals, Kest):
 
         # Read stored value from table.
         try:
-            mean, std = RK_vals[xy.shape[0]]
+            mean, std = KDE_vals[xy.shape[0]]
         except KeyError:
             dist_u = []
             for _ in range(100):
@@ -149,7 +156,7 @@ def rejctVal(xy, clRjctMethod, RK_rad, RK_vals, Kest):
                     (kde2dmap.max() - kde2dmap.mean()) / kde2dmap.std())
 
             mean, std = np.mean(dist_u), np.std(dist_u)
-            RK_vals[N] = mean, std
+            KDE_vals[N] = mean, std
 
         rx = r.matrix(xy.T[0])
         ry = r.matrix(xy.T[1])
@@ -170,7 +177,7 @@ def rejctVal(xy, clRjctMethod, RK_rad, RK_vals, Kest):
 
         # Read stored value from table.
         try:
-            mean, std = RK_vals[xy.shape[0]]
+            mean, std = KDE_vals[xy.shape[0]]
         except KeyError:
             dist_u = []
             for _ in range(100):
@@ -182,7 +189,7 @@ def rejctVal(xy, clRjctMethod, RK_rad, RK_vals, Kest):
                     (kde2dmap.max() - kde2dmap.mean()) / kde2dmap.std())
 
             mean, std = np.mean(dist_u), np.std(dist_u)
-            RK_vals[N] = mean, std
+            KDE_vals[N] = mean, std
 
         # Evaluate subset
         # from scipy.stats import iqr
@@ -199,7 +206,7 @@ def rejctVal(xy, clRjctMethod, RK_rad, RK_vals, Kest):
 
         C_s = (dist_d - mean) / std
 
-    return C_s, RK_vals
+    return C_s, KDE_vals
 
 
 # C_vals = []

@@ -54,22 +54,26 @@ def initialize_cluster(data):
 def expectation_step(X, cluster):
     """
     """
-    # Evaluate Gaussian distribution
-    gamma_g = cluster['pi_g'] * multivariate_normal(
-        mean=cluster['mu'], cov=cluster['cov']).pdf(X)
+    try:
+        # Evaluate Gaussian distribution
+        gamma_g = cluster['pi_g'] * multivariate_normal(
+            mean=cluster['mu'], cov=cluster['cov']).pdf(X)
 
-    # Evaluate uniform distribution (just a constant)
-    gamma_u = cluster['pi_u'] * np.ones(X.shape[0])
+        # Evaluate uniform distribution (just a constant)
+        gamma_u = cluster['pi_u'] * np.ones(X.shape[0])
 
-    # Normalizing constant
-    gammas_sum = gamma_g + gamma_u
+        # Normalizing constant
+        gammas_sum = gamma_g + gamma_u
 
-    # Probabilities for each element
-    cluster['gamma_g'] = gamma_g / gammas_sum
-    cluster['gamma_u'] = gamma_u / gammas_sum
+        # Probabilities for each element
+        cluster['gamma_g'] = gamma_g / gammas_sum
+        cluster['gamma_u'] = gamma_u / gammas_sum
 
-    # Save for breaking out
-    cluster['likelihood'] = np.sum(np.log(gammas_sum))
+        # Save for breaking out
+        cluster['likelihood'] = np.sum(np.log(gammas_sum))
+
+    except np.linalg.LinAlgError:
+        pass
 
 
 def maximization_step(X, cluster):

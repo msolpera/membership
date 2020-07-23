@@ -1,7 +1,9 @@
 
+import warnings
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
+from scipy.stats import gaussian_kde
 from . import inner
 from .GUMM import GUMMProbs
 from .GUMMExtras import GUMMProbCut, lowCIGUMMClean
@@ -9,8 +11,8 @@ from .GUMMExtras import GUMMProbCut, lowCIGUMMClean
 
 def loop(
     ID, xy, data, data_err, resampleFlag, PCAflag, PCAdims, GUMM_flag,
-    GUMM_perc, N_membs, clust_method, clRjctMethod, Kest, C_thresh,
-        cl_method_pars, prfl, prob_GUMM, KDE_vals):
+    GUMM_perc, KDEP_flag, N_membs, clust_method, clRjctMethod, Kest, C_thresh,
+        cl_method_pars, prfl, prob_GUMM, KDE_vals, maxIL=25):
     """
     Perform the outer loop: inner loop until all "fake" clusters are rejected
     """
@@ -29,11 +31,13 @@ def loop(
         print("\n IL iteration {}".format(_iter), file=prfl)
         _iter += 1
 
+        # Call the Inner Loop (IL)
         C_masks, KDE_vals, N_clusts = inner.main(
             clust_xy, clust_data, N_membs, clust_method, clRjctMethod,
             KDE_vals, Kest, C_thresh, cl_method_pars, prfl)
 
-        # No clusters were rejected in this iteration. Break
+        # No clusters were rejected in this iteration of the IL. This means
+        # that the method converged. Break
         if N_clusts == len(C_masks):
             print(" All clusters survived, N={}".format(
                 clust_xy.shape[0]), file=prfl)
@@ -70,7 +74,11 @@ def loop(
                 clust_ID, clust_xy, clust_data = clust_ID[msk], clust_xy[msk],\
                     clust_data[msk]
                 print("GUMM analysis: reject {} stars as non-members".format(
-                    msk.sum()), file=prfl)
+                    len(probs_cl) - msk.sum()), file=prfl)
+
+        if _iter == maxIL:
+            print("Maximum number of IL runs reached. Breaking", file=prfl)
+            break
 
     # Mark all the stars that survived in 'clust_ID' as members assigning
     # a probability of '1'. All others are field stars and are assigned
@@ -82,10 +90,15 @@ def loop(
 
     # Perform a final cleaning on the list of stars selected as members.
     # Use the last list of coordinates and IDs from the inner loop.
+    # This is only ever used for *very* low contaminated clusters.
     if GUMM_flag:
-        # This is only ever used for *very* low contaminated clusters.
         cl_probs = lowCIGUMMClean(
             N_membs, GUMM_perc, ID, cl_probs, clust_ID, clust_xy, prfl, prob_GUMM)
+
+    # Estimate probabilities using KDEs for the field stars, and assigned
+    # true members.
+    if KDEP_flag:
+        cl_probs = KDEProbs(xy, data, cl_probs)
 
     return list(cl_probs), KDE_vals
 
@@ -125,3 +138,42 @@ def dimReduc(cl_data, PCAflag, PCAdims, prfl):
         cl_data_pca = cl_data
 
     return cl_data_pca
+
+
+def KDEProbs(xy, data, cl_probs):
+    """
+    Assign probabilities to all stars after generating the KDEs for field and
+    member stars. The Cluster probability is obtained applying the formula for
+    two mutually exclusive and exhaustive hypotheses.
+    """
+
+    # Combine coordinates with the rest of the features.
+    all_data = np.concatenate([xy.T, data.T]).T
+    # Split into the two populations.
+    field_stars = all_data[cl_probs == 0.]
+    membs_stars = all_data[cl_probs == 1.]
+
+    # To improve the performance, cap the number of stars using a random
+    # selection of 'Nf_max' elements.
+    Nst_max = 5000
+    if field_stars.shape[0] > Nst_max:
+        idxs = np.arange(field_stars.shape[0])
+        np.random.shuffle(idxs)
+        field_stars = field_stars[idxs[:Nst_max]]
+
+    # Evaluate all stars in both KDEs
+    try:
+        kd_field = gaussian_kde(field_stars.T)
+        kd_memb = gaussian_kde(membs_stars.T)
+        L_memb = kd_memb.evaluate(all_data.T)
+        L_field = kd_field.evaluate(all_data.T)
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            # Probabilities for mutually exclusive and exhaustive hypotheses
+            cl_probs = 1. / (1. + (L_field / L_memb))
+
+    except (np.linalg.LinAlgError, ValueError):
+        print("WARNING: Could not perform KDE probabilities estimation")
+
+    return cl_probs

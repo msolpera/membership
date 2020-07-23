@@ -17,16 +17,23 @@ def main(
     # Number of clusters: min is 2, max is N_cl_max
     n_clusters = max(2, min(int(clust_data.shape[0] / N_membs), N_cl_max))
 
-    # Obtain all the clusters in the input data using kMeans
     if clust_method == 'Voronoi':
-        labels = clustAlgor.voronoi(clust_data, n_clusters)
-    elif clust_method == 'rkde':
-        labels = clustAlgor.RKDE(clust_data, n_clusters)
-    # TODO Not fully implemented yet
+        labels = clustAlgor.voronoi(clust_data, N_membs)
+
+    # Obtain all the clusters in the input data
+    elif clust_method == 'kNNdens':
+        labels = clustAlgor.kNNdens(
+            clust_data, cl_method_pars, N_membs, n_clusters)
+
+    elif clust_method == 'rkmeans':
+        labels = clustAlgor.RKmeans(clust_data, n_clusters)
+
+    # scikit-learn methods
     elif clust_method[:4] != 'pycl':
         labels = clustAlgor.sklearnMethods(
             clust_method, cl_method_pars, clust_data, n_clusters)
 
+    # TODO Not fully implemented yet
     else:
         labels = clustAlgor.pycl(clust_data, n_clusters)
 
@@ -122,49 +129,49 @@ def rejctVal(xy, clRjctMethod, KDE_vals, Kest):
             C_s = np.nanmax(abs(L_t - rad))
 
     elif clRjctMethod == "kdetest":
-
         from rpy2.robjects import r
-        from rpy2.robjects import numpy2ri
-        from rpy2.robjects.packages import importr
-        importr('MASS')
-        numpy2ri.activate()
 
         N = xy.shape[0]
         xmin, ymin = xy.min(0)
         xmax, ymax = xy.max(0)
-        xrng, yrng = xmax - xmin, ymax - ymin
-
-        r.assign('minX', xmin)
-        r.assign('maxX', xmax)
-        r.assign('minY', ymin)
-        r.assign('maxY', ymax)
-        r.assign('xrng', xrng)
-        r.assign('yrng', yrng)
-        r.assign('nstars', N)
 
         # Read stored value from table.
         try:
-            mean, std = KDE_vals[xy.shape[0]]
+            mean, std = KDE_vals[N]
         except KeyError:
-            dist_u = []
-            for _ in range(100):
-                r('dataX <- runif(nstars, 0, xrng)')
-                r('dataY <- runif(nstars, 0, yrng)')
-                r('kde2dmap <- kde2d(dataX, dataY, n=50, lims=c(0, xrng, 0, yrng))')
-                kde2dmap = np.array(list(r('kde2dmap'))[2]).flatten()
-                dist_u.append(
-                    (kde2dmap.max() - kde2dmap.mean()) / kde2dmap.std())
+            xrng, yrng = xmax - xmin, ymax - ymin
+            r.assign('xrng', xrng)
+            r.assign('yrng', yrng)
+            r.assign('nstars', N)
 
+            r("""
+            maxDistStats <- vector("double", nruns)
+            for(i in 1:nruns) {
+              dataX <- runif(nstars, 0, xrng)
+              dataY <- runif(nstars, 0, yrng)
+              kde2dmap <- kde2d(dataX, dataY, n=nKde, lims=c(0, xrng, 0, yrng))
+              maxDistStats[i] <- ((max(as.vector(kde2dmap$z))-
+              mean(as.vector(kde2dmap$z)))/sd(as.vector(kde2dmap$z)))
+            }
+            """)
+            dist_u = np.array(list(r('maxDistStats')))
             mean, std = np.mean(dist_u), np.std(dist_u)
             KDE_vals[N] = mean, std
 
         rx = r.matrix(xy.T[0])
         ry = r.matrix(xy.T[1])
+        r.assign('minX', xmin)
+        r.assign('maxX', xmax)
+        r.assign('minY', ymin)
+        r.assign('maxY', ymax)
         r.assign('dataX', rx)
         r.assign('dataY', ry)
-        r('kde2dmap <- kde2d(dataX, dataY, n=50, lims=c(minX, maxX, minY, maxY))')
-        kde2dmap = np.array(list(r('kde2dmap'))[2]).flatten()
-        dist_d = (kde2dmap.max() - kde2dmap.mean()) / kde2dmap.std()
+        r("""
+        kde2dmap <- kde2d(dataX, dataY, n=nKde,lims=c(minX, maxX, minY, maxY))
+        dist_d <- ((max(as.vector(kde2dmap$z))-mean(as.vector(kde2dmap$z)))/
+        sd(as.vector(kde2dmap$z)))
+        """)
+        dist_d = r('dist_d')[0]
 
         C_s = (dist_d - mean) / std
 

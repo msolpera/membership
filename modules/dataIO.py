@@ -85,6 +85,17 @@ def dread(
     N_d = len(data)
     print("Stars read         : {}".format(N_d))
 
+    # Remove stars with no valid data
+    try:
+        msk = np.logical_or.reduce([~data[_].mask for _ in data_cols])
+        data_rjct = data[~msk]
+        data = data[msk]
+        print("Stars removed      : {}".format(N_d - len(data)))
+    except AttributeError:
+        # No masked columns
+        data_rjct = []
+        pass
+
     # Separate data into groups
     if ID_c == 'None':
         ID_data = np.arange(1, N_d + 1)
@@ -98,7 +109,7 @@ def dread(
         cl_errs = np.array([data[_] for _ in data_errs]).T
     print("Data dimensions    : {}".format(cl_data.shape[1]))
 
-    return data, ID_data, xy_data, cl_data, cl_errs
+    return data, ID_data, xy_data, cl_data, cl_errs, data_rjct
 
 
 def dmask(ID, xy, pdata, perrs, oultr_method, stdRegion_nstd):
@@ -141,20 +152,25 @@ def dxynorm(xy_data):
 def dwrite(file_path, full_data, msk_data, probs_all, probs_mean, method_name):
     """
     """
+    if msk_data is not None:
+        out_path = Path('output/' + method_name, *file_path.parts[1:])
+
+        for i, p in enumerate(probs_all):
+            # Fill masked data with '-1'
+            p0 = np.zeros(len(full_data)) - 1.
+            p0[msk_data] = p
+            full_data.add_column(Column(np.round(p0, 2), name='prob' + str(i)))
+
+        pf = np.zeros(len(full_data)) - 1.
+        pf[msk_data] = probs_mean
+        full_data.add_column(Column(np.round(pf, 2), name='probs_final'))
+    else:
+        ext = file_path.suffix
+        file_path = Path(str(file_path).replace(ext, '_rjct' + ext))
+        out_path = Path('output/' + method_name, *file_path.parts[1:])
+
     # Create sub-folder if it does not exist
-    out_path = Path('output/' + method_name, *file_path.parts[1:])
     out_path.parent.mkdir(parents=True, exist_ok=True)
-
-    for i, p in enumerate(probs_all):
-        # Fill masked data with '-1'
-        p0 = np.zeros(len(full_data)) - 1.
-        p0[msk_data] = p
-        full_data.add_column(Column(np.round(p0, 2), name='prob' + str(i)))
-
-    pf = np.zeros(len(full_data)) - 1.
-    pf[msk_data] = probs_mean
-    full_data.add_column(Column(np.round(pf, 2), name='probs_final'))
-
     ascii.write(full_data, out_path, overwrite=True)
 
 

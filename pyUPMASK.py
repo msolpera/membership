@@ -12,7 +12,7 @@ import multiprocessing as mp
 def main(
     ID_c, x_c, y_c, data_cols, data_errs, oultr_method, stdRegion_nstd,
     rnd_seed, verbose, OL_runs, parallel_flag, parallel_procs,
-    resampleFlag, PCAflag, PCAdims, GUMM_flag, GUMM_perc, N_membs,
+    resampleFlag, PCAflag, PCAdims, GUMM_flag, GUMM_perc, KDEP_flag, N_membs,
     clust_method, clRjctMethod, C_thresh, cl_method_pars, prob_GUMM,
         method_name):
     """
@@ -20,6 +20,7 @@ def main(
     # Create 'output' folder if it does not exist
     Path('./output').mkdir(parents=True, exist_ok=True)
 
+    KDE_vals = {}
     # Process all files inside the '/input' folder
     inputfiles = readFiles()
     for file_path in inputfiles:
@@ -36,7 +37,7 @@ def main(
         print("Processing         : {}".format(file_path.name))
 
         # Original data
-        full_data, cl_ID, cl_xy, cl_data, cl_errs = dread(
+        full_data, cl_ID, cl_xy, cl_data, cl_errs, data_rjct = dread(
             file_path, ID_c, x_c, y_c, data_cols, data_errs,
             oultr_method, stdRegion_nstd)
 
@@ -47,11 +48,11 @@ def main(
         # Normalize (x, y) data to [0, 1]
         xy01 = dxynorm(xy)
 
-        probs_all = dataProcess(
+        probs_all, KDE_vals = dataProcess(
             ID, xy01, data, data_err, rnd_seed, verbose, OL_runs,
             parallel_flag, parallel_procs, resampleFlag, PCAflag, PCAdims,
-            GUMM_flag, GUMM_perc, N_membs, clust_method, clRjctMethod,
-            C_thresh, cl_method_pars, prob_GUMM)
+            GUMM_flag, GUMM_perc, KDEP_flag, N_membs, clust_method,
+            clRjctMethod, C_thresh, cl_method_pars, KDE_vals, prob_GUMM)
 
         if OL_runs > 1:
             # Obtain the mean of all runs. This are the final probabilities
@@ -62,13 +63,16 @@ def main(
 
         # Write final data to file
         dwrite(file_path, full_data, msk_data, probs_all, probs_mean, method_name)
+        # Write rejected data (if any)
+        if len(data_rjct) > 0:
+            dwrite(file_path, data_rjct, None, [], [], method_name)
 
 
 def dataProcess(
     ID, xy, data, data_err, rnd_seed, verbose, OL_runs, parallel_flag,
     parallel_procs, resampleFlag, PCAflag, PCAdims, GUMM_flag, GUMM_perc,
-    N_membs, clust_method, clRjctMethod, C_thresh, cl_method_pars,
-        prob_GUMM):
+    KDEP_flag, N_membs, clust_method, clRjctMethod, C_thresh, cl_method_pars,
+        KDE_vals, prob_GUMM):
     """
     """
     start_t = t.time()
@@ -79,11 +83,6 @@ def dataProcess(
         prfl = open(os.devnull, 'w')
     else:
         prfl = None
-
-    Kest = None
-    # Define RK test with an area of 1.
-    if clRjctMethod == 'rkfunc':
-        Kest = RipleysKEstimator(area=1, x_max=1, y_max=1, x_min=0, y_min=0)
 
     # Print input parameters to screen
     if PCAflag:
@@ -104,6 +103,8 @@ def dataProcess(
     if GUMM_flag:
         print("Apply GUMM         : {}".format(GUMM_flag))
         print(" GUMM percentile   : {}".format(GUMM_perc))
+    if KDEP_flag:
+        print("Obtain KDE probs   : {}".format(KDEP_flag))
     # Set a random seed for reproducibility
     if rnd_seed == 'None':
         seed = np.random.randint(100000)
@@ -112,11 +113,26 @@ def dataProcess(
     print("Random seed        : {}".format(seed))
     np.random.seed(seed)
 
+    Kest = None
+    # Define RK test with an area of 1.
+    if clRjctMethod == 'rkfunc':
+        Kest = RipleysKEstimator(area=1, x_max=1, y_max=1, x_min=0, y_min=0)
+
+    if clRjctMethod == 'kdetest' or clust_method == 'rkmeans':
+        from rpy2.robjects import r
+        from rpy2.robjects import numpy2ri
+        from rpy2.robjects.packages import importr
+        importr('MASS')
+        numpy2ri.activate()
+
+        r.assign('nruns', 2000)
+        r.assign('nKde', 50)
+
     # Arguments for the Outer Loop
     OLargs = (
         ID, xy, data, data_err, resampleFlag, PCAflag, PCAdims, GUMM_flag,
-        GUMM_perc, N_membs, clust_method, clRjctMethod, Kest, C_thresh,
-        cl_method_pars, prfl, prob_GUMM)
+        GUMM_perc, KDEP_flag, N_membs, clust_method, clRjctMethod, Kest,
+        C_thresh, cl_method_pars, prfl, prob_GUMM)
 
     # TODO: Breaks if verbose=0
     if parallel_flag is True:
@@ -131,7 +147,7 @@ def dataProcess(
                 OLfunc, [(OLargs, KDE_vals) for _ in range(OL_runs)])
 
     else:
-        probs_all, KDE_vals = [], {}
+        probs_all = []
         for _ in range(OL_runs):
             print("\n--------------------------------------------------------")
             print("OL run {}".format(_ + 1))
@@ -152,7 +168,7 @@ def dataProcess(
         ms_id = "seconds"
     print("\nTime consumed: {:.1f} {}".format(elapsed, ms_id))
 
-    return probs_all
+    return probs_all, KDE_vals
 
 
 def OLfunc(args, KDE_vals):
@@ -182,27 +198,32 @@ if __name__ == '__main__':
     # Read input parameters.
     ID_c, x_c, y_c, data_cols, data_errs, oultr_method, stdRegion_nstd,\
         rnd_seed, verbose, OL_runs, parallel_flag, parallel_procs,\
-        resampleFlag, PCAflag, PCAdims, GUMM_flag, GUMM_perc, N_membs,\
-        clust_method, clRjctMethod, C_thresh, cl_method_pars = readINI()
+        resampleFlag, PCAflag, PCAdims, GUMM_flag, GUMM_perc, KDEP_flag,\
+        N_membs, clust_method, clRjctMethod, C_thresh, cl_method_pars =\
+        readINI()
 
     # For testing:
+    verbose = 0
 
     # Methods and OL runs
-    methods = {'AgglomerativeClustering': 1, 'Voronoi': 50,
-               'KMeans': 50, 'GaussianMixture': 50}
-    # Number of stars per cluster, and small value to add to the probability
-    # cut in the GUMM method
-    N_membs_lst = (15, 25, 50)
-    prob_add_lst = (0., 0.05, 0.1)
+    methods = {
+        'KMeans': 25, 'GaussianMixture': 25, 'MiniBatchKMeans': 25,
+        'AgglomerativeClustering': 1, 'kNNdens': 1, 'Voronoi': 1}
 
+    # from aux_funcs import getMetrics
     for clust_method, OL_runs in methods.items():
-        for i, N_membs in enumerate(N_membs_lst):
-            for j, prob_GUMM in enumerate(prob_add_lst):
-                method_name = clust_method[:5] + "_" + str(i) + str(j)
-                print(method_name, N_membs, prob_GUMM)
-                main(
-                    ID_c, x_c, y_c, data_cols, data_errs, oultr_method,
-                    stdRegion_nstd, rnd_seed, verbose, OL_runs, parallel_flag,
-                    parallel_procs, resampleFlag, PCAflag, PCAdims, GUMM_flag,
-                    GUMM_perc, N_membs, clust_method, clRjctMethod, C_thresh,
-                    cl_method_pars, prob_GUMM, method_name)
+        for i, N_membs in enumerate((25, 50)):
+            for j, prob_GUMM in enumerate((0., 0.05)):
+                for k, KDEP_flag in enumerate((True, False)):
+                    method_name = clust_method[:5] + "_" + str(i) + str(j) +\
+                        str(k)
+                    print(method_name)
+
+                    main(
+                        ID_c, x_c, y_c, data_cols, data_errs, oultr_method,
+                        stdRegion_nstd, rnd_seed, verbose, OL_runs, parallel_flag,
+                        parallel_procs, resampleFlag, PCAflag, PCAdims, GUMM_flag,
+                        GUMM_perc, KDEP_flag, N_membs, clust_method, clRjctMethod,
+                        C_thresh, cl_method_pars, prob_GUMM, method_name)
+
+                    # getMetrics.main((method_name, ))

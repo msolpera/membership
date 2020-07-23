@@ -3,17 +3,14 @@ import numpy as np
 import sklearn.cluster as skclust
 import sklearn.mixture as skmixture
 from scipy.spatial.distance import cdist
-# from .GUMMExtras import rotate
+from scipy import spatial
 from .voronoiVols import voronoi_volumes
 
 
-def voronoi(clust_data, n_clusters):
+def voronoi(clust_data, N_membs, Nmax=20000):
     """
-    Adapted from: 'Clustering by fast search and find of density peaks',
-    Rodriguez and Laio (2014)
+    Voronoi assignation. Not really a clustering method.
     """
-    dmetric = 'euclidean'
-
     N_stars = clust_data.shape[0]
 
     # Obtain Voronoi volumes
@@ -21,17 +18,57 @@ def voronoi(clust_data, n_clusters):
     # Convert to densities
     dens = 1. / vol_v
 
+    # Indexes for clusters
+    idxs = np.argsort(-dens)
+    cl_idx = idxs[::N_membs]
+
+    # Assign to each star a label corresponding to the cluster that is
+    # closest to it.
+    # Only use 'cdist' for arrays with less than 'Nmax' stars. Otherwise
+    # too much memory is required.
+    if N_stars < Nmax:
+        # Find the distances to all stars, for all stars
+        dist = cdist(clust_data, clust_data)
+        labels = np.argmin(dist[cl_idx, :], 0)
+    else:
+        labels = np.empty(N_stars, dtype=int)
+        for i, st in enumerate(clust_data):
+            dist = cdist([st], clust_data)
+            labels[i] = np.argmin(dist[0][cl_idx])
+
+    return labels
+
+
+def kNNdens(clust_data, cl_method_pars, N_membs, n_clusters, Nmax=20000):
+    """
+    Adapted from: 'Clustering by fast search and find of density peaks',
+    Rodriguez and Laio (2014)
+    """
+    N_stars = clust_data.shape[0]
+
+    try:
+        NN_dd = cl_method_pars['NN_dd']
+    except KeyError:
+        NN_dd = N_membs
+
+    # Find NN_dd nearest neighbors.
+    tree = spatial.cKDTree(clust_data)
+    inx = tree.query(clust_data, k=NN_dd + 1)
+    # Mean distance to the NN_dd neighbors.
+    NN_dist = inx[0].mean(1)
+    # Convert to densities
+    dens = 1. / NN_dist
+
     # For each star, find the distance to the *closest* star that has a
     # larger density (stored in 'delta'). For the star with largest
     # density, assign the distance to the most distant star.
     delta = np.zeros(dens.size)
 
-    # Only use for arrays with less than 20000 stars. Otherwise too much
+    # Only use for arrays with less than 'Nmax' stars. Otherwise too much
     # memory is required.
-    if N_stars < 20000:
+    if N_stars < Nmax:
         # Find the distances to all stars, for all stars
-        dist = cdist(clust_data, clust_data, metric=dmetric)
-
+        dist = cdist(clust_data, clust_data)
         for i, st_dens in enumerate(dens):
             msk = dens > st_dens
             # Store the index of the star with the largest density.
@@ -43,10 +80,9 @@ def voronoi(clust_data, n_clusters):
         delta[idx_max] = delta.max()
 
     else:
-        # for st in clust_data:
         for i, st_dens in enumerate(dens):
             # Distance from 'st' to all other stars
-            dist = cdist([clust_data[i]], clust_data, metric=dmetric)
+            dist = cdist([clust_data[i]], clust_data)
             msk = dens > st_dens
             # Store the index of the star with the largest density.
             if msk.sum() == 0:
@@ -61,45 +97,27 @@ def voronoi(clust_data, n_clusters):
     # Indexes that sort 'mult' in descending order
     idx_s = np.argsort(-mult)
 
-    # # Used internally for testing the auto selection of n_clusters
-    # n_clusters = 'auto'
-    # if n_clusters == 'auto':
-    #     data = np.array([np.arange(mult.size), mult[np.argsort(mult)]]).T
-    #     elbow_idx = rotate(data, True)
-    #     n_clusters = data.shape[0] - elbow_idx
-    #     n_clusters = max(2, n_clusters)
-
     # Indexes for clusters
-    # if idx_s.size > N_stars / 3.:
-    #     cl_idx = idx_s[:n_clusters]
-    # else:
-    #     cl_idx = np.concatenate([idx_s[:n_clusters], idx_s[-n_clusters:]])
     cl_idx = idx_s[:n_clusters]
-
-    # centers = clust_data[cl_idx]
-    # # cl_method_pars = {'init': centers, 'n_init': 1}
-    # cl_method_pars = {}
-    # labels = sklearnMethods('AgglomerativeClustering', cl_method_pars, clust_data, n_clusters)
 
     # Assign to each star a label corresponding to the cluster that is
     # closest to it.
-    if N_stars < 20000:
+    if N_stars < Nmax:
         labels = np.argmin(dist[cl_idx, :], 0)
     else:
         labels = np.empty(N_stars, dtype=int)
         for i, st in enumerate(clust_data):
-            dist = cdist([st], clust_data, metric=dmetric)
+            dist = cdist([st], clust_data)
             labels[i] = np.argmin(dist[0][cl_idx])
 
     return labels
 
 
-def RKDE(clust_data, n_clusters):
+def RKmeans(clust_data, n_clusters):
     """
+    Use R's K-means method.
     """
     from rpy2.robjects import r
-    from rpy2.robjects import numpy2ri
-    numpy2ri.activate()
     nr, nc = clust_data.shape
     ocdata_px = r.matrix(clust_data, nrow=nr, ncol=nc)
     r.assign('ocdata_px', ocdata_px)

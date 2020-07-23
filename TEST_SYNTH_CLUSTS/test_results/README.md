@@ -132,6 +132,23 @@ New run with abs(L_t - rad):
 * UPMASK NU=50: PM 1.74 (6 wins), PHOT 3.36 (7 wins)
 Slightly better results for PHOT under NU=25, but the `N_membs=50` run is still better.
 
+## agglomerative_KDE
+Same as  `agglomerative_50` with `clRjctMethod=kdetest, C_thresh=1`
+
+* UPMASK NU=25: PM 20.06 (9 wins), PHOT 0.34 (1 wins)
+* UPMASK NU=50: PM 10.61 (8 wins), PHOT 1.05 (5 wins)
+Massively improves PM performance, at the cost of a **very poor** performance for PHOT.
+
+## agglomerative_KDEpy
+Same as  `agglomerative_KDE` with `clRjctMethod=kdetestpy`
+
+1. `N_membs=50`
+* UPMASK NU=25: PM 17.68 (9 wins), PHOT 0.29 (1 wins)
+Very similar to the `agglomerative_KDE` run
+
+2. `N_membs=25`
+* UPMASK NU=25: PM 2.21 (7 wins), PHOT 0.14 (1 wins)
+Worsens results considerably.
 
 ## voronoi_dist
 Uses the configuration `autoperc_inner_GUMM6, 8.` but setting the `metric` in `cdist` to values other than the default `euclidean`.
@@ -167,6 +184,119 @@ Uses the configuration `autoperc_inner_GUMM6, 8.` with `metric=euclidean` in `cd
 * UPMASK NU=25: PM 6.17 (9 wins), PHOT 0.48 (2 wins)
 * UPMASK NU=50: PM 5.53 (8 wins), PHOT 2.34 (6 wins)
 No real improvement.
+
+## kNN_10_50
+Replaced the `Voronoi` algorithm for a kNN. Used 10 neighbors to estimate the density, and `N_membs=50`
+
+* UPMASK NU=25: PM 38.89 (7 wins), PHOT -13.56 (2 wins)
+Slightly better PHOT results than `autoperc_inner_GUMM6`, but slightly worst PM results.
+
+## kNN_50_50
+Used 50 neighbors and `N_membs=50`
+
+* PM 51.11 (9 wins), PHOT -6.89 (3 wins)
+Much better than `kNN_10_50` in both PHOT and PM
+
+## kNN_25_25
+Used 25 neighbors and `N_membs=25`
+
+* PM 19.78 (7 wins), PHOT -2.22 (6 wins)
+Worst results for PM but still good. Great results for PHOT: although still bellow 0, there are 6 wins.
+
+## kNN_10_25
+Used 10 neighbors and `N_membs=25`
+
+* PM 22.00 (7 wins), PHOT -11.56 (2 wins)
+Similar PM but worse PHOT than `kNN_25_25`
+
+## kNN_50_25
+Used 50 neighbors and `N_membs=25`
+
+* PM 25.78 (7 wins), PHOT -11.56 (2 wins)
+Almost equal to `kNN_10_25`
+
+## kNN_25_50
+Used 25 neighbors and `N_membs=50`
+
+* kNN_25_50 NU=25: PM 36.22 (7 wins), PHOT -14.89 (3 wins)
+Better PM, worse PHOT than `kNN_25_25` (the worst actually)
+
+## kNN_25_auto
+Used 25 neighbors and `N_membs=auto`
+
+* PM 43.11 (7 wins), PHOT -20.22 (2 wins)
+Reasonable PM, bad PHOT
+
+## kNN_10_10
+Used 10 neighbors and `N_membs=10`
+
+* PM -8.22 (6 wins), PHOT -32.44 (2 wins)
+**Horrible** performance overall
+
+## kNN_25_mean_25
+Used 25 neighbors and `N_membs=25`, but using the mean of the distances instead of the distance to the NN neighbor (as did previous runs).
+
+* NU=25: PM 17.78 (7 wins), PHOT -2.44 (5 wins)
+Very similar to `kNN_25_25`, but slightly worse PHOT
+
+## voronoi_kde_p_25
+Used Voronoi with `N_membs=25, prob_cut+=0.05` and using KDEs to assign probabilities in the [0, 1] range after the OL.
+
+* NU=25: PM 56.00 (9 wins), PHOT -4.89 (2 wins)
+Better PHOT results than the `autoperc_GUMMX` results (X=2,6) and similar PM.
+
+## voronoi_kde_p_50
+Same as `voronoi_kde_p_25` but using `N_membs=50`
+
+* NU=25: PM 43.11 (8 wins), PHOT -8.67 (2 wins)
+Worse than `voronoi_kde_p_25`
+
+## kNN_50_50_kde
+Used 50 neighbors and `N_membs=50`, with the KDE estimated probs
+
+* NU=25: PM 49.11 (9 wins), PHOT 16.67 (7 wins)
+Improves the PHOT results **a lot**
+
+## kNN_25_25_kde
+Used 25 neighbors and `N_membs=25`, with the KDE estimated probs
+
+* NU=25: PM 40.44 (9 wins), PHOT 21.56 (8 wins)
+Very good results.
+
+## agglomerative_25_kde_p
+Using `N_membs=25` with the KDE estimated probs
+
+* NU=25: PM 54.44 (9 wins), PHOT 41.11 (9 wins)
+Improves the results **a lot** compared to `agglomerative_25`
+
+## agglomerative_50_kde_p
+Using `N_membs=50` with the KDE estimated probs
+
+* NU=25: PM 45.11 (9 wins), PHOT 20.67 (8 wins)
+Improves the results for PHOT versus `agglomerative_50`. PM results are very similar, but there are more wins here.
+
+
+## voronoi_newcents_50
+Using Voronoi with `N_membs=50` but selecting the centers of the clusters spread across all the densities (`idxs[::step]`, where `step=N_membs`)
+
+* NU=25: PM 50.67 (9 wins), PHOT 6.67 (5 wins)
+Best results for PHOTwith Voronoi yet, and good PM results.
+
+## voronoi_newcents_25
+Same as `voronoi_newcents_50` but using Voronoi with `N_membs=25`
+
+* NU=25: PM 44.22 (9 wins), PHOT 19.33 (8 wins)
+Much better than `voronoi_newcents_50`
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -219,7 +349,6 @@ Not as good as the GMM runs, but a lot faster and still better than UPMASK: PHOT
 * UPMASK NU=50: PM 7.67 (8 wins), PHOT 4.30 (8 wins)
 Much better results than `minibatch_50` for PM, and better results for PHOT.
 PHOT ~6 mins , PM ~30 secs (per cluster).
-
 
 
 
@@ -330,3 +459,19 @@ Configuration `autoperc_inner_GUMM6, 8.` with `linkage=ward`, and Voronoi `N_mem
 * UPMASK NU=25: PM 6.31 (9 wins), PHOT 0.36 (1 wins)
 * UPMASK NU=50: PM 5.50 (9 wins), PHOT 1.63 (5 wins)
 Worsens deeply the PHOT results.
+
+## voronoi_newcents_nauto
+Auto `N_membs`
+
+* NU=25: PM 44.22 (8 wins), PHOT -20.22 (2 wins)
+Very poor results for PHOT
+
+## voronoi_newcents_15
+Same as `voronoi_newcents_50` but using Voronoi with `N_membs=15`
+Not good.
+
+## voronoi_flat
+Voronoi with `N_membs=25,clRjctMethod=rkfunc` and GUMM & KDEp turned off.
+
+* NU=25: PM -32.22 (3 wins), PHOT -52.00 (1 wins)
+Horrible results

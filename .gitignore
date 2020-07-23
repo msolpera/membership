@@ -8,6 +8,7 @@
 /output/*
 .vscode/
 params.ini
+.Rhistory
 #
 # Do not ignore this
 !/input/README.md

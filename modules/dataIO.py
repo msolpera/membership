@@ -40,12 +40,12 @@ def readINI():
     # Arguments for the Outer Loop
     outer_loop = in_params['Outer loop']
     rnd_seed, verbose, OL_runs, parallel_flag, parallel_procs, resampleFlag,\
-        PCAflag, PCAdims, GUMM_flag =\
+        PCAflag, PCAdims, GUMM_flag, KDEP_flag =\
         outer_loop.get('rnd_seed'), outer_loop.getint('verbose'),\
         outer_loop.getint('OL_runs'), outer_loop.getboolean('parallel'),\
         outer_loop.get('processes'), outer_loop.getboolean('resampleFlag'),\
         outer_loop.getboolean('PCAflag'), outer_loop.getint('PCAdims'),\
-        outer_loop.getboolean('GUMM_flag')
+        outer_loop.getboolean('GUMM_flag'), outer_loop.getboolean('KDEP_flag')
     GUMM_perc = outer_loop.get('GUMM_perc')
     if GUMM_perc != 'auto':
         GUMM_perc = float(GUMM_perc)
@@ -71,8 +71,8 @@ def readINI():
 
     return ID_c, x_c, y_c, data_cols, data_errs, oultr_method, stdRegion_nstd,\
         rnd_seed, verbose, OL_runs, parallel_flag, parallel_procs,\
-        resampleFlag, PCAflag, PCAdims, GUMM_flag, GUMM_perc, N_membs,\
-        clust_method, clRjctMethod, C_thresh, cl_method_pars
+        resampleFlag, PCAflag, PCAdims, GUMM_flag, GUMM_perc, KDEP_flag,\
+        N_membs, clust_method, clRjctMethod, C_thresh, cl_method_pars
 
 
 def dread(

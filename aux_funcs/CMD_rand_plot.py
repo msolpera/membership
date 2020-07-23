@@ -12,10 +12,11 @@ generates a coordinates and CMD plot.
 A method for pyUPMASK and for the H measure metric need to be selected.
 """
 
-method = 'optm_GUMM'
+method = 'agglomerative_25_kde_p'
 Hmethod = 'auto'
+N_UPMASK = "25"
 # Probability cuts (use 0. for Voronoi)
-pyU_prob_min = .0
+pyU_prob_min = .9
 UP_prob_min = .9
 
 print("Method: {}".format(method))
@@ -34,7 +35,8 @@ while True:
     data_pyupmask = ascii.read(fold + file)
 
     # Load the same file from the UPMASK run
-    UP_fold = '../TEST_SYNTH_CLUSTS/test_results/100_UPMASK_res/'
+    UP_fold = '../TEST_SYNTH_CLUSTS/test_results/100_UPMASK_res/nstars'\
+        + N_UPMASK + '/' + feature_ran + '/'
     data_upmask = ascii.read(UP_fold + file)
 
     # Load pyUPMASK metrics
@@ -45,8 +47,8 @@ while True:
     met_pyU = metrics_data[msk]
 
     # Load UPMASK metrics
-    metrics_file = '../TEST_SYNTH_CLUSTS/test_results/metrics_UP-' +\
-        feature_ran + '_H_' + Hmethod + '.dat'
+    metrics_file = '../TEST_SYNTH_CLUSTS/test_results/100_UPMASK_res/' +\
+        'metrics_UP-' + feature_ran + '_H_' + Hmethod + '_' + N_UPMASK + '.dat'
     metrics_data = ascii.read(metrics_file)
     msk = metrics_data['Name'] == file[:-4].replace('.', '_')
     met_U = metrics_data[msk]

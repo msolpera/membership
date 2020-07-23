@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 
 # Define the "tie" range.
-tie_max = .05
+tie_max = .025
 tie_min = -1. * tie_max
 
 
@@ -30,9 +30,9 @@ def main():
     # 'autoperc_inner_GUMM4', 'autoperc_inner_GUMM5', 'autoperc_inner_GUMM6'
     # 'autoperc_GMM', 'autoperc_GMM2', 'autoperc_GMM3', 'autoperc_GMM4'
 
-    mode = ('minibatch_vor',)
+    mode = ('voronoi_newcents',)
     Hval = ('auto',)  # 'symm', 'SR05')
-    N_UPMASK = ("25", "50")
+    N_UPMASK = ("25",) #  "50")
 
     # Folder where the files are located
     fold = "../TEST_SYNTH_CLUSTS/test_results/"

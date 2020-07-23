@@ -6,7 +6,7 @@ from sklearn.metrics import log_loss, brier_score_loss,\
     matthews_corrcoef, recall_score, precision_score
 
 
-def main(verbose=False):
+def main(mode=None, verbose=False):
     """
     Obtain performance metrics for the clusters processed with pyUPMASK or
     UPMASK.
@@ -14,8 +14,10 @@ def main(verbose=False):
     The input files (which are the outputs from pyUPMASk or UPMASK) are read
     from the 'output/' folder.
     """
+    if mode is None:
+        return
+
     # mode = ('UPMASK_600', 'pyUPMASK_600')
-    mode = ('agglomerative_25',)
     features = ('PHOT', 'PM')
     Hval = ('auto',)  # 'symm', 'SR05')
 
@@ -32,7 +34,7 @@ def main(verbose=False):
                     'MCC_5': [], 'TPR_5': [], 'PPV_5': [],
                     'MCC_9': [], 'TPR_9': [], 'PPV_9': []}
 
-                outp = Path('../output/' + subfold)
+                outp = Path('./output/' + subfold)
                 for fpath in outp.iterdir():
                     fname = '_'.join(fpath.name.split('/')[-1].split('.')[:-1])
                     if fname == '':
@@ -46,7 +48,7 @@ def main(verbose=False):
                     for k, v in metrics_dct.items():
                         final_dct[k].append(metrics_dct[k])
 
-                outf = Path('../TEST_SYNTH_CLUSTS/test_results/').joinpath(
+                outf = Path('./TEST_SYNTH_CLUSTS/test_results/').joinpath(
                     'metrics_{}_{}_H_{}.dat'.format(f, m, H))
                 ascii.write(final_dct, outf, format='csv', overwrite=True)
 

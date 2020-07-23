@@ -9,7 +9,7 @@ def voronoi_volumes(points, Nsigma=3.):
     """
     For an D-dimensional dataset obtain its Voronoi diagram, and calculate
     the volume associated to each region. Unbounded regions are assigned the
-    mean volume, outlier regions (with large volumes) are clipped to
+    95th percentile volume. Outlier regions (with large volumes) are clipped to
     median volumes.
     """
 
@@ -35,8 +35,8 @@ def voronoi_volumes(points, Nsigma=3.):
             # Obtain volume for this region
             vol[i] = area_of_polygon(vertxs, Ndim)
 
-    # For points with unbounded regions, assign the mean volume.
-    vol[np.isnan(vol)] = np.nanmean(vol)
+    # For points with unbounded regions, assign the 95th percentile volume.
+    vol[np.isnan(vol)] = np.nanpercentile(vol, 95)
 
     # Clip volumes of N-sigma outliers to the median volume of the dataset.
     mean, median, std = sigma_clipped_stats(vol)

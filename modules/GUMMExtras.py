@@ -3,7 +3,7 @@ import numpy as np
 from .GUMM import GUMMProbs
 
 
-def GUMMProbCut(GUMM_perc, gumm_p, prob_GUMM):
+def GUMMProbCut(GUMM_perc, gumm_p):
     """
     """
     # Select the probability cut.
@@ -18,7 +18,7 @@ def GUMMProbCut(GUMM_perc, gumm_p, prob_GUMM):
 
         # Adding a small percentage to the selected probability improves the
         # results by making the cut slightly stricter.
-        prob_cut += prob_GUMM
+        prob_cut += 0.05
 
         # import matplotlib.pyplot as plt
         # from scipy.spatial import distance
@@ -96,13 +96,13 @@ def rotate(data, retElbow=False):
     return data[elbow_idx][1]
 
 
-def lowCIGUMMClean(N_membs, GUMM_perc, ID, cl_probs, clust_ID, clust_xy, prfl, prob_GUMM):
+def lowCIGUMMClean(N_membs, GUMM_perc, ID, cl_probs, clust_ID, clust_xy, prfl):
     """
     Remove stars marked as members if their GUMM probability is below
     the 'pob_cut' threshold.
     """
     gumm_p = GUMMProbs(clust_xy, prfl)
-    prob_cut = GUMMProbCut(GUMM_perc, gumm_p, prob_GUMM)
+    prob_cut = GUMMProbCut(GUMM_perc, gumm_p)
 
     # Don't overwrite
     probs_cl = list(cl_probs)

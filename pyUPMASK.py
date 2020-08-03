@@ -13,8 +13,7 @@ def main(
     ID_c, x_c, y_c, data_cols, data_errs, oultr_method, stdRegion_nstd,
     rnd_seed, verbose, OL_runs, parallel_flag, parallel_procs,
     resampleFlag, PCAflag, PCAdims, GUMM_flag, GUMM_perc, KDEP_flag, N_membs,
-    clust_method, clRjctMethod, C_thresh, cl_method_pars, prob_GUMM,
-        method_name):
+        clust_method, clRjctMethod, C_thresh, cl_method_pars):
     """
     """
     # Create 'output' folder if it does not exist
@@ -24,13 +23,6 @@ def main(
     # Process all files inside the '/input' folder
     inputfiles = readFiles()
     for file_path in inputfiles:
-
-        # TODO here for testing uprposes only
-        if 'oc_' in file_path.name:
-            # This is an UPMASK synthetic cluster
-            data_cols, PCAdims = ['V', 'B_V', 'U_B', 'V_I', 'J_H', 'H_K'], 4
-        else:
-            data_cols, PCAdims = ['pmRA', 'pmDE'], 2
 
         print("\n\n")
         print("===========================================================")
@@ -52,7 +44,7 @@ def main(
             ID, xy01, data, data_err, rnd_seed, verbose, OL_runs,
             parallel_flag, parallel_procs, resampleFlag, PCAflag, PCAdims,
             GUMM_flag, GUMM_perc, KDEP_flag, N_membs, clust_method,
-            clRjctMethod, C_thresh, cl_method_pars, KDE_vals, prob_GUMM)
+            clRjctMethod, C_thresh, cl_method_pars, KDE_vals)
 
         if OL_runs > 1:
             # Obtain the mean of all runs. This are the final probabilities
@@ -62,17 +54,17 @@ def main(
             probs_mean = probs_all[0]
 
         # Write final data to file
-        dwrite(file_path, full_data, msk_data, probs_all, probs_mean, method_name)
+        dwrite(file_path, full_data, msk_data, probs_all, probs_mean)
         # Write rejected data (if any)
         if len(data_rjct) > 0:
-            dwrite(file_path, data_rjct, None, [], [], method_name)
+            dwrite(file_path, data_rjct, None, [], [])
 
 
 def dataProcess(
     ID, xy, data, data_err, rnd_seed, verbose, OL_runs, parallel_flag,
     parallel_procs, resampleFlag, PCAflag, PCAdims, GUMM_flag, GUMM_perc,
     KDEP_flag, N_membs, clust_method, clRjctMethod, C_thresh, cl_method_pars,
-        KDE_vals, prob_GUMM):
+        KDE_vals):
     """
     """
     start_t = t.time()
@@ -132,7 +124,7 @@ def dataProcess(
     OLargs = (
         ID, xy, data, data_err, resampleFlag, PCAflag, PCAdims, GUMM_flag,
         GUMM_perc, KDEP_flag, N_membs, clust_method, clRjctMethod, Kest,
-        C_thresh, cl_method_pars, prfl, prob_GUMM)
+        C_thresh, cl_method_pars, prfl)
 
     # TODO: Breaks if verbose=0
     if parallel_flag is True:
@@ -202,28 +194,9 @@ if __name__ == '__main__':
         N_membs, clust_method, clRjctMethod, C_thresh, cl_method_pars =\
         readINI()
 
-    # For testing:
-    verbose = 0
-
-    # Methods and OL runs
-    methods = {
-        'KMeans': 25, 'GaussianMixture': 25, 'MiniBatchKMeans': 25,
-        'AgglomerativeClustering': 1, 'kNNdens': 1, 'Voronoi': 1}
-
-    # from aux_funcs import getMetrics
-    for clust_method, OL_runs in methods.items():
-        for i, N_membs in enumerate((25, 50)):
-            for j, prob_GUMM in enumerate((0., 0.05)):
-                for k, KDEP_flag in enumerate((True, False)):
-                    method_name = clust_method[:5] + "_" + str(i) + str(j) +\
-                        str(k)
-                    print(method_name)
-
-                    main(
-                        ID_c, x_c, y_c, data_cols, data_errs, oultr_method,
-                        stdRegion_nstd, rnd_seed, verbose, OL_runs, parallel_flag,
-                        parallel_procs, resampleFlag, PCAflag, PCAdims, GUMM_flag,
-                        GUMM_perc, KDEP_flag, N_membs, clust_method, clRjctMethod,
-                        C_thresh, cl_method_pars, prob_GUMM, method_name)
-
-                    # getMetrics.main((method_name, ))
+    main(
+        ID_c, x_c, y_c, data_cols, data_errs, oultr_method,
+        stdRegion_nstd, rnd_seed, verbose, OL_runs, parallel_flag,
+        parallel_procs, resampleFlag, PCAflag, PCAdims, GUMM_flag,
+        GUMM_perc, KDEP_flag, N_membs, clust_method, clRjctMethod,
+        C_thresh, cl_method_pars)

@@ -31,9 +31,11 @@ def main():
     # Good PM, very bad PHOT: 'agglomerative_KDEpy'
     # Superseded by 'kNN_50_50_kde': 'kNN_50_50'
     # Superseded by 'kNN_250_25_kde': 'kNN_25_25'
-    # Superseded by 'agglomerative_25_kde_p': 'agglomerative_25'
+    # Superseded by 'agglomerative_25_kde_p': 'agglomerative_25',
+    # 'agglomerative_50_kde_p'
     # Superseded by 'voronoi_newcents_25': 'voronoi_newcents_50',
     # 'voronoi_newcents_15'
+    # Superseded by 'kNN_25_25_kde': 'kNN_50_50_kde'
 
     Hval = 'auto'  # 'symm', 'SR05')
     N_UPMASK = "25"  # "50")
@@ -43,8 +45,8 @@ def main():
 
     configs = (
         'autoperc_GMM2', 'autoperc_GMM3', 'minibatch_50',
-        'kNN_50_50_kde', 'kNN_25_25_kde', 'agglomerative_25_kde_p',
-        'agglomerative_50_kde_p', 'voronoi_newcents_25', 'voronoi_flat')
+        'kNN_25_25_kde', 'agglomerative_25_kde_p',
+        'voronoi_newcents_25', 'knn_test')
 
     # for NU in N_UPMASK:
     #     print(NU)

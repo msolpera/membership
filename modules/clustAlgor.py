@@ -7,11 +7,15 @@ from scipy import spatial
 from .voronoiVols import voronoi_volumes
 
 
-def voronoi(clust_data, N_membs, Nmax=20000):
+def voronoi(clust_data, N_membs, n_clusters, N_st_max):
     """
     Voronoi assignation. Not really a clustering method.
     """
     N_stars = clust_data.shape[0]
+
+    step = N_membs
+    if N_stars / n_clusters > N_membs:
+        step = int(N_stars / n_clusters)
 
     # Obtain Voronoi volumes
     vol_v = voronoi_volumes(clust_data)
@@ -20,26 +24,21 @@ def voronoi(clust_data, N_membs, Nmax=20000):
 
     # Indexes for clusters
     idxs = np.argsort(-dens)
-    cl_idx = idxs[::N_membs]
+    cl_idx = idxs[::step]
+    # Cap at n_clusters
+    cl_idx = cl_idx[:n_clusters]
 
-    # Assign to each star a label corresponding to the cluster that is
-    # closest to it.
-    # Only use 'cdist' for arrays with less than 'Nmax' stars. Otherwise
-    # too much memory is required.
-    if N_stars < Nmax:
+    dist = None
+    if N_stars < N_st_max:
         # Find the distances to all stars, for all stars
         dist = cdist(clust_data, clust_data)
-        labels = np.argmin(dist[cl_idx, :], 0)
-    else:
-        labels = np.empty(N_stars, dtype=int)
-        for i, st in enumerate(clust_data):
-            dist = cdist([st], clust_data)
-            labels[i] = np.argmin(dist[0][cl_idx])
+
+    labels = densLabeling(N_st_max, N_stars, clust_data, dist, cl_idx)
 
     return labels
 
 
-def kNNdens(clust_data, cl_method_pars, N_membs, n_clusters, Nmax=20000):
+def kNNdens(clust_data, cl_method_pars, N_membs, n_clusters, N_st_max):
     """
     Adapted from: 'Clustering by fast search and find of density peaks',
     Rodriguez and Laio (2014)
@@ -66,7 +65,7 @@ def kNNdens(clust_data, cl_method_pars, N_membs, n_clusters, Nmax=20000):
 
     # Only use for arrays with less than 'Nmax' stars. Otherwise too much
     # memory is required.
-    if N_stars < Nmax:
+    if N_stars < N_st_max:
         # Find the distances to all stars, for all stars
         dist = cdist(clust_data, clust_data)
         for i, st_dens in enumerate(dens):
@@ -99,16 +98,22 @@ def kNNdens(clust_data, cl_method_pars, N_membs, n_clusters, Nmax=20000):
 
     # Indexes for clusters
     cl_idx = idx_s[:n_clusters]
+    labels = densLabeling(N_st_max, N_stars, clust_data, dist, cl_idx)
 
-    # Assign to each star a label corresponding to the cluster that is
-    # closest to it.
+    return labels
+
+
+def densLabeling(Nmax, N_stars, clust_data, dist, cl_idx):
+    """
+    Assign to each star a label corresponding to the cluster that is
+    closest to it.
+    """
     if N_stars < Nmax:
         labels = np.argmin(dist[cl_idx, :], 0)
     else:
-        labels = np.empty(N_stars, dtype=int)
-        for i, st in enumerate(clust_data):
-            dist = cdist([st], clust_data)
-            labels[i] = np.argmin(dist[0][cl_idx])
+        # Assign the 'label' given the closest cluster to each star.
+        tree = spatial.cKDTree(clust_data[cl_idx])
+        _, labels = tree.query(clust_data)
 
     return labels
 
@@ -155,35 +160,7 @@ def sklearnMethods(clust_method, cl_method_pars, clust_data, n_clusters):
         model = skmixture.BayesianGaussianMixture()
 
     elif clust_method == 'DBSCAN':
-        # # Finding eps manually:
-        # # https://towardsdatascience.com/
-        # # machine-learning-clustering-dbscan-determine-the-optimal-value-for-
-        # # epsilon-eps-python-example-3100091cfbc
-        # Another method described in:
-        # Amin Karami and Ronnie Johansson. Choosing dbscan parameters
-        # automatically using differential evolution. International Journal
-        # of Computer Applications, 91(7), 2014
-        #
-        from sklearn.neighbors import NearestNeighbors
-        neigh = NearestNeighbors(n_neighbors=cl_method_pars['min_samples'])
-        nbrs = neigh.fit(clust_data)
-        distances, indices = nbrs.kneighbors(clust_data)
-        distances = np.sort(distances, axis=0)
-        distances = distances[:, 1]
-        # import matplotlib.pyplot as plt
-        # plt.plot(distances)
-        # TODO replace this package with the rotate() function
-        # Finding eps with 'kneed'
-        from kneed import KneeLocator
-        S = cl_method_pars['knee_s']
-        kneedle = KneeLocator(
-            range(len(distances)), distances, S=S, curve='convex',
-            direction='increasing')
-        eps = kneedle.knee_y
-        if eps is None:
-            # Select maximum value as eps
-            eps = distances[-1]
-        model = skclust.DBSCAN(eps=eps)
+        model = skclust.DBSCAN()
 
     elif clust_method == 'OPTICS':
         model = skclust.OPTICS()
@@ -196,12 +173,7 @@ def sklearnMethods(clust_method, cl_method_pars, clust_data, n_clusters):
 
     # Set parameters for the method (if any)
     if cl_method_pars:
-        if clust_method == 'DBSCAN':
-            cl_method_pars2 = {
-                k: cl_method_pars[k] for k in cl_method_pars if k != 'knee_s'}
-            model.set_params(**cl_method_pars2)
-        else:
-            model.set_params(**cl_method_pars)
+        model.set_params(**cl_method_pars)
 
     # Only these methods require the number of clusters to be set
     if clust_method in (

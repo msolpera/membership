@@ -16,10 +16,6 @@ def GUMMProbCut(GUMM_perc, gumm_p):
         # Find 'elbow' where the probabilities start climbing from ~0.
         prob_cut = rotate(perc_probs)
 
-        # Adding a small percentage to the selected probability improves the
-        # results by making the cut slightly stricter.
-        prob_cut += 0.05
-
         # import matplotlib.pyplot as plt
         # from scipy.spatial import distance
         # plt.subplot(221)
@@ -93,7 +89,11 @@ def rotate(data, retElbow=False):
     if retElbow:
         return elbow_idx
 
-    return data[elbow_idx][1]
+    # Adding a small percentage to the selected probability improves the
+    # results by making the cut slightly stricter.
+    prob_cut = data[elbow_idx][1] + 0.05
+
+    return prob_cut
 
 
 def lowCIGUMMClean(N_membs, GUMM_perc, ID, cl_probs, clust_ID, clust_xy, prfl):

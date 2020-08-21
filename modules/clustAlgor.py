@@ -127,7 +127,14 @@ def RKmeans(clust_data, n_clusters):
     ocdata_px = r.matrix(clust_data, nrow=nr, ncol=nc)
     r.assign('ocdata_px', ocdata_px)
     r.assign('nclust', n_clusters)
+
+    # This line apparently serves no purpose in the original code
+    # aggregate(ocdata_px, by=list(fit$cluster), FUN=mean)
+
     r('fit <- kmeans(ocdata_px, nclust, nstart=50, iter.max=100)')
+    r('ocdata_px <- data.frame(ocdata_px, resMclust.class=fit$cluster)')
+    # r('labels_R <- ocdata_px$resMclust.class')
+    # labels = np.array(list(r('labels_R')))
     labels = np.array(list(r('fit$cluster')))
 
     return labels

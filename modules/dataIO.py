@@ -150,11 +150,11 @@ def dxynorm(xy_data):
     return xy
 
 
-def dwrite(file_path, full_data, msk_data, probs_all, probs_mean):
+def dwrite(out_folder, file_path, full_data, msk_data, probs_all, probs_mean):
     """
     """
     if msk_data is not None:
-        out_path = Path('output/', *file_path.parts[1:])
+        out_path = Path(out_folder, *file_path.parts[1:])
 
         for i, p in enumerate(probs_all):
             # Fill masked data with '-1'
@@ -168,7 +168,7 @@ def dwrite(file_path, full_data, msk_data, probs_all, probs_mean):
     else:
         ext = file_path.suffix
         file_path = Path(str(file_path).replace(ext, '_rjct' + ext))
-        out_path = Path('output/', *file_path.parts[1:])
+        out_path = Path(out_folder, *file_path.parts[1:])
 
     # Create sub-folder if it does not exist
     out_path.parent.mkdir(parents=True, exist_ok=True)

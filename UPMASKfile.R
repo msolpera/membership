@@ -1,15 +1,101 @@
-#! /usr/bin/Rscript
+#! /home/gabriel/miniconda3/envs/py3/lib/R/bin/Rscript
 
+#  R package UPMASK file R/UPMASKfile.R
+#  Copyright (C) 2014 Alberto Krone-Martins
+#
+#This program is free software: you can redistribute it and/or modify
+#it under the terms of the GNU General Public License version 3 as published by
+#the Free Software Foundation.
 
+#This program is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU General Public License for more details.
+
+#  A copy of the GNU General Public License is available at
+#  http://www.r-project.org/Licenses/
+#
+
+#' @title Run UPMASK in a file
+#' 
+#' @description \code{UPMASKfile} executes the UPMASK method using a file as an input
+#' and writes another file as an output. This is a wrapper function that only reads a 
+#' file into an R data frame, calls the \code{UPMASKdata} function using this data frame 
+#' and the parameters passed by the user and writes the output into another file.
+#' 
+#' @param filenameWithPathInput a string indicating the file containing the data to run UPMASK on (with full path)
+#' @param filenameWithPathOuput a string indicating the file where the output shall be written (with full path) 
+#' @param positionDataIndexes an array of integers indicating the columns of the file containing the spatial position measurements
+#' @param photometricDataIndexes an array of integers with the column numbers containing photometric measurements (or any other measurement to go into the PCA step)
+#' @param photometricErrorDataIndexes an array of integers with the column numbers containing the errors of the photometric measurements
+#' @param threshold a double indicating the thresholding level for the random field analysis
+#' @param maxIter an integer the maximum amount of iterations of the outer loop before giving up convergence (usually it is not necessary to modify this)
+#' @param starsPerClust_kmeans an integer with the average number of stars per k-means cluster
+#' @param nstarts_kmeans an integer the amount of random re-initializations of the k-means clustering method (usually it is not necessary to modify this)
+#' @param nRuns the total number of individual runs to execute the total number of outer loop runs to execute
+#' @param runInParallel a boolean indicating if the code should run in parallel
+#' @param paralelization a string with the type of paralilization to use. the paralelization can be: "multicore" or "MPIcluster". At this moment only "multicore" is implemented (defaults to multicore).
+#' @param independent a boolean indicating if non-parallel runs should be completely independent
+#' @param verbose a boolean indicating if the output to screen should be verbose
+#' @param autoCalibrated a boolean indicating if the number of random field realizations for the clustering check in the position space should be autocalibrated (experimental code, defaults to FALSE).
+#' @param considerErrors a boolean indicating if the errors should be taken into account
+#' @param finalXYCut a boolean indicating if a final cut in the XY space should be performed (defaults to FALSE)
+#' @param fileWithHeader a boolean indicating if the input file has a text header
+#' @param nDimsToKeep an integer with the number of dimensions to consider (defaults to 4)
+#' @param dimRed a string with the dimensionality reduction method to use (defaults to PCA. The only other options are LaplacianEigenmaps or None)
+#' @param scale a boolean indicating if the data should be scaled and centered
+#' 
+#' @references \href{http://dx.doi.org/10.1051/0004-6361/201321143}{Krone-Martins, A. & Moitinho, A., A&A, v.561, p.A57, 2014}
+#'
+#' @examples
+#' \dontrun{
+#' # Analyse a simulated open cluster using spatial and photometric data 
+#' # Create strings with filenames
+#' fileNameI <- "oc_12_500_1000_1.0_p019_0880_1_25km_120nR_withcolors.dat"
+#' inputFileName <- system.file("extdata", fileNameI, package="UPMASK")
+#' outputFileName <- file.path(tempdir(), "up-RESULTS.dat")
+#' 
+#' # Example of how to run UPMASK using data from a file
+#' # (serious analysis require at least larger nRuns)
+#' posIdx <- c(1,2)
+#' photIdx <- c(3,5,7,9,11,19,21,23,25,27)
+#' photErrIdx <- c(4,6,8,10,12,20,22,24,26,28)
+#' UPMASKfile(inputFileName, outputFileName, posIdx, photIdx, photErrIdx, nRuns=5, 
+#'            starsPerClust_kmeans=25, verbose=TRUE, fileWithHeader=TRUE)
+#' 
+#' # Open the resulting file to inspect the results
+#' tempResults <- read.table(outputFileName, header=TRUE)
+#' 
+#' # Create a simple raw plot to see the results
+#' pCols <- tempResults[,length(tempResults)]/max(tempResults[,length(tempResults)])
+#' plot(tempResults[,1], tempResults[,2], col=rgb(0,0,0,pCols), cex=0.5, pch=19)
+#' 
+#' # Clean the environment
+#' rm(list=c("tempResults", "inputFileName", "outputFileName", "pCols", "fileNameI"))
+#' } 
+#'  
+#' @usage UPMASKfile(filenameWithPathInput, filenameWithPathOuput, 
+#' positionDataIndexes=c(1,2), photometricDataIndexes=c(3,5,7,9,11,19,21,23,25,27),
+#' photometricErrorDataIndexes=c(4,6,8,10,12,20,22,24,26,28), threshold=1, 
+#' maxIter=20, starsPerClust_kmeans=50, nstarts_kmeans=50, nRuns=5, 
+#' runInParallel=FALSE, paralelization="multicore", independent=TRUE, verbose=FALSE, 
+#' autoCalibrated=FALSE, considerErrors=FALSE, finalXYCut=FALSE, 
+#' fileWithHeader=FALSE, nDimsToKeep=4, dimRed="PCA", scale=TRUE)
+#' 
+#' @author Alberto Krone-Martins, Andre Moitinho
+#' 
+#' @keywords misc, utilities
+#' @export
+#
 UPMASKfile <- function(filenameWithPathInput, filenameWithPathOuput, 
-                      positionDataIndexes=c(1,2),
-                      photometricDataIndexes=c(3,5,7,9,11,19,21,23,25,27),
-                      photometricErrorDataIndexes=c(4,6,8,10,12,20,22,24,26,28),
-                      threshold=1, maxIter=20, starsPerClust_kmeans=50, nstarts_kmeans=50, 
+					  positionDataIndexes=c(1,2),
+					  photometricDataIndexes=c(3,5,7,9,11,19,21,23,25,27),
+					  photometricErrorDataIndexes=c(4,6,8,10,12,20,22,24,26,28),
+					  threshold=1, maxIter=20, starsPerClust_kmeans=50, nstarts_kmeans=50, 
             nRuns=5, runInParallel=FALSE, paralelization="multicore", 
             independent=TRUE, verbose=FALSE, autoCalibrated=FALSE, 
             considerErrors=FALSE, finalXYCut=FALSE, fileWithHeader=FALSE, 
-                      nDimsToKeep=4, dimRed="PCA", scale=TRUE, sep) {
+					  nDimsToKeep=4, dimRed="PCA", scale=TRUE) {
   
   # 
   # User :: Interface
@@ -24,30 +110,30 @@ UPMASKfile <- function(filenameWithPathInput, filenameWithPathOuput,
   # Data I/O :: Perform File Input
   # 
   if(verbose) {
-    # cat(paste("-------------------------------------------------------------------\n"))
-    cat(      " Reading the input table from: ",filenameWithPathInput,"\n")
+    cat(paste("-------------------------------------------------------------------\n"))
+    cat(      " Reading the input table from: \n\t",filenameWithPathInput,"\n")
   }
   # Load the file
-  ocdata_full <- read.table(filenameWithPathInput, header=fileWithHeader, sep=sep)
-  # if(verbose) {
-  #   cat(paste("-------------------------------------------------------------------\n"))
-  # }
+  ocdata_full <- read.table(filenameWithPathInput, header=fileWithHeader)
+  if(verbose) {
+    cat(paste("-------------------------------------------------------------------\n"))
+  }
   
   #
   # Science :: Run the UPMASK caller function
   #
   resultsTable <- UPMASKdata(ocdata_full, 
-                      positionDataIndexes=positionDataIndexes,
-                        photometricDataIndexes=photometricDataIndexes,
-                        photometricErrorDataIndexes=photometricErrorDataIndexes,
-                        threshold=threshold, maxIter=maxIter, 
+  					  positionDataIndexes=positionDataIndexes,
+					    photometricDataIndexes=photometricDataIndexes,
+					    photometricErrorDataIndexes=photometricErrorDataIndexes,
+					    threshold=threshold, maxIter=maxIter, 
               starsPerClust_kmeans=starsPerClust_kmeans, 
               nstarts_kmeans=nstarts_kmeans, nRuns=nRuns, 
               runInParallel=runInParallel, paralelization=paralelization, 
               independent=independent, verbose=verbose, 
               considerErrors=considerErrors, finalXYCut=finalXYCut, 
-                        nDimsToKeep=nDimsToKeep, dimRed=dimRed, scale=scale)
-
+					    nDimsToKeep=nDimsToKeep, dimRed=dimRed, scale=scale)
+  
   # 
   # Data I/O :: Perform File Output
   # 
@@ -55,8 +141,8 @@ UPMASKfile <- function(filenameWithPathInput, filenameWithPathOuput,
     cat(paste("-------------------------------------------------------------------\n"))
     cat(      " Writing the output table at: \n\t",filenameWithPathOuput,"\n")
   }
-  write.table(resultsTable, filenameWithPathOuput, sep="    ", 
-              col.names=fileWithHeader, quote=FALSE, row.names=FALSE)   
+  write.table(resultsTable, filenameWithPathOuput, sep="	", 
+              col.names=fileWithHeader, quote=FALSE, row.names=FALSE)	
 
   # 
   # User :: Interface
@@ -69,26 +155,121 @@ UPMASKfile <- function(filenameWithPathInput, filenameWithPathOuput,
 }
 
 
+#  R package UPMASK file R/UPMASKdata.R
+#  Copyright (C) 2014 Alberto Krone-Martins
+#
+#This program is free software: you can redistribute it and/or modify
+#it under the terms of the GNU General Public License version 3 as published by
+#the Free Software Foundation.
 
+#This program is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU General Public License for more details.
+
+#  A copy of the GNU General Public License is available at
+#  http://www.r-project.org/Licenses/
+#
+
+#' @title Run UPMASK in a data frame
+#' 
+#' @description \code{UPMASKdata} executes the UPMASK method on a data frame, and returns 
+#' another data frame as output, including the membership analysis result as additional 
+#' columns. 
+#' 
+#' \code{UPMASKdata} is a method for performing membership assignment in stellar 
+#' clusters. The distributed code is prepared to use photometry and spatial positions, 
+#' but it can take into account other types of data as well. The method is able to take 
+#' into account arbitrary error models (the used must rewrite the 
+#' \code{\link{takeErrorsIntoAccount}} function), and it is unsupervised, data-driven, 
+#' physical-model-free and relies on as few assumptions as possible. The approach followed
+#' for membership assessment is based on an iterative process, dimensionality reduction, 
+#' a clustering algorithm and a kernel density estimation.
+#' 
+#' @param dataTable a data frame with the data to perform the analysis
+#' @param positionDataIndexes an array of integers indicating the columns of the data frame containing the spatial position measurements
+#' @param photometricDataIndexes an array of integers with the column numbers containing photometric measurements (or any other measurement to go into the PCA step)
+#' @param photometricErrorDataIndexes an array of integers with the column numbers containing the errors of the photometric measurements
+#' @param threshold a double indicating the thresholding level for the random field analysis
+#' @param classAlgol a string indicating the type of clustering algorithm to consider. Only k-means is implemented at this moment (defaults to kmeans)
+#' @param maxIter an integer the maximum amount of iterations of the outer loop before giving up convergence (usually it is not necessary to modify this)
+#' @param starsPerClust_kmeans an integer with the average number of stars per k-means cluster
+#' @param nstarts_kmeans an integer the amount of random re-initializations of the k-means clustering method (usually it is not necessary to modify this)
+#' @param nRuns the total number of individual runs to execute the total number of outer loop runs to execute
+#' @param runInParallel a boolean indicating if the code should run in parallel
+#' @param paralelization a string with the type of paralilization to use. the paralelization can be: "multicore" or "MPIcluster". At this moment only "multicore" is implemented (defaults to multicore).
+#' @param independent a boolean indicating if non-parallel runs should be completely independent
+#' @param verbose a boolean indicating if the output to screen should be verbose
+#' @param autoCalibrated a boolean indicating if the number of random field realizations for the clustering check in the position space should be autocalibrated (experimental code, defaults to FALSE).
+#' @param considerErrors a boolean indicating if the errors should be taken into account
+#' @param finalXYCut a boolean indicating if a final cut in the XY space should be performed (defaults to FALSE)
+#' @param nDimsToKeep an integer with the number of dimensions to consider (defaults to 4)
+#' @param dimRed a string with the dimensionality reduction method to use (defaults to PCA. The only other options are LaplacianEigenmaps or None)
+#' @param scale a boolean indicating if the data should be scaled and centered
+#' 
+#' @return A data frame with the original data used to run the method and additional columns indicating the classification at each run, as well as a membership probability in the frequentist sense.
+#' 
+#' @references \href{http://dx.doi.org/10.1051/0004-6361/201321143}{Krone-Martins, A. & Moitinho, A., A&A, v.561, p.A57, 2014}
+#'
+#' @examples
+#' \dontrun{
+#' # Analyse a simulated open cluster using spatial and photometric data 
+#' # Load the data into a data frame
+#' fileNameI <- "oc_12_500_1000_1.0_p019_0880_1_25km_120nR_withcolors.dat"
+#' inputFileName <- system.file("extdata", fileNameI, package="UPMASK")
+#' ocData <- read.table(inputFileName, header=TRUE)
+#' 
+#' # Example of how to run UPMASK using data from a data frame
+#' # (serious analysis require at least larger nRuns)
+#' posIdx <- c(1,2)
+#' photIdx <- c(3,5,7,9,11,19,21,23,25,27)
+#' photErrIdx <- c(4,6,8,10,12,20,22,24,26,28)
+#' 
+#' upmaskRes <- UPMASKdata(ocData, posIdx, photIdx, PhotErrIdx, nRuns=2, 
+#'                         starsPerClust_kmeans=25, verbose=TRUE)
+#' 
+#' # Create a simple raw plot to see the results
+#' pCols <- upmaskRes[,length(upmaskRes)]/max(upmaskRes[,length(upmaskRes)])
+#' plot(upmaskRes[,1], upmaskRes[,2], col=rgb(0,0,0,pCols), cex=0.5, pch=19)
+#' 
+#' # Clean the environment
+#' rm(list=c("inputFileName", "ocData", "posIdx", "photIdx", "photErrIdx", 
+#'           "upmaskRes", "pCols"))
+#' } 
+#'  
+#' @usage UPMASKdata(dataTable, positionDataIndexes=c(1,2),
+#' photometricDataIndexes=c(3,5,7,9,11,19,21,23,25,27),
+#' photometricErrorDataIndexes=c(4,6,8,10,12,20,22,24,26,28), threshold=1, 
+#' classAlgol="kmeans", maxIter=25, starsPerClust_kmeans=25, nstarts_kmeans=50, 
+#' nRuns=8, runInParallel=FALSE, paralelization="multicore", independent=TRUE, 
+#' verbose=FALSE, autoCalibrated=FALSE, considerErrors=FALSE, 
+#' finalXYCut=FALSE, nDimsToKeep=4, dimRed="PCA", scale=TRUE)
+#' 
+#' @author Alberto Krone-Martins, Andre Moitinho
+#' 
+#' @keywords cluster, methods, multivariate, nonparametric
+#' @import parallel
+#' @export
+#
 UPMASKdata <- function(dataTable,
-                      positionDataIndexes=c(1,2),
-                      photometricDataIndexes=c(3,5,7,9,11,19,21,23,25,27),
-                      photometricErrorDataIndexes=c(4,6,8,10,12,20,22,24,26,28),
-                      threshold=1, classAlgol="kmeans", maxIter=25,
-                      starsPerClust_kmeans=25, nstarts_kmeans=50, nRuns=8,
-                      runInParallel=FALSE, paralelization="multicore", independent=TRUE,
-                      verbose=FALSE, autoCalibrated=FALSE, considerErrors=FALSE,
-                      finalXYCut=FALSE, nDimsToKeep=4, dimRed="PCA", scale=TRUE) {
+            positionDataIndexes=c(1,2),
+            photometricDataIndexes=c(3,5,7,9,11,19,21,23,25,27),
+            photometricErrorDataIndexes=c(4,6,8,10,12,20,22,24,26,28),
+            threshold=1, classAlgol="kmeans", maxIter=25,
+            starsPerClust_kmeans=25, nstarts_kmeans=50, nRuns=8,
+            runInParallel=FALSE, paralelization="multicore", independent=TRUE,
+            verbose=FALSE, autoCalibrated=FALSE, considerErrors=FALSE,
+            finalXYCut=FALSE, nDimsToKeep=4, dimRed="PCA", scale=TRUE) {
   
   # 
   # User :: Interface
   #
-  # if(verbose) {
-  #   cat(paste("-------------------------------------------------------------------\n"))
-  #   cat(      " Starting UPMASK analysis!\n")
-  #   cat(      " UPMASK kernels v. 1.2\n")
-  #   cat(paste("-------------------------------------------------------------------\n"))
-  # }
+  if(verbose) {
+    cat(paste("-------------------------------------------------------------------\n"))
+    cat(      " Starting UPMASK analysis!\n")
+    cat(      " UPMASK kernels v. 1.2\n")
+    cat(paste("-------------------------------------------------------------------\n"))
+  }
   
   # 
   # Science
@@ -106,12 +287,12 @@ UPMASKdata <- function(dataTable,
     if(independent) {
       for(i in 1:nRuns) {
         pp[[length(pp)+1]] <- outerLoop(dataTable, 
-                                positionDataIndexes=positionDataIndexes,
-                                photometricDataIndexes=photometricDataIndexes, 
-                                photometricErrorDataIndexes=photometricErrorDataIndexes,
-                                threshold=threshold,
-                                maxIter=maxIter, plotIter=FALSE, 
-                                starsPerClust_kmeans=starsPerClust_kmeans, 
+                    positionDataIndexes=positionDataIndexes,
+                    photometricDataIndexes=photometricDataIndexes, 
+                    photometricErrorDataIndexes=photometricErrorDataIndexes,
+                    threshold=threshold,
+                    maxIter=maxIter, plotIter=FALSE, 
+                    starsPerClust_kmeans=starsPerClust_kmeans, 
                                 nstarts_kmeans=nstarts_kmeans,  
                                 verbose=verbose, finalXYCut=finalXYCut, 
                                 autoCalibrated=autoCalibrated, 
@@ -125,10 +306,10 @@ UPMASKdata <- function(dataTable,
       # library(parallel)
       # Ok, now it is just a matter of running the code using a list
       pp <- mclapply(1:nRuns, function(x) { outerLoop(dataTable, 
-                                positionDataIndexes=positionDataIndexes,
-                                photometricDataIndexes=photometricDataIndexes, 
-                                photometricErrorDataIndexes=photometricErrorDataIndexes,
-                                threshold=threshold, 
+                    positionDataIndexes=positionDataIndexes,
+                    photometricDataIndexes=photometricDataIndexes, 
+                    photometricErrorDataIndexes=photometricErrorDataIndexes,
+                    threshold=threshold, 
                                 maxIter=maxIter, plotIter=FALSE, 
                                 starsPerClust_kmeans=starsPerClust_kmeans, 
                                 nstarts_kmeans=nstarts_kmeans, 
@@ -136,7 +317,7 @@ UPMASKdata <- function(dataTable,
                                 autoCalibrated=autoCalibrated, 
                                 considerErrors=considerErrors, run=x, 
                                 smartTableDB=stcon, nDimsToKeep=nDimsToKeep, 
-                                            dimRed=dimRed, scale=scale)} )
+                                dimRed=dimRed, scale=scale)} )
     } else if(paralelization=="MPIcluster") {
       # if the user wants to run in a cluster
       # then we need to use MPI
@@ -195,8 +376,8 @@ UPMASKdata <- function(dataTable,
   return(ocdata_out)
 }
 
-library('DBI')
-library(RSQLite)
+
+
 create_smartTable <- function() {
 #  con <- dbConnect(RSQLite::SQLite(), ":memory:")
   con <- dbConnect(dbDriver("SQLite"), dbname = tempfile())
@@ -207,14 +388,14 @@ create_smartTable <- function() {
 
 
 outerLoop <- function(ocdata_full, 
-                      positionDataIndexes=c(1,2),
-                      photometricDataIndexes=c(3,5,7,9,11,19,21,23,25,27),
-                      photometricErrorDataIndexes=c(4,6,8,10,12,20,22,24,26,28),
-                      threshold=1, maxIter=25, plotIter=FALSE, 
-                      verbose=FALSE, starsPerClust_kmeans=50, nstarts_kmeans=50, 
-                      finalXYCut=FALSE, 
-                      autoCalibrated=FALSE, considerErrors=FALSE, run=0, 
-                      smartTableDB, nDimsToKeep=4, dimRed="PCA", scale=TRUE) {
+            positionDataIndexes=c(1,2),
+            photometricDataIndexes=c(3,5,7,9,11,19,21,23,25,27),
+            photometricErrorDataIndexes=c(4,6,8,10,12,20,22,24,26,28),
+            threshold=1, maxIter=25, plotIter=FALSE, 
+            verbose=FALSE, starsPerClust_kmeans=50, nstarts_kmeans=50, 
+            finalXYCut=FALSE, 
+            autoCalibrated=FALSE, considerErrors=FALSE, run=0, 
+            smartTableDB, nDimsToKeep=4, dimRed="PCA", scale=TRUE) {
   
   # The version without autoThresold is deprecated
   autoThreshold <- TRUE
@@ -299,8 +480,8 @@ outerLoop <- function(ocdata_full,
     }
   } else {
     if(verbose) {
-        cat(" Sorry, the system never converged...\n But I am not aborting!!\n")
-    }
+      cat(" Sorry, the system never converged...\n But I am not aborting!!\n")
+  }
     # Flag this iteration's cluster stars as non-members
     member <- data.frame(m=rep(0,length(ocdata_out[,1])))
     ocdata_out <- data.frame(ocdata_out, member)
@@ -315,12 +496,15 @@ outerLoop <- function(ocdata_full,
     }
     ocdata_out <- getStarsAtHighestDensityRegion(ocdata_out, threshold=3, verbose=FALSE)
   } else {
-    ocdata_out <- data.frame(ocdata_out, finalClass=ocdata_out[,length(ocdata_out)] )   
+    ocdata_out <- data.frame(ocdata_out, finalClass=ocdata_out[,length(ocdata_out)] ) 
   }
     
   # That's all folks!  
   return(data.frame(id=ocdata_out$id, class=ocdata_out$finalClass))
 }
+
+
+
 
 performCuts <- function(originalData) {
 
@@ -332,154 +516,8 @@ performCuts <- function(originalData) {
 }
 
 
-getStarsAtHighestDensityRegion <- function(ocdata_out, threshold=2, posIdx=c(1,2), plotAnalysis=FALSE, verbose=FALSE) {
-  # Get the cluster stars
-  # oc_data_clean <- subset(ocdata_out, ocdata_out$resMclust.class==1)
-  oc_data_clean <- subset(ocdata_out, ocdata_out[,ncol(ocdata_out)]==1)
-  
-  # Perform the Kde2d in the X-Y space
-  dens_map <- kde2d(oc_data_clean[,posIdx[1]],oc_data_clean[,posIdx[2]],n=50, 
-                    lims=c(range(ocdata_out[,posIdx[1]]), range(ocdata_out[,posIdx[2]])))
-  
-  # Compute the average density and its sd (using an iterative method)
-  dens_vals <- as.vector(dens_map$z)
-  stat_dens <- meanThreeSigRej(dens_vals)
-  
-  # Compute the average density and its sd, difference from the random fields
-  # stat_dens <- analyse_randomKde2d(nfields=2000, nstars=length(oc_data_clean$x), 
-  #               (max(oc_data_clean$x)-min(oc_data_clean$x)),
-  #               (max(oc_data_clean$y)-min(oc_data_clean$y)), 
-  #               nKde=50, showStats=FALSE, returnStats=TRUE)
-  
-  
-  loopFlag <- TRUE
-  while(loopFlag) { 
-    # Create a density map with flags for the selected cluster / field regions
-    if(verbose) {
-      print(stat_dens)
-    }
-    flagged_dens_map <- dens_map
-    flagged_dens_map$z[which(flagged_dens_map$z<(stat_dens$mean+threshold*stat_dens$sd))] <- 0
-    flagged_dens_map$z[which(flagged_dens_map$z>=(stat_dens$mean+threshold*stat_dens$sd))] <- 1
-    
-    # Select the stars inside the flagged region
-    oc_data_clean_tmp <- oc_data_clean
-    # before anything else, reorganize the data
-    dmap <- flagged_dens_map
-    xvec <- rep(dmap$x,times=length(dmap$y))
-    yvec <- vector("double",(length(dmap$x)*length(dmap$y)) )
-    kk <- 1
-    for (j in 1:length(dmap$y)) {
-      yvec[kk:(kk+length(dmap$x)-1)] <- rep(dmap$y[j], length(dmap$x))
-      kk <- kk+length(dmap$x)
-    }
-    zvec <- as.vector(dmap$z)
-    flagged_region <- data.frame(x=xvec, y=yvec, z=zvec)
-    # first let's get rid of the easy ones...
-    flagged_region <- subset(flagged_region, flagged_region$z==1)
-    dxP2 <- abs(flagged_dens_map$x[2]-flagged_dens_map$x[1])/2
-    dyP2 <- abs(flagged_dens_map$y[2]-flagged_dens_map$y[1])/2
-    oc_data_clean_tmp <- subset(oc_data_clean_tmp, oc_data_clean_tmp[,posIdx[1]]>=(min(flagged_region$x)-dxP2))
-    oc_data_clean_tmp <- subset(oc_data_clean_tmp, oc_data_clean_tmp[,posIdx[1]]<=(max(flagged_region$x)+dxP2))
-    oc_data_clean_tmp <- subset(oc_data_clean_tmp, oc_data_clean_tmp[,posIdx[2]]>=(min(flagged_region$y)-dyP2))
-    oc_data_clean_tmp <- subset(oc_data_clean_tmp, oc_data_clean_tmp[,posIdx[2]]<=(max(flagged_region$y)+dyP2))
-    
-    loopFlag <- FALSE
-    
-    if(verbose) {
-      print(oc_data_clean_tmp)
-    } 
-    
-    if(length(oc_data_clean_tmp[,posIdx[1]])==0) {
-      loopFlag=TRUE
-      threshold<-threshold-1
-      cat(paste(" WARNING: The thresholding for the final cluster selection in the X-Y density map was to high!\n"))
-      cat(paste(" WARNING:     since no stars were present in the final cluster, I am lowering the threshold!\n"))
-      cat(paste(" WARNING:     The NEW threshold will be",threshold,"\n"))
-      if(threshold<0) {
-        stop("ABORTING! Threshold for spatial clustering of member stars is less than zero!")
-      }
-    }
-  }
-  
-  # ok, now check the hard ones one by one
-  trueVec <- c()
-  for(i in 1:length(oc_data_clean_tmp[,posIdx[1]])) { # for each star
-    # check if this star is inside any of the flagged boxes
-    isInside <- FALSE
-    for(j in 1:length(flagged_region$z)) {
-      if( (oc_data_clean_tmp[i,posIdx[1]] >= (flagged_region$x[j]-dxP2) ) &&
-            (oc_data_clean_tmp[i,posIdx[1]] <= (flagged_region$x[j]+dxP2) ) &&
-            (oc_data_clean_tmp[i,posIdx[2]] >= (flagged_region$y[j]-dyP2) ) &&
-            (oc_data_clean_tmp[i,posIdx[2]] <= (flagged_region$y[j]+dyP2) )) {
-        isInside <- TRUE
-        break 
-      }
-    }
-    if (isInside) {
-      trueVec <- c(trueVec, i)
-    }
-  }
-  oc_data_veryclean_tmp <- oc_data_clean_tmp[trueVec,]
-  
-  # Plot the results
-  if(plotAnalysis) {
-    clevels <- c((stat_dens$mean), (stat_dens$mean+1*stat_dens$sd), (stat_dens$mean+2*stat_dens$sd), 
-                 (stat_dens$mean+3*stat_dens$sd), (stat_dens$mean+threshold*stat_dens$sd))    
-    
-    # flagged plot
-    colvec <- rgb(0:1/2,0,0)
-    dev.new()
-    plot(ocdata_out[,posIdx[1]], ocdata_out[,posIdx[2]], pch=19, cex=0.1, col="black", type="n", main=paste("Final Open Cluster"), xlab="X", ylab="Y")
-    image(flagged_dens_map, col=colvec, add=TRUE)
-    contour(dens_map, levels=clevels, labels=c("mean", "1sd", "2sd","3sd", "user"), col=c("red", "red", "red", "red", "blue"), add=TRUE, labcex=1.5)
-    points(oc_data_clean[,posIdx[1]], oc_data_clean[,posIdx[2]], pch=19, cex=0.2, col="white") # OC data  
-    points(oc_data_clean_tmp[,posIdx[1]], oc_data_clean_tmp[,posIdx[2]], cex=1, col="blue") # OC data 
-    points(oc_data_veryclean_tmp[,posIdx[1]], oc_data_veryclean_tmp[,posIdx[2]], pch=19, cex=1, col="green") # OC data  
-    
-    # normal plot
-    collevels <- 256
-    div <- 2*collevels
-    colvec <- rgb(0:collevels/div,0:collevels/div,0:collevels/div)
-    dev.new()
-    plot(ocdata_out[,posIdx[1]], ocdata_out[,posIdx[2]], pch=19, cex=0.1, col="black", type="n", main=paste("Final Open Cluster"), xlab="X", ylab="Y")
-    image(dens_map, col=colvec, add=TRUE)
-    contour(dens_map, levels=clevels, labels=c("mean", "1sd", "2sd","3sd", "user"), col=c("red", "red", "red", "red", "blue"), add=TRUE, labcex=1.5)
-    points(oc_data_clean[,posIdx[1]], oc_data_clean[,posIdx[2]], pch=19, cex=0.2, col="white") # OC data
-    
-  }
-  
-  retDf <- data.frame(ocdata_out, finalClass=rep(0,length(ocdata_out[,posIdx[1]])))
-  
-  retDf$finalClass[oc_data_veryclean_tmp$id] <- 1
-  
-  return(retDf) 
-}
 
 
-meanThreeSigRej <- function(vec, maxI=50, tolerance=0.001) {
-  tvec <- vec
-  newM <- mean(tvec)
-  i<-0
-  for(i in 1:maxI) {
-    oldM <- newM
-    tvec <- subset(tvec, tvec<(mean(tvec)+3*sd(tvec)))
-    newM <- mean(tvec)
-    newSd <- sd(tvec)
-    # if the mean converged, stop the torture, please...
-    if( abs(oldM-newM)/oldM < tolerance) { break }
-  }
-  if(i==maxI) {
-    stop(" ARGH! The Iterative 3-sigma rejection reached the maximum iterations without converging...\n Aborting cowardly!")
-  }
-  return(data.frame(mean=newM,sd=newSd, convergenceAtIter=i))
-}
-
-
-
-
-
-library('MASS')
 innerLoop <- function(ocdata_full, ocdata, classAlgol="kmeans", autoThresholdLevel=3, 
                          autoThreshold=TRUE, iiter=0, plotIter=FALSE, verbosity=1, 
                          starsPerClust_kmeans=50, nstarts_kmeans=50, runId=0, 
@@ -564,7 +602,7 @@ innerLoop <- function(ocdata_full, ocdata, classAlgol="kmeans", autoThresholdLev
   if(plotIter){
     dev.new()
     par(cex=0.3)
-    #   plot(resMclust, data=ocdata_px[,1:4])
+    # plot(resMclust, data=ocdata_px[,1:4])
     pairs(ocdata_px[,1:4], pch=19, cex=0.2, col=rainbow(max(ocdata_px$resMclust.class))[ocdata_px$resMclust.class])
   }
   
@@ -572,12 +610,12 @@ innerLoop <- function(ocdata_full, ocdata, classAlgol="kmeans", autoThresholdLev
   ocdata_full_withColorsAndPcaCols <- data.frame(ocdata_full, ocdata, ocdata_px)
     
   # Select the classes with densities above the threshold
-  # if(verbosity>=1) {
-  cat(paste(" [runId:",runId,"] ITERATION:",iiter," -- [3/3] Found",max(ocdata_px$resMclust.class),"individual classes...\n"))
-  #   if(verbosity==1) {
-  #     cat(paste(" [runId:",runId,"] ITERATION:",iiter,"          You can get a coffee. This can take long! \n"))
-  #   }
-  # }
+  if(verbosity>=1) {
+    cat(paste(" [runId:",runId,"] ITERATION:",iiter," -- [3/3] Performing comparison with random density fields for",max(ocdata_px$resMclust.class),"individual classes...\n"))
+    if(verbosity==1) {
+      cat(paste(" [runId:",runId,"] ITERATION:",iiter,"          You can get a coffee. This can take long! \n"))
+    }
+  }
   
   vclass <- c()
   not_class <- c()
@@ -590,9 +628,9 @@ innerLoop <- function(ocdata_full, ocdata, classAlgol="kmeans", autoThresholdLev
       
       # First, get the thresholding level...
       if(autoThreshold) {
-        # if(verbosity>=2) {
-        #   cat(paste(" [runId:",runId,"] ITERATION:",iiter," -- Class",i," -- Performing analysis of random fields...\n"))
-        # }
+        if(verbosity>=2) {
+          cat(paste(" [runId:",runId,"] ITERATION:",iiter," -- Class",i," -- Performing analysis of random fields...\n"))
+        }
         
         if(autoCalibrated) {
           # This is an experimental code for performing automatic calibration of the 
@@ -602,7 +640,7 @@ innerLoop <- function(ocdata_full, ocdata, classAlgol="kmeans", autoThresholdLev
                  (max(ocdata_full_withColorsAndPcaCols[,positionDataIndexes[1]])-min(ocdata_full_withColorsAndPcaCols[,positionDataIndexes[1]])),
                  (max(ocdata_full_withColorsAndPcaCols[,positionDataIndexes[2]])-min(ocdata_full_withColorsAndPcaCols[,positionDataIndexes[2]])), 
                  nKde=50, showStats=FALSE, returnStats=TRUE)
-        } else {                    
+        } else {          
           at <- analyse_randomKde2d_smart(
                  nfields=2000, nstars=length(dfn$resMclust.class), 
                  (max(ocdata_full_withColorsAndPcaCols[,positionDataIndexes[1]])-min(ocdata_full_withColorsAndPcaCols[,positionDataIndexes[1]])),
@@ -611,8 +649,8 @@ innerLoop <- function(ocdata_full, ocdata, classAlgol="kmeans", autoThresholdLev
         }
         threshold <- at$mean + autoThresholdLevel*at$sd
         if(verbosity>=2) {
-          # cat(paste(" [runId:",runId,"] ITERATION:",iiter,"         Automatic threshold for class",i," spatial clustering selected at ",round(threshold,1),"above the mean density.\n"))
-          # cat(paste(" [runId:",runId,"] ITERATION:",iiter,"                                 class",i," got dif_max_mean             = ",round(dif_max_mean,1),"above the mean density.\n"))
+          cat(paste(" [runId:",runId,"] ITERATION:",iiter,"     Automatic threshold for class",i," spatial clustering selected at ",round(threshold,1),"above the mean density.\n"))
+          cat(paste(" [runId:",runId,"] ITERATION:",iiter,"                             class",i," got dif_max_mean             = ",round(dif_max_mean,1),"above the mean density.\n"))
         }
       } else {
         stop(" The code without autothresolding was deprecated. \b Aborting cowardly.\n\n")
@@ -620,8 +658,8 @@ innerLoop <- function(ocdata_full, ocdata, classAlgol="kmeans", autoThresholdLev
       
       if(is.na(round(threshold,1))) {
         cat(paste(" [runId:",runId,"] ITERATION:",iiter,"/- PROBLEM REPORT -----------------------------------------------------------------\n"))
-        cat(paste(" [runId:",runId,"] ITERATION:",iiter,"|      Class",i," has a NA value in the threshold!\n"))
-        cat(paste(" [runId:",runId,"] ITERATION:",iiter,"|      probably due to its small number of stars: ", nrow(dfn),".\n"))
+        cat(paste(" [runId:",runId,"] ITERATION:",iiter,"|    Class",i," has a NA value in the threshold!\n"))
+        cat(paste(" [runId:",runId,"] ITERATION:",iiter,"|    probably due to its small number of stars: ", nrow(dfn),".\n"))
         kde2dForSubset(ocdata_full_withColorsAndPcaCols, setw=i, returnDistance=FALSE, showStats=TRUE, printPlots=FALSE, positionDataIndexes=positionDataIndexes)
         print(dfn)
         cat(paste(" [runId:",runId,"] ITERATION:",iiter,"\\----------------------------------------------------------------------------------\n"))
@@ -631,19 +669,19 @@ innerLoop <- function(ocdata_full, ocdata, classAlgol="kmeans", autoThresholdLev
         if(round(dif_max_mean,1) >= round(threshold,1)) {
           vclass <- c(vclass, i)
           if(verbosity>=2) {
-            cat(paste(" [runId:",runId,"] ITERATION:",iiter," Class",i," ok: ",round(dif_max_mean,2),">=",round(threshold,2),"\n"))
+            cat(paste(" [runId:",runId,"] ITERATION:",iiter," <<<< -- Class",i," : ok!\n"))
           }
         } else {
           not_class <- c(not_class, i)
-          # if(verbosity>=2) {
-          #   cat(paste(" [runId:",runId,"] ITERATION:",iiter,"      --   Class",i," : WILL BE ELIMINATED!!\n"))
-          # }
+          if(verbosity>=2) {
+            cat(paste(" [runId:",runId,"] ITERATION:",iiter,"      -- Class",i," : WILL BE ELIMINATED!!\n"))
+          }
         }
       }
     } else {
-      # if(verbosity>=2) {
-      #   cat(paste(" [runId:",runId,"] ITERATION:",iiter,"   -- Class",i," -- THERE ARE TWO OR LESS STARS IN THIS CLASS! \n"))
-      # }
+      if(verbosity>=2) {
+        cat(paste(" [runId:",runId,"] ITERATION:",iiter," -- Class",i," -- THERE ARE TWO OR LESS STARS IN THIS CLASS! \n"))
+      }
       not_class <- c(not_class, i)
     }
   }
@@ -661,9 +699,9 @@ innerLoop <- function(ocdata_full, ocdata, classAlgol="kmeans", autoThresholdLev
   if(verbosity>=1) {
     if(length(vclass)!=0) {
       if(verbosity >= 2) {
-      #    cat(paste(" [runId:",runId,"] ITERATION:",iiter," -- The ",length(vclass),"selected classes from the kernel density estimation in the X-Y space are: "))
-      #    print(vclass)
-      # } else {
+         cat(paste(" [runId:",runId,"] ITERATION:",iiter," -- The ",length(vclass),"selected classes from the kernel density estimation in the X-Y space are: "))
+         print(vclass)
+      } else {
          cat(paste(" [runId:",runId,"] ITERATION:",iiter," -- Number of classes selected from the kde analysis : ",length(vclass)))
       }
       cat("\n")
@@ -690,18 +728,19 @@ innerLoop <- function(ocdata_full, ocdata, classAlgol="kmeans", autoThresholdLev
         field_reconst <- not_tmp
       } else {
         field_reconst <- rbind(field_reconst, not_tmp)
-      }         
+      }     
     }
   }
   
-  # if(verbosity!=0) {
-  #   cat(paste(" [runId:",runId,"] ITERATION:",iiter," DONE!\n"))
-  #   cat(paste("-------------------------------------------------------------------\n"))
-  # }
+  if(verbosity!=0) {
+    cat(paste(" [runId:",runId,"] ITERATION:",iiter," DONE!\n"))
+    cat(paste("-------------------------------------------------------------------\n"))
+  }
   
   # What is going out of this function must be only the astronomical cluster stars only...
   return(oc_reconst[,1:inSize])    
 }
+
 
 
 
@@ -736,7 +775,7 @@ kde2dForSubset <- function(df, setw=1, n=50, showStats=TRUE, printPlots=TRUE, re
     cat(paste("   Median dens.: ", median(as.vector(kde2dmap$z)),"\n"))
     cat(paste("   MAD dens.   : ", mad(as.vector(kde2dmap$z)),"\n"))
     cat(paste("   Dist max from the mean (in sd): ", ((max(as.vector(kde2dmap$z))-mean(as.vector(kde2dmap$z)))/sd(as.vector(kde2dmap$z))),"\n" ))
-    cat(paste("-------------------------------------\n\n"))     
+    cat(paste("-------------------------------------\n\n"))   
   }
   
   # Return the distance
@@ -744,6 +783,8 @@ kde2dForSubset <- function(df, setw=1, n=50, showStats=TRUE, printPlots=TRUE, re
     return(((max(as.vector(kde2dmap$z))-mean(as.vector(kde2dmap$z)))/sd(as.vector(kde2dmap$z))))
   }
 }
+
+
 
 
 analyse_randomKde2d_smart <- function(nfields=100, nstars, maxX, maxY, nKde=50, 
@@ -766,6 +807,9 @@ analyse_randomKde2d_smart <- function(nfields=100, nstars, maxX, maxY, nKde=50,
   return(retStat)
 }
 
+
+
+
 analyse_randomKde2d <- function(nfields=100, nstars, maxX, maxY, nKde=50, showStats=FALSE, returnStats=TRUE) {
   
   maxDistStats <- vector("double", nfields)
@@ -774,7 +818,7 @@ analyse_randomKde2d <- function(nfields=100, nstars, maxX, maxY, nKde=50, showSt
   for(i in 1:nfields) {
     maxDistStats[i] <- create_randomKde2d(nstars, maxX, maxY, nKde=nKde, returnDistance=TRUE)
   }
-
+  
   # Print some statistics
   if(showStats) {
     cat(paste("------ Statistics of the sample random fields -----\n"))
@@ -784,7 +828,7 @@ analyse_randomKde2d <- function(nfields=100, nstars, maxX, maxY, nKde=50, showSt
     cat(paste("   Sd distance     : ", sd(maxDistStats),"\n"))
     cat(paste("   Median distance : ", median(maxDistStats),"\n"))
     cat(paste("   MAD distance    : ", mad(maxDistStats),"\n"))
-    cat(paste("---------------------------------------------------\n\n"))       
+    cat(paste("---------------------------------------------------\n\n"))   
     hist(maxDistStats, freq=FALSE)
     lines(density(maxDistStats), col="red")
   }
@@ -795,6 +839,8 @@ analyse_randomKde2d <- function(nfields=100, nstars, maxX, maxY, nKde=50, showSt
   }
   
 }
+
+
 
 
 create_randomKde2d <- function(nstars, maxX, maxY, nKde=50, printPlots=FALSE, showStats=FALSE, returnDistance=FALSE) {
@@ -827,7 +873,7 @@ create_randomKde2d <- function(nstars, maxX, maxY, nKde=50, printPlots=FALSE, sh
     cat(paste("   Median dens.: ", median(as.vector(kde2dmap$z)),"\n"))
     cat(paste("   MAD dens.   : ", mad(as.vector(kde2dmap$z)),"\n"))
     cat(paste("   Dist max from the mean (in sd): ", ((max(as.vector(kde2dmap$z))-mean(as.vector(kde2dmap$z)))/sd(as.vector(kde2dmap$z))),"\n" ))
-    cat(paste("-------------------------------------------\n\n"))       
+    cat(paste("-------------------------------------------\n\n"))   
   }
   
   # Return the distance
@@ -857,48 +903,56 @@ create_randomKde2d <- function(nstars, maxX, maxY, nKde=50, printPlots=FALSE, sh
 
 
 
-# filenameWithPathInput <- "input/0.10_0.10_0.10_0.10_0.10.dat"
-# sep <- ","
-# positionDataIndexes <- c(2,3)
-# photometricDataIndexes <- c(8,22)
-# photometricErrorDataIndexes <- c(9,23)
 
-filenameWithPathInput <- "input/oc_12_500_1500_1.5_p019_0800_1.dat"
-sep <- " "
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#####################################################################
+cat(paste("R version: ",R.version.string))
+
+set.seed(12345)
+
+library('DBI')
+library(RSQLite)
+library('MASS')
+
+fileNameI <- "input/189.00_0.04_1.48_17.27_7.03.dat"
+# inputFileName <- system.file("extdata", fileNameI, package="UPMASK")
+outputFileName <- file.path(getwd(), "output/up-RES.dat")
 positionDataIndexes <- c(2,3)
-photometricDataIndexes <- c(4,5,6,7,8,9)
-photometricErrorDataIndexes <- c(4,5,6,7,8,9)
-
-# filenameWithPathInput <- "input/oc_12_500_1500_1.5_p019_0800_1.dat"
-# sep <- ""
-# positionDataIndexes <- c(1,2)
-# photometricDataIndexes <- c(3,5,7,9,11,13,15,17)
-# photometricErrorDataIndexes <- c(4,6,8,10,12,14,16,18)
-
-filenameWithPathOuput <- file.path(getwd(), "output/up-RESULTS.dat")
-fileWithHeader <- TRUE
-
-nDimsToKeep <- 4
-nRuns <- 50
+photometricDataIndexes <- c(6,7)
+photometricErrorDataIndexes <- c(4,5)
+nDimsToKeep <- 2
+nRuns <- 5
+starsPerClust_kmeans <- 25
 verbose <- TRUE
-
-# runInParallel <- FALSE, paralelization <- "multicore", independent <- TRUE, 
-# threshold <- 1
-# starsPerClust_kmeans <- 50
-# nstarts_kmeans <- 50
-# autoCalibrated <- FALSE, considerErrors <- FALSE
-# dimRed="PCA", scale=TRUE
+# verbose <- 0
 finalXYCut <- FALSE
-
-
-UPMASKfile(filenameWithPathInput, filenameWithPathOuput,
+fileWithHeader <- TRUE
+UPMASKfile(fileNameI, outputFileName,
 positionDataIndexes, photometricDataIndexes, photometricErrorDataIndexes,
 nRuns=nRuns, verbose=verbose, fileWithHeader=fileWithHeader, nDimsToKeep=nDimsToKeep,
-sep=sep, finalXYCut=finalXYCut)
-
-# Sol:
-# > posIdx <- c(2,3)
-# > photIdx <- c(8,20,22,24)
-# > photErrIdx <- c(9,21,23,25)
-# > UPMASKfile(inputFileName, outputFileName, posIdx, photIdx, photErrIdx, nRuns=50, 
-# +            starsPerClust_kmeans=50, verbose=TRUE, fileWithHeader=TRUE)
+finalXYCut=finalXYCut, starsPerClust_kmeans=starsPerClust_kmeans)

@@ -5,15 +5,13 @@ import matplotlib.pyplot as plt
 from metrics_plot import tie_min, tie_max, WinTieLoss, readTables
 
 
-def main():
+def main(flag600=True):
     """
     """
     metrics = ["LSR", "BSL", "HMS", "MCC_5", "TPR_5", "PPV_5", "MCC_9",
                "TPR_9", "PPV_9"]
-    configs = [
-        'autoperc_GMM2', 'autoperc_GMM3', 'minibatch_50', 'kNN_50_50_kde',
-        'kNN_25_25_kde', 'agglomerative_25_kde_p', 'agglomerative_50_kde_p',
-        'voronoi_newcents_25']
+
+    configs = ("Agglo", "Gauss", "KMean", "kNNde", 'MiniB', "Voron")
 
     Hval = 'auto'  # 'symm', 'SR05')
     N_UPMASK = "25"  # "50")
@@ -25,7 +23,7 @@ def main():
     for m in configs:
 
         pyUP_PHOT, pyUP_PM, UP_PHOT, UP_PM = readTables(
-            fold, N_UPMASK, Hval, m)
+            fold, N_UPMASK, Hval, m, flag600)
 
         CI_PM, CI_PHOT, win_PHOT, loss_PHOT, win_PM, loss_PM =\
             WinTieLoss(
@@ -173,12 +171,15 @@ def annotate_heatmap(
     texts = []
     for i in range(data.shape[0]):
         for j in range(data.shape[1]):
-            if data[i, j] < 0.:
+            val = round(data[i, j], 0)
+            # This line prevents '-0' values
+            val = 0. if val == 0. else val
+            if val < 0.:
                 clr = 'red'
             else:
-                clr = textcolors[int(im.norm(data[i, j]) > threshold)]
+                clr = textcolors[int(im.norm(val) > threshold)]
             kw.update(color=clr)
-            text = im.axes.text(j, i, valfmt(data[i, j], None), **kw)
+            text = im.axes.text(j, i, valfmt(val, None), **kw)
             texts.append(text)
 
     return texts

@@ -7,8 +7,9 @@ def main():
     """
     Plot the metrics versus CI for all the clusters.
     """
-    mode = ('pyUPMASK_600',)
-    Hval = ('auto',)  # 'symm', 'SR05')
+    mode = ('UPMASK0',)
+    Hval = ('auto',)  # 'symm', 'SR05'
+    N_UPMASK = "25"  # "50"
 
     # Folder where the files are located
     fold = "../TEST_SYNTH_CLUSTS/test_results/"
@@ -17,7 +18,8 @@ def main():
         print(H)
         for m in mode:
             print(" ", m)
-            pyUP_PHOT, pyUP_PM, UP_PHOT, UP_PM = readTables(fold, H, m)
+            pyUP_PHOT, pyUP_PM, UP_PHOT, UP_PM = readTables(
+                fold, N_UPMASK, H, m)
 
             CI_PM, CI_PHOT, comp_PHOT, comp_PM, pyU_PHOT, pyU_PM = WinTieLoss(
                 tie_max, tie_min, pyUP_PHOT, pyUP_PM, UP_PHOT, UP_PM, 'CI')

@@ -15,49 +15,34 @@ def main():
     Plot the bar plots with the statistics obtained after applying the
     getMetrics() script to the pyUPMASK and UPMASK results.
     """
-
-    # Bad performers:
-    # '75perc', 'marginNmemb_autoperc', 'marginC_2_autoperc',
-    # 'GUMMprobs_autoperc', 'norm_GUMMprobs_autoperc', 'marginC_autoperc'
-    # 'manualperc_1'
-
-    # This performs identical to 'autoperc_inner_GUMM3'
-    # 'inner_GUMM_marginC'
-
-    # Good performers
-    # 'autoperc', 'autoperc_5', 'autoperc_10', 'autoperc_inner_GUMM',
-    # 'autoperc_inner_GUMM2', 'autoperc_inner_GUMM3',
-    # 'autoperc_inner_GUMM4', 'autoperc_inner_GUMM5', 'autoperc_inner_GUMM6'
-    # 'autoperc_GMM', 'autoperc_GMM2', 'autoperc_GMM3', 'autoperc_GMM4'
-
-    mode = ('voronoi_newcents',)
+    configs = ("Agglo", "Gauss", "KMean", "kNNde", 'MiniB', "Voron")
     Hval = ('auto',)  # 'symm', 'SR05')
-    N_UPMASK = ("25",) #  "50")
+    N_UPMASK = ("25",)  # "50")
+    flag600 = True
 
     # Folder where the files are located
     fold = "../TEST_SYNTH_CLUSTS/test_results/"
 
     for H in Hval:
-        print(H)
-        for m in mode:
+        for m in configs:
             print(" ", m)
 
             for NU in N_UPMASK:
                 print("  ", NU)
 
                 pyUP_PHOT, pyUP_PM, UP_PHOT, UP_PM = readTables(
-                    fold, NU, H, m)
+                    fold, NU, H, m, flag600)
 
                 win_PHOT, loss_PHOT, emp_PHOT, win_PM, loss_PM, emp_PM =\
                     WinTieLoss(tie_max, tie_min, pyUP_PHOT, pyUP_PM, UP_PHOT,
                                UP_PM, 'metrics_bars')
 
                 makePlot(
-                    fold, NU, tie_max, tie_min, H, m, win_PHOT, loss_PHOT,
+                    fold, NU, tie_max, tie_min, m, win_PHOT, loss_PHOT,
                     emp_PHOT, win_PM, loss_PM, emp_PM)
 
 
-def readTables(fold, N_UPMASK, H, m):
+def readTables(fold, N_UPMASK, H, m, flag600=False):
     """
     """
     pyUP_PHOT = Table.read(
@@ -65,20 +50,20 @@ def readTables(fold, N_UPMASK, H, m):
     pyUP_PM = Table.read(
         fold + 'metrics_PM_{}_H_{}.dat'.format(m, H), format='ascii')
 
-    if m.endswith('600'):
+    if flag600:
         UP_PHOT = Table.read(
-            fold + '600/metrics_PHOT_UPMASK_600_H_' + H + '.dat',
-            format='ascii')
+            fold + '600/metrics_PHOT_UP_600_' + str(N_UPMASK) + '_H_' + H +
+            '.dat', format='ascii')
         UP_PM = Table.read(
-            fold + '600/metrics_PM_UPMASK_600_H_' + H + '.dat',
-            format='ascii')
+            fold + '600/metrics_PM_UP_600_' + str(N_UPMASK) + '_H_' + H +
+            '.dat', format='ascii')
     else:
         UP_PHOT = Table.read(
-            fold + '100_UPMASK_res/metrics_UP-PHOT_H_' + H + '_{}.dat'.format(
-                N_UPMASK), format='ascii')
+            fold + '100_UPMASK_res/metrics_UP-PHOT_H_{}_{}.dat'.format(
+                H, N_UPMASK), format='ascii')
         UP_PM = Table.read(
-            fold + '100_UPMASK_res/metrics_UP-PM_H_' + H + '_{}.dat'.format(
-                N_UPMASK), format='ascii')
+            fold + '100_UPMASK_res/metrics_UP-PM_H_{}_{}.dat'.format(
+                H, N_UPMASK), format='ascii')
 
     return pyUP_PHOT, pyUP_PM, UP_PHOT, UP_PM
 
@@ -155,7 +140,7 @@ def WinTieLoss(tie_max, tie_min, pyUP_PHOT, pyUP_PM, UP_PHOT, UP_PM, caller):
 
 
 def makePlot(
-    fold, N_UPMASK, tie_max, tie_min, H, m, win_PHOT, loss_PHOT, emp_PHOT,
+    fold, N_UPMASK, tie_max, tie_min, m, win_PHOT, loss_PHOT, emp_PHOT,
         win_PM, loss_PM, emp_PM):
     """
     """
@@ -198,7 +183,7 @@ def makePlot(
     barsPlot(ax, Results_PHOT, category_names_PHOT)
     ax = plt.subplot(313)
     barsPlot(ax, Results_comb, category_names_comb)
-    file_out = fold + 'plots/H{}/'.format(H) + '{}_{}.png'.format(m, N_UPMASK)
+    file_out = fold + 'plots/' + '{}_{}.png'.format(m, N_UPMASK)
     plt.savefig(file_out, dpi=150, bbox_inches='tight')
 
 

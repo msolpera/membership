@@ -6,7 +6,7 @@ from sklearn.metrics import log_loss, brier_score_loss,\
     matthews_corrcoef, recall_score, precision_score
 
 
-def main(mode=None, verbose=False):
+def main(verbose=False):
     """
     Obtain performance metrics for the clusters processed with pyUPMASK or
     UPMASK.
@@ -14,10 +14,13 @@ def main(mode=None, verbose=False):
     The input files (which are the outputs from pyUPMASk or UPMASK) are read
     from the 'output/' folder.
     """
-    if mode is None:
-        return
 
+    mode = (
+        "UPMASK0", "UPMASK1", "UPMASK2", "UPMASK3", "UPMASK4", "UPMASK5",
+        "UPMASK6", "UPMASK7", "UPMASK8", "UPMASK9", "UPMASK10", "UPMASK11",
+        "UPMASK12", "UPMASK13", "UPMASK14", "UPMASK15", "UPMASK16")
     # mode = ('UPMASK_600', 'pyUPMASK_600')
+
     features = ('PHOT', 'PM')
     Hval = ('auto',)  # 'symm', 'SR05')
 
@@ -34,7 +37,8 @@ def main(mode=None, verbose=False):
                     'MCC_5': [], 'TPR_5': [], 'PPV_5': [],
                     'MCC_9': [], 'TPR_9': [], 'PPV_9': []}
 
-                outp = Path('./output/' + subfold)
+                outp = Path('../output/' + subfold)
+                print(outp)
                 for fpath in outp.iterdir():
                     fname = '_'.join(fpath.name.split('/')[-1].split('.')[:-1])
                     if fname == '':
@@ -48,9 +52,10 @@ def main(mode=None, verbose=False):
                     for k, v in metrics_dct.items():
                         final_dct[k].append(metrics_dct[k])
 
-                outf = Path('./TEST_SYNTH_CLUSTS/test_results/').joinpath(
-                    'metrics_{}_{}_H_{}.dat'.format(f, m, H))
-                ascii.write(final_dct, outf, format='csv', overwrite=True)
+                if verbose is False:
+                    outf = Path('../TEST_SYNTH_CLUSTS/test_results/').joinpath(
+                        'metrics_{}_{}_H_{}.dat'.format(f, m, H))
+                    ascii.write(final_dct, outf, format='csv', overwrite=True)
 
 
 def getMetrics(data, Hval, verbose, eps=1e-2):
@@ -79,6 +84,13 @@ def getMetrics(data, Hval, verbose, eps=1e-2):
         memb_prob = np.clip(memb_prob, a_min=0., a_max=1.)
     except KeyError:
         # Processed with UPMASK
+        # # This block takes the average of the first 25 columns, instead
+        # # of using the final column
+        # aa = [data['class']]
+        # for c in range(24):
+        #     aa.append(data['class.' + str(c + 1)])
+        # memb_prob = np.mean(aa, 0)
+        # This line uses the final averaged probability column
         memb_prob = data['probability']
 
     # Members are identified with a '1'

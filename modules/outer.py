@@ -1,18 +1,17 @@
 
-import warnings
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
-from scipy.stats import gaussian_kde
 from . import inner
 from .GUMM import GUMMProbs
 from .GUMMExtras import GUMMProbCut, lowCIGUMMClean
+from . import KDEAnalysis
 
 
 def loop(
     ID, xy, data, data_err, resampleFlag, PCAflag, PCAdims, GUMM_flag,
     GUMM_perc, KDEP_flag, N_membs, clust_method, clRjctMethod, Kest, C_thresh,
-        cl_method_pars, prfl, KDE_vals, maxIL=50):
+        cl_method_pars, prfl, KDE_vals, standard_scale=True, maxIL=25):
     """
     Perform the outer loop: inner loop until all "fake" clusters are rejected
     """
@@ -21,18 +20,18 @@ def loop(
     clust_ID, clust_xy = np.array(list(ID)), np.array(list(xy))
 
     # Re-sample the data using its uncertainties?
-    clust_data = reSampleData(resampleFlag, data, data_err, prfl)
+    clust_data = reSampleData(
+        resampleFlag, data, data_err, prfl, standard_scale)
+
     # Apply PCA and features reduction
     clust_data = dimReduc(clust_data, PCAflag, PCAdims, prfl)
 
-    # Keep calling the inner loop until all the "fake clusters" are rejected
-    _iter = 1
-    while True:
-        print("\n IL iteration {}".format(_iter), file=prfl)
-        _iter += 1
+    # Call the inner loop until all the "fake clusters" are rejected
+    for _iter in range(maxIL):
+        print("\n IL iteration {}".format(_iter + 1), file=prfl)
 
         # Call the Inner Loop (IL)
-        N_clusts, msk_all, N_survived, KDE_vals = inner.main(
+        N_clusts, msk_all, N_survived, KDE_vals = inner.loop(
             clust_xy, clust_data, N_membs, clust_method, clRjctMethod,
             KDE_vals, Kest, C_thresh, cl_method_pars, prfl)
 
@@ -44,16 +43,16 @@ def loop(
             break
 
         # Applying 'msk_all' results in too few stars. Break
-        if clust_data[msk_all].shape[0] < N_membs:
+        if msk_all.sum() < N_membs:
             print(" N_stars<{:.0f} Breaking".format(N_membs), file=prfl)
             break
+        print(" A total of {} stars survived in {} clusters".format(
+            msk_all.sum(), N_survived), file=prfl)
 
         # Keep only stars identified as members and move on to the next
         # iteration
         clust_ID, clust_xy, clust_data = clust_ID[msk_all],\
             clust_xy[msk_all], clust_data[msk_all]
-        print(" A total of {} stars survived in {} clusters".format(
-            msk_all.sum(), N_survived), file=prfl)
 
         # Clean using GUMM
         if GUMM_flag:
@@ -74,9 +73,8 @@ def loop(
                 print(" Rejected {} stars as non-members".format(
                     len(probs_cl) - msk.sum()), file=prfl)
 
-        if _iter == maxIL:
-            print("Maximum number of IL runs reached. Breaking", file=prfl)
-            break
+    if _iter + 1 == maxIL:
+        print("Maximum number of IL runs reached. Breaking", file=prfl)
 
     # Mark all the stars that survived in 'clust_ID' as members assigning
     # a probability of '1'. All others are field stars and are assigned
@@ -98,7 +96,7 @@ def loop(
     # true members.
     if KDEP_flag:
         print("Performing KDE analysis...", file=prfl)
-        cl_probs = KDEProbs(xy, data, cl_probs)
+        cl_probs = KDEAnalysis.probs(xy, data, cl_probs)
 
     return list(cl_probs), KDE_vals
 
@@ -131,49 +129,10 @@ def dimReduc(cl_data, PCAflag, PCAdims, prfl):
     if PCAflag:
         pca = PCA(n_components=PCAdims)
         cl_data_pca = pca.fit(cl_data).transform(cl_data)
-        print("Selected N={} PCA features".format(PCAdims), file=prfl)
+        print(" Selected N={} PCA features".format(PCAdims), file=prfl)
         var_r = ["{:.2f}".format(_) for _ in pca.explained_variance_ratio_]
         print(" Variance ratio: ", ", ".join(var_r), file=prfl)
     else:
         cl_data_pca = cl_data
 
     return cl_data_pca
-
-
-def KDEProbs(xy, data, cl_probs):
-    """
-    Assign probabilities to all stars after generating the KDEs for field and
-    member stars. The Cluster probability is obtained applying the formula for
-    two mutually exclusive and exhaustive hypotheses.
-    """
-
-    # Combine coordinates with the rest of the features.
-    all_data = np.concatenate([xy.T, data.T]).T
-    # Split into the two populations.
-    field_stars = all_data[cl_probs == 0.]
-    membs_stars = all_data[cl_probs == 1.]
-
-    # To improve the performance, cap the number of stars using a random
-    # selection of 'Nf_max' elements.
-    Nst_max = 5000
-    if field_stars.shape[0] > Nst_max:
-        idxs = np.arange(field_stars.shape[0])
-        np.random.shuffle(idxs)
-        field_stars = field_stars[idxs[:Nst_max]]
-
-    # Evaluate all stars in both KDEs
-    try:
-        kd_field = gaussian_kde(field_stars.T)
-        kd_memb = gaussian_kde(membs_stars.T)
-        L_memb = kd_memb.evaluate(all_data.T)
-        L_field = kd_field.evaluate(all_data.T)
-
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            # Probabilities for mutually exclusive and exhaustive hypotheses
-            cl_probs = 1. / (1. + (L_field / L_memb))
-
-    except (np.linalg.LinAlgError, ValueError):
-        print("WARNING: Could not perform KDE probabilities estimation")
-
-    return cl_probs

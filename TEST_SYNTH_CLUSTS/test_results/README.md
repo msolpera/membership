@@ -260,8 +260,28 @@ Improves the PHOT results **a lot**
 ## kNN_25_25_kde
 Used 25 neighbors and `N_membs=25`, with the KDE estimated probs
 
-* NU=25: PM 40.44 (9 wins), PHOT 21.56 (8 wins)
+* PM   W 62.67, T 13.56, L 23.78 (9 wins)
+* PHOT W 47.78, T 35.11, L 17.11 (9 wins)
 Very good results.
+
+## kNN_PCAin
+Same as `voronoi_PCAin`
+
+* NU=25: PM 40.67 (9 wins), PHOT 28.89 (9 wins)
+Very similar to `voronoi_PCAin`
+
+## kNN_PCAR
+Same as `voronoi_PCAin` but using R's PCA
+
+* NU=25: PM 38.89 (8 wins), PHOT 29.56 (9 wins)
+Very similar to `voronoi_PCAin`
+
+## kNN_RKDE_range
+Same as `kNN_RKDE` but now using the range taken from outside the inner loop
+
+* PM   W 73.78, T 9.56, L 16.67 (9 wins)
+* PHOT W 37.78, T 30.00, L 32.22 (6 wins)
+Much better than `kNN_RKDE`, particularly for PM.
 
 ## agglomerative_25_kde_p
 Using `N_membs=25` with the KDE estimated probs
@@ -275,6 +295,11 @@ Using `N_membs=50` with the KDE estimated probs
 * NU=25: PM 45.11 (9 wins), PHOT 20.67 (8 wins)
 Improves the results for PHOT versus `agglomerative_50`. PM results are very similar, but there are more wins here.
 
+## agglomerative_PCAin
+Similar to `agglomerative_25_kde_p` but with the `PCA``inside the inner loop
+
+* NU=25: PM 53.78 (9 wins), PHOT 41.33 (9 wins)
+Almost identical to `agglomerative_25_kde_p`
 
 ## voronoi_newcents_50
 Using Voronoi with `N_membs=50` but selecting the centers of the clusters spread across all the densities (`idxs[::step]`, where `step=N_membs`)
@@ -285,8 +310,163 @@ Best results for PHOTwith Voronoi yet, and good PM results.
 ## voronoi_newcents_25
 Same as `voronoi_newcents_50` but using Voronoi with `N_membs=25`
 
-* NU=25: PM 44.22 (9 wins), PHOT 19.33 (8 wins)
+* PM   W 65.33, T 13.56, L 21.11 (9 wins)
+* PHOT W 43.11, T 33.11, L 23.78 (8 wins)
 Much better than `voronoi_newcents_50`
+
+## voronoi_PCAin
+`N_membs=25` and moving the `PCA` inside the inner loop
+
+* NU=25: PM 44.00 (9 wins), PHOT 21.11 (8 wins)
+Slightly better PHOT than `voronoi_newcents_25`
+
+## voronoi_PCAin_3_round
+Same as `voronoi_PCAin` but using `minStars=3, round(C_s, 1) >= C_thresh` in the inner loop
+
+* NU=25: PM 29.78 (6 wins), PHOT -0.67 (3 wins)
+Much worse than before.
+
+## voronoi_kdetest
+The PCA is outside, `N_membs=25`, and the `kdetest` range is taken from outside the inner loop
+
+* PM   W 76.89, T 13.11, L 10.00 (9 wins)
+* PHOT W 40.44, T 25.33, L 34.22 (5 wins)
+PM improves compared to `voronoi_newcents_25`, but PHOT worsens slightly.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# UPMASK configuration testing
+
+(The UPMASK run with R was made with 50 OL runs. We compare here with runs with 25 OL runs)
+
+Setting the input parameters to:
+
+```
+stdRegion_nstd = 10.
+OL_runs      = 25
+N_membs    = 25
+clust_method = rkmeans
+clRjctMethod  = kdetest
+```
+
+and the same random seed: 12345.
+
+The UPMASK code options are:
+
+* Outer loop
+1. standard_scale=False
+2. PCA inside inner loop
+3. combine masks appending (not with np.logical_or.reduce())
+
+* Inner loop
+4. minStars=3 (instead of 5)
+5. n_clusters = max(2, int(round(clust_data.shape[0] / N_membs)))
+6. KDE range from inner loop (instead of fixed 0,1 range)
+7. round(dist_d, 1) >= round(mean + C_thresh * std, 1)
+
+## Runs
+
+0. Use UPMASk settings in outer and inner loop
+1. standard_scale=True
+2. PCA outside the inner loop (applied once)
+3. combine masks with np.logical_or.reduce()
+4. minStars=5
+5. n_clusters = max(2, int(clust_data.shape[0] / N_membs))
+6. KDE range fixed to (0,1) range
+7. C_s >= C_thresh
+8. Use pyUPMASk settings in outer loop and UPMASK in inner loop. I.e.: negates (1,2,3) in the outer loop
+9. Use UPMASk settings in outer loop and pyUPMASK in inner loop. I.e.: negates (4,5,6,7) in the inner loop
+10. Use pyUPMASk settings in outer and inner loop. I.e.: negates all 7 UPMASK options. The opposite of the 0 run.
+
+## Results
+
+0. Almost identical to the UPMASK run with a minimal difference in ~3% of the PM clusters. Expected.
+10. Slightly degraded results
+
+### Outer loop changes
+1. Identical to the 0 run. Likely because R's PCA scales the data always.
+2. The results degrade substantially. It is the **worst** performer
+3. Almost identical to the 0 run. Expected, it is a **very minor** change.
+8. Almost no change in PHOT, minimal improvement in PM (~6%)
+
+### Inner loop changes
+4. **Second worst performer** after 2 . Did not expect this to have such an important effect.
+5. Degrades PHOT results minimally
+6. Minimal degrade in PHOT results, but improves PM by same amount
+7. Improves both PHOT (minimal) and PM (not so minimal: ~7%). **Best** performer
+9. Degrades PHOT by ~8%, minimal improvement in PM (~3%)
+
+
+Runs 2, 4, and 9 are the worst performers for PHOT. Runs 2, and 4 are also the worst performers for PM, but not 9 where the results actually improves slightly.
+
+11. After analyzing the above runs, I try to make the best performer possible, while using the largest amount of Python code possible:
+ 1. standard_scale=True
+ 2. the PCA (Python) is used inside the inner loop <-- **Worst performer**
+ 3. combine masks with np.logical_or.reduce()
+ 4. minStars=3
+ 5. n_clusters = max(2, int(clust_data.shape[0] / N_membs))
+ 6. KDE range fixed to (0,1) range
+ 7. C_s >= C_thresh                                <-- **Best performer**
+The results indicate that it is a better performer than UPMASK0, but not as good as UPMASK7, by a small margin.
+
+12. Same as 11 but **moving the PCA outside the outer loop**.
+Slight decrease in performance for PHOT: 1.56 (11) vs 0.67 (12), but still a better performer than UPMASK0.
+
+13. Same as 12 but using `rkfunc` instead of `kdetest`
+Curiously PHOT improves slightly (~2.44%) but PM becomes the worst performer (~-11.8%)
+
+14. Same as 12 but using `GUMM_flag=True`
+The improvement is **MASSIVE**: 82% (PM), 38% (PHOT)
+
+15. Same as 12 but using `KDEP_flag=True`
+Same for PM, small improvement for PHOT (~6%)
+
+16. Same as 13. but using the inner PCA
+Strangely it gives worse results than 13.: -12% (PM), ~0% (PHOT)
+I thought that moving the PCA inside would improve the results, as per run 2.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -475,3 +655,10 @@ Voronoi with `N_membs=25,clRjctMethod=rkfunc` and GUMM & KDEp turned off.
 
 * NU=25: PM -32.22 (3 wins), PHOT -52.00 (1 wins)
 Horrible results
+
+## kNN_RKDE
+Same as `kNN_25_25_kde` (PCA out), but using `kdetest` with (0,1) range
+
+* PM   W 62.00, T 9.33, L 28.67 (5 wins)
+* PHOT W 35.78, T 19.78, L 44.44 (4 wins)
+The PHOT results worsen considerably

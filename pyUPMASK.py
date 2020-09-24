@@ -16,10 +16,10 @@ def main(
         clust_method, clRjctMethod, C_thresh, cl_method_pars):
     """
     """
+    out_folder = "output"
     # Create 'output' folder if it does not exist
-    Path('./output').mkdir(parents=True, exist_ok=True)
+    Path('./{}'.format(out_folder)).mkdir(parents=True, exist_ok=True)
 
-    KDE_vals = {}
     # Process all files inside the '/input' folder
     inputfiles = readFiles()
     for file_path in inputfiles:
@@ -40,11 +40,11 @@ def main(
         # Normalize (x, y) data to [0, 1]
         xy01 = dxynorm(xy)
 
-        probs_all, KDE_vals = dataProcess(
+        probs_all = dataProcess(
             ID, xy01, data, data_err, rnd_seed, verbose, OL_runs,
             parallel_flag, parallel_procs, resampleFlag, PCAflag, PCAdims,
             GUMM_flag, GUMM_perc, KDEP_flag, N_membs, clust_method,
-            clRjctMethod, C_thresh, cl_method_pars, KDE_vals)
+            clRjctMethod, C_thresh, cl_method_pars)
 
         if OL_runs > 1:
             # Obtain the mean of all runs. This are the final probabilities
@@ -54,17 +54,18 @@ def main(
             probs_mean = probs_all[0]
 
         # Write final data to file
-        dwrite(file_path, full_data, msk_data, probs_all, probs_mean)
+        dwrite(
+            out_folder, file_path, full_data, msk_data, probs_all, probs_mean)
         # Write rejected data (if any)
         if len(data_rjct) > 0:
-            dwrite(file_path, data_rjct, None, [], [])
+            dwrite(out_folder, file_path, data_rjct, None, [], [])
 
 
 def dataProcess(
     ID, xy, data, data_err, rnd_seed, verbose, OL_runs, parallel_flag,
     parallel_procs, resampleFlag, PCAflag, PCAdims, GUMM_flag, GUMM_perc,
-    KDEP_flag, N_membs, clust_method, clRjctMethod, C_thresh, cl_method_pars,
-        KDE_vals):
+    KDEP_flag, N_membs, clust_method, clRjctMethod, C_thresh,
+        cl_method_pars):
     """
     """
     start_t = t.time()
@@ -114,9 +115,12 @@ def dataProcess(
         from rpy2.robjects import r
         from rpy2.robjects import numpy2ri
         from rpy2.robjects.packages import importr
+        # cat(paste("R version: ",R.version.string,"\n"))
         importr('MASS')
+        r("""
+        set.seed(12345)
+        """)
         numpy2ri.activate()
-
         r.assign('nruns', 2000)
         r.assign('nKde', 50)
 
@@ -139,6 +143,7 @@ def dataProcess(
                 OLfunc, [(OLargs, KDE_vals) for _ in range(OL_runs)])
 
     else:
+        KDE_vals = {}
         probs_all = []
         for _ in range(OL_runs):
             print("\n--------------------------------------------------------")
@@ -160,7 +165,7 @@ def dataProcess(
         ms_id = "seconds"
     print("\nTime consumed: {:.1f} {}".format(elapsed, ms_id))
 
-    return probs_all, KDE_vals
+    return probs_all
 
 
 def OLfunc(args, KDE_vals):

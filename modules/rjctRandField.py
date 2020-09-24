@@ -31,35 +31,21 @@ def rkfunc(xy, Kest):
     return C_s
 
 
-def kdetest(xy, xyminmax, KDE_vals):
+def kdetest(xy, KDE_vals):
     """
     """
     from rpy2.robjects import r
 
     rx = r.matrix(xy.T[0])
     ry = r.matrix(xy.T[1])
-    r.assign('minX', xyminmax[0])
-    r.assign('maxX', xyminmax[1])
-    r.assign('minY', xyminmax[2])
-    r.assign('maxY', xyminmax[3])
     r.assign('dataX', rx)
     r.assign('dataY', ry)
     r("""
-    kde2dmap <- kde2d(dataX, dataY, n=nKde,lims=c(minX, maxX, minY, maxY))
+    kde2dmap <- kde2d(dataX, dataY, n=nKde,lims=c(0, 1, 0, 1))
     dist_d <- ((max(as.vector(kde2dmap$z))-mean(as.vector(kde2dmap$z)))/
     sd(as.vector(kde2dmap$z)))
     """)
     dist_d = r('dist_d')[0]
-
-    # print("------ Stats - Class")
-    # print("   Max dens.   : ", max(vector(kde2dmap)))
-    # print("   Min dens.   : ", min(vector(kde2dmap)))
-    # print("   Mean dens.  : ", mean(vector(kde2dmap)))
-    # print("   Sd dens.    : ", sd(vector(kde2dmap)))
-    # print("   Median dens.: ", median(vector(kde2dmap)))
-    # print("   MAD dens.   : ", mad(vector(kde2dmap)))
-    # # print("   Dist max from the mean (in sd): ", ((max(vector(kde2dmap))-mean(vector(kde2dmap)))/sd(vector(kde2dmap)))
-    # print("-------------------------------------")
 
     N = xy.shape[0]
     # Read stored value from table.
@@ -68,15 +54,12 @@ def kdetest(xy, xyminmax, KDE_vals):
     except KeyError:
         r.assign('nstars', N)
 
-        # dataX <- runif(nstars, 0, xrng)
-        # dataY <- runif(nstars, 0, yrng)
-        # kde2dmap <- kde2d(dataX, dataY, n=nKde, lims=c(0, xrng, 0, yrng))
         r("""
         maxDistStats <- vector("double", nruns)
         for(i in 1:nruns) {
-          dataX <- runif(nstars, minX, maxX)
-          dataY <- runif(nstars, minY, maxY)
-          kde2dmap <- kde2d(dataX, dataY, n=nKde, lims=c(minX, maxX, minY, maxY))
+          dataX <- runif(nstars, 0, 1)
+          dataY <- runif(nstars, 0, 1)
+          kde2dmap <- kde2d(dataX, dataY, n=nKde, lims=c(0, 1, 0, 1))
           maxDistStats[i] <- ((max(as.vector(kde2dmap$z))-
           mean(as.vector(kde2dmap$z)))/sd(as.vector(kde2dmap$z)))
         }
@@ -89,13 +72,14 @@ def kdetest(xy, xyminmax, KDE_vals):
 
     C_s = (dist_d - mean) / std
 
-    return C_s, dist_d, mean, std, KDE_vals
+    return C_s, KDE_vals
 
 
-def kdetestpy(xy, xyminmax, KDE_vals):
+def kdetestpy(xy, KDE_vals, Nfields=500):
     """
     """
     N = xy.shape[0]
+    xyminmax = (0, 1, 0, 1)
     xmin, xmax, ymin, ymax = xyminmax
     xx, yy = np.mgrid[xmin:xmax:50j, ymin:ymax:50j]
     positions = np.vstack([xx.ravel(), yy.ravel()])
@@ -105,7 +89,7 @@ def kdetestpy(xy, xyminmax, KDE_vals):
         mean, std = KDE_vals[N]
     except KeyError:
         dist_u = []
-        for _ in range(500):
+        for _ in range(Nfields):
             # Generate random uniform 2D distribution
             xy_u = np.random.uniform((xmin, ymin), (xmax, ymax), (N, 2))
             kde = gaussian_kde(xy_u.T)

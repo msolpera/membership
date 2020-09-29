@@ -15,6 +15,13 @@ def rkfunc(xy, Kest):
         mode = "none"
     else:
         mode = 'translation'
+
+    # https://rdrr.io/cran/spatstat/man/Kest.html
+    # "Users are advised * to specify this argument; there is a sensible
+    # default"
+    # "For a rectangular window it is prudent to restrict the r values to a
+    # maximum of 1/4 of the smaller side length of the rectangle
+    # (Ripley, 1977, 1988; Diggle, 1983)"
     rad = np.linspace(.01, .25, 50)
 
     # Hide RunTimeWarning

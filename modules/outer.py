@@ -57,7 +57,7 @@ def loop(
         # Clean using GUMM
         if GUMM_flag:
             print(" Performing GUMM analysis...", file=prfl)
-            gumm_p = GUMMProbs(clust_xy, prfl)
+            gumm_p = GUMMProbs(clust_xy)
             prob_cut = GUMMProbCut(GUMM_perc, gumm_p)
             # Mark all stars as members
             probs_cl = np.ones(len(clust_xy))

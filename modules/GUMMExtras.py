@@ -59,12 +59,12 @@ def GUMMProbCut(GUMM_perc, gumm_p):
     return prob_cut
 
 
-def rotate(data, retElbow=False):
+def rotate(data):
     """
     Rotate a 2d vector.
 
     (Very) Stripped down version of the great 'kneebow' package, by Georg
-    Unterholzner
+    Unterholzner. Source:
 
     https://github.com/georg-un/kneebow
 
@@ -84,10 +84,6 @@ def rotate(data, retElbow=False):
 
     # Find elbow index
     elbow_idx = np.where(rot_data == rot_data.min())[0][0]
-
-    # Used by the Voronoi clustering algorithm to obtain the automatic Ncluster
-    if retElbow:
-        return elbow_idx
 
     # Adding a small percentage to the selected probability improves the
     # results by making the cut slightly stricter.

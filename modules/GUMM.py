@@ -3,7 +3,7 @@ import numpy as np
 from scipy.stats import multivariate_normal
 
 
-def GUMMProbs(clust_xy, prfl, n_epochs=1000, stable_per=.1):
+def GUMMProbs(clust_xy, n_epochs=1000, stable_per=.1):
     """
     Fit a model composed of a 2D Gaussian and a 2D uniform distribution in a
     square region with [0., 1.] range.

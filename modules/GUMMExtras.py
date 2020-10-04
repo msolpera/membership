@@ -97,7 +97,7 @@ def lowCIGUMMClean(N_membs, GUMM_perc, ID, cl_probs, clust_ID, clust_xy, prfl):
     Remove stars marked as members if their GUMM probability is below
     the 'pob_cut' threshold.
     """
-    gumm_p = GUMMProbs(clust_xy, prfl)
+    gumm_p = GUMMProbs(clust_xy)
     prob_cut = GUMMProbCut(GUMM_perc, gumm_p)
 
     # Don't overwrite

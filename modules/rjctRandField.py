@@ -17,7 +17,7 @@ def rkfunc(xy, Kest):
         mode = 'translation'
 
     # https://rdrr.io/cran/spatstat/man/Kest.html
-    # "Users are advised * to specify this argument; there is a sensible
+    # "Users are advised *not to* to specify this argument; there is a sensible
     # default"
     # "For a rectangular window it is prudent to restrict the r values to a
     # maximum of 1/4 of the smaller side length of the rectangle

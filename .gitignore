@@ -13,3 +13,4 @@ params.ini
 # Do not ignore this
 !/input/README.md
 !/TEST_SYNTH_CLUSTS/synth_clusts/synth_clust_input.dat
+!/TEST_SYNTH_CLUSTS/UPMASK_convergence/*

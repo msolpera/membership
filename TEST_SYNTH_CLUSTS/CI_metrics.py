@@ -3,35 +3,29 @@ import matplotlib.pyplot as plt
 from metrics_plot import tie_min, tie_max, WinTieLoss, readTables
 
 
-def main():
+def main(plot_raw_metrics=False):
     """
     Plot the metrics versus CI for all the clusters.
     """
-    mode = ('UPMASK0',)
-    Hval = ('auto',)  # 'symm', 'SR05'
+    configs = ("Voron", "kNNde", "Agglo", 'MiniB', "KMean", "Gauss")
+    Hval = 'auto'  # 'symm', 'SR05'
     N_UPMASK = "25"  # "50"
 
-    # Folder where the files are located
-    fold = "../TEST_SYNTH_CLUSTS/test_results/"
+    for m in configs:
+        print(" ", m)
+        pyUP_PHOT, pyUP_PM, UP_PHOT, UP_PM = readTables(N_UPMASK, Hval, m)
 
-    for H in Hval:
-        print(H)
-        for m in mode:
-            print(" ", m)
-            pyUP_PHOT, pyUP_PM, UP_PHOT, UP_PM = readTables(
-                fold, N_UPMASK, H, m)
+        CI_PM, CI_PHOT, comp_PHOT, comp_PM, pyU_PHOT, pyU_PM = WinTieLoss(
+            tie_max, tie_min, pyUP_PHOT, pyUP_PM, UP_PHOT, UP_PM, 'CI')
 
-            CI_PM, CI_PHOT, comp_PHOT, comp_PM, pyU_PHOT, pyU_PM = WinTieLoss(
-                tie_max, tie_min, pyUP_PHOT, pyUP_PM, UP_PHOT, UP_PM, 'CI')
-
-            makePlot(
-                fold, tie_max, tie_min, H, m, CI_PM, CI_PHOT, comp_PHOT,
-                comp_PM, pyU_PHOT, pyU_PM)
+        makePlot(
+            tie_max, tie_min, m, CI_PM, CI_PHOT, comp_PHOT,
+            comp_PM, pyU_PHOT, pyU_PM, plot_raw_metrics)
 
 
 def makePlot(
-    fold, tie_max, tie_min, H, m, CI_PM, CI_PHOT, comp_PHOT, comp_PM,
-        pyU_PHOT, pyU_PM):
+    tie_max, tie_min, m, CI_PM, CI_PHOT, comp_PHOT, comp_PM,
+        pyU_PHOT, pyU_PM, plot_raw_metrics):
     """
     """
     metrics = (
@@ -40,15 +34,18 @@ def makePlot(
 
     fig = plt.figure(figsize=(20, 10))
     CIPlot(metrics, tie_min, tie_max, CI_PM, comp_PM, CI_PHOT, comp_PHOT)
-    file_out = fold + 'plots/H{}/'.format(H) + 'CI_delta_{}.png'.format(m)
+    file_out = 'plots/' + 'CI_delta_{}.png'.format(m)
     fig.tight_layout()
     plt.savefig(file_out, dpi=150, bbox_inches='tight')
+    # plt.show()
 
-    fig = plt.figure(figsize=(20, 10))
-    rawMetricsPlot(metrics, CI_PM, CI_PHOT, pyU_PHOT, pyU_PM)
-    file_out = fold + 'plots/H{}/'.format(H) + 'CI_{}.png'.format(m)
-    fig.tight_layout()
-    plt.savefig(file_out, dpi=150, bbox_inches='tight')
+    if plot_raw_metrics:
+        fig = plt.figure(figsize=(20, 10))
+        rawMetricsPlot(metrics, CI_PM, CI_PHOT, pyU_PHOT, pyU_PM)
+        file_out = 'plots/' + 'CI_{}.png'.format(m)
+        fig.tight_layout()
+        plt.savefig(file_out, dpi=150, bbox_inches='tight')
+        # plt.show()
 
 
 def CIPlot(metrics, tie_min, tie_max, CI_PM, comp_PM, CI_PHOT, comp_PHOT):
@@ -71,7 +68,7 @@ def CIPlot(metrics, tie_min, tie_max, CI_PM, comp_PM, CI_PHOT, comp_PHOT):
         plt.ylim(ymin, ymax)
 
         if met in ('LSR', 'MCC_5', 'MCC_9'):
-            plt.ylabel(r"$\Delta=(pyU - U)$")
+            plt.ylabel("pyUPMASK - UPMASK")
         if met in ('MCC_9', 'TPR_9', 'PPV_9'):
             plt.xlabel("CI (log)")
         ax.set_xscale('log')

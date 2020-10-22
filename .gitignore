@@ -12,4 +12,4 @@ params.ini
 #
 # Do not ignore this
 !/input/README.md
-!/aux_funcs/synth_clust_input.dat
+!/TEST_SYNTH_CLUSTS/synth_clusts/synth_clust_input.dat

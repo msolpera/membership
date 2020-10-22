@@ -11,7 +11,7 @@ print("Random seed:", seed)
 np.random.seed(seed)
 
 
-def main(CI):
+def main(CI=.5):
     """
     CI : float, 0.<CI<1.
       The contamination index.
@@ -23,17 +23,17 @@ def main(CI):
     data_dims = ('ID', 'x', 'y', 'V', 'BV', 'pmRA', 'pmDE')
 
     # Read input synthetic cluster data
-    data = ascii.read('synth_clust_input.dat')
+    data = ascii.read('synth_clusts/synth_clust_input.dat')
 
     # Extract members and field stars data
     membs_ID, membs_x, membs_y, membs_V, membs_BV, field_V, field_BV =\
         membSeparate(data)
     N_membs = len(membs_ID)
 
-    # cluster area given the radius defined
-    cl_area = np.pi * cl_rad**2
-    # Total area of the square frame, given the x,y range defined
-    tot_area = xy_range**2
+    # # cluster area given the radius defined
+    # cl_area = np.pi * cl_rad**2
+    # # Total area of the square frame, given the x,y range defined
+    # tot_area = xy_range**2
 
     # Estimate number of members given the CI
     N_field = estimateNfield(N_membs, CI)
@@ -72,7 +72,8 @@ def main(CI):
     makePlot_2(CI, data_dims[3:], data_arrs)
 
     # Write final data
-    fname = "synth_clusts/" + "{:.2f}_{:1.2f}_{:1.2f}_{:1.2f}_{:1.2f}.dat".format(CI, *CI_array)
+    fname = "synth_clusts/" +\
+        "{:.2f}_{:1.2f}_{:1.2f}_{:1.2f}_{:1.2f}.dat".format(CI, *CI_array)
     ascii.write(vstack([tabl_cl, tabl_fl]), fname, overwrite=True)
 
     print("Finished")
@@ -116,7 +117,7 @@ def estimateNfield(N_membs, CI):
     N_field = int(field_dens * tot_area)
     '''
     # Total number of field stars in the entire frame
-    N_field = int(CI*N_membs)
+    N_field = int(CI * N_membs)
 
     return N_field
 
@@ -276,7 +277,8 @@ def makePlot(
 
     fig.tight_layout()
     plt.savefig(
-        'synth_clust_out_' + str(CI) + '.png', dpi=150, bbox_inches='tight')
+        'synth_clusts/synth_clust_out_' + str(CI) + '.png', dpi=150,
+        bbox_inches='tight')
 
 
 def CI_AD(rad, cent, table_data, data_dims):
@@ -325,7 +327,7 @@ def makePlot_2(CI_coord, data_dims, data_arrs):
         plt.legend()
 
     fig.tight_layout()
-    plt.savefig("CI_analysis_" + str(CI_coord) + ".png",
+    plt.savefig("synth_clusts/CI_analysis_" + str(CI_coord) + ".png",
                 dpi=150, bbox_inches='tight')
 
 

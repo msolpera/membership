@@ -12,7 +12,7 @@ generates a coordinates and CMD plot.
 A method for pyUPMASK and for the H measure metric need to be selected.
 """
 
-method = 'agglomerative_25_kde_p'
+method = 'GMM'
 Hmethod = 'auto'
 N_UPMASK = "25"
 # Probability cuts (use 0. for Voronoi)
@@ -25,8 +25,7 @@ while True:
     # Select random file from pyUPMASK results folder
     feature = ('PHOT', 'PM')
     feature_ran = feature[np.random.choice(2)]
-    fold = '../output/' + method + '/' + feature_ran + '/'
-
+    fold = 'output/' + method + '/' + feature_ran + '/'
     files = os.listdir(fold)
     file = np.random.choice(files)
     print(file)
@@ -35,20 +34,19 @@ while True:
     data_pyupmask = ascii.read(fold + file)
 
     # Load the same file from the UPMASK run
-    UP_fold = '../TEST_SYNTH_CLUSTS/test_results/100_UPMASK_res/nstars'\
-        + N_UPMASK + '/' + feature_ran + '/'
+    UP_fold = 'metrics/output/UPMASK_600/' + feature_ran + '/'
     data_upmask = ascii.read(UP_fold + file)
 
     # Load pyUPMASK metrics
-    metrics_file = '../TEST_SYNTH_CLUSTS/test_results/metrics_' +\
-        feature_ran + '_' + method + '_H_' + Hmethod + '.dat'
+    metrics_file = 'metrics/metrics_' + feature_ran + '_' + method +\
+        '_H_' + Hmethod + '.dat'
     metrics_data = ascii.read(metrics_file)
     msk = metrics_data['Name'] == file[:-4].replace('.', '_')
     met_pyU = metrics_data[msk]
 
     # Load UPMASK metrics
-    metrics_file = '../TEST_SYNTH_CLUSTS/test_results/100_UPMASK_res/' +\
-        'metrics_UP-' + feature_ran + '_H_' + Hmethod + '_' + N_UPMASK + '.dat'
+    metrics_file = 'metrics/metrics_' + feature_ran + '_UP_600_' + N_UPMASK +\
+        '_H_' + Hmethod + '.dat'
     metrics_data = ascii.read(metrics_file)
     msk = metrics_data['Name'] == file[:-4].replace('.', '_')
     met_U = metrics_data[msk]

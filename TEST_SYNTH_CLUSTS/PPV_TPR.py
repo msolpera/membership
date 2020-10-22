@@ -1,5 +1,4 @@
 
-import numpy as np
 import matplotlib.pyplot as plt
 from metrics_plot import readTables
 
@@ -7,7 +6,7 @@ from metrics_plot import readTables
 def main():
     """
     Plot the PPV vs the TPR (90%) emulating a Precision-Recall plot[1],
-    although it is *not* a PR plot as no threshold is being veried.
+    although it is *not* a PR plot as no threshold is being varied.
 
     [1]: https://scikit-learn.org/stable/auto_examples/model_selection/
     plot_precision_recall.html
@@ -15,15 +14,10 @@ def main():
     configs = ("Agglo", "kNNde", "Voron", 'MiniB', "KMean", "Gauss")
     Hval = 'auto'
     N_UPMASK = "25"
-    flag600 = True
-
-    # Folder where the files are located
-    fold = "../TEST_SYNTH_CLUSTS/test_results/"
 
     for i, m in enumerate(configs):
         print(" ", m)
-        pyUP_PHOT, pyUP_PM, UP_PHOT, UP_PM = readTables(
-            fold, N_UPMASK, Hval, m, flag600)
+        pyUP_PHOT, pyUP_PM, UP_PHOT, UP_PM = readTables(N_UPMASK, Hval, m)
 
         plt.subplot(int("23" + str(i + 1)))
         plt.title(m)

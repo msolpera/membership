@@ -8,25 +8,20 @@ from sklearn.metrics import log_loss, brier_score_loss,\
 
 def main(verbose=False):
     """
-    Obtain performance metrics for the clusters processed with pyUPMASK or
-    UPMASK.
+    Obtain performance metrics for the synthetic clusters processed with
+    pyUPMASK and/or UPMASK.
 
     The input files (which are the outputs from pyUPMASk or UPMASK) are read
     from the 'output/' folder.
     """
 
-    mode = (
-        "UPMASK0", "UPMASK1", "UPMASK2", "UPMASK3", "UPMASK4", "UPMASK5",
-        "UPMASK6", "UPMASK7", "UPMASK8", "UPMASK9", "UPMASK10", "UPMASK11",
-        "UPMASK12", "UPMASK13", "UPMASK14", "UPMASK15", "UPMASK16")
-    # mode = ('UPMASK_600', 'pyUPMASK_600')
-
+    configs = ('UPMASK_600', 'pyUPMASK_600')
     features = ('PHOT', 'PM')
     Hval = ('auto',)  # 'symm', 'SR05')
 
     for H in Hval:
         print("\n{}".format(H))
-        for m in mode:
+        for m in configs:
             print(m)
             for f in features:
                 print(f)
@@ -37,7 +32,7 @@ def main(verbose=False):
                     'MCC_5': [], 'TPR_5': [], 'PPV_5': [],
                     'MCC_9': [], 'TPR_9': [], 'PPV_9': []}
 
-                outp = Path('../output/' + subfold)
+                outp = Path('output/' + subfold)
                 print(outp)
                 for fpath in outp.iterdir():
                     fname = '_'.join(fpath.name.split('/')[-1].split('.')[:-1])
@@ -53,8 +48,7 @@ def main(verbose=False):
                         final_dct[k].append(metrics_dct[k])
 
                 if verbose is False:
-                    outf = Path('../TEST_SYNTH_CLUSTS/test_results/').joinpath(
-                        'metrics_{}_{}_H_{}.dat'.format(f, m, H))
+                    outf = 'metrics/metrics_{}_{}_H_{}.dat'.format(f, m, H)
                     ascii.write(final_dct, outf, format='csv', overwrite=True)
 
 

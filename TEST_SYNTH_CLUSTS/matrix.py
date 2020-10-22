@@ -5,25 +5,20 @@ import matplotlib.pyplot as plt
 from metrics_plot import tie_min, tie_max, WinTieLoss, readTables
 
 
-def main(flag600=True):
+def main():
     """
     """
-    metrics = ["LSR", "BSL", "HMS", "MCC_5", "TPR_5", "PPV_5", "MCC_9",
-               "TPR_9", "PPV_9"]
-
-    configs = ("Agglo", "Gauss", "KMean", "kNNde", 'MiniB', "Voron")
-
     Hval = 'auto'  # 'symm', 'SR05')
     N_UPMASK = "25"  # "50")
-
-    # Folder where the files are located
-    fold = "../TEST_SYNTH_CLUSTS/test_results/"
+    configs = ("Voron", "kNNde", "Agglo", 'MiniB', "KMean", "Gauss")
+    col_labels = ('VOR', 'KNN', 'AGG', 'MBK', 'KMS', 'GMM')
+    metrics = ["LSR", "BSL", "HMS", "MCC_5", "TPR_5", "PPV_5", "MCC_9",
+               "TPR_9", "PPV_9"]
 
     winloss_rates = [[], [], []]
     for m in configs:
 
-        pyUP_PHOT, pyUP_PM, UP_PHOT, UP_PM = readTables(
-            fold, N_UPMASK, Hval, m, flag600)
+        pyUP_PHOT, pyUP_PM, UP_PHOT, UP_PM = readTables(N_UPMASK, Hval, m)
 
         CI_PM, CI_PHOT, win_PHOT, loss_PHOT, win_PM, loss_PM =\
             WinTieLoss(
@@ -46,15 +41,18 @@ def main(flag600=True):
 
     titl = ["PM", "PHOT", "Combined"]
     for i, win_loss in enumerate(winloss_rates):
-        fig, ax = plt.subplots()
+        print(titl[i])
+        fig, ax = plt.subplots(figsize=(7, 7))
         plt.title(titl[i])
         # (metrics, methods)
         matrx_vals = np.array(win_loss).T
-        im, cbar = heatmap(matrx_vals, metrics, configs, ax=ax,
+        im, cbar = heatmap(matrx_vals, metrics, col_labels, ax=ax,
                            cmap="YlGn", cbarlabel="(W-L)%")
         annotate_heatmap(im, valfmt="{x:.0f}")
+        # plt.show()
+        file_out = 'plots/matrix_{}.png'.format(titl[i])
         fig.tight_layout()
-        plt.show()
+        plt.savefig(file_out, dpi=300, bbox_inches='tight')
 
 
 def heatmap(
@@ -86,7 +84,7 @@ def heatmap(
         ax = plt.gca()
 
     # Plot the heatmap
-    im = ax.imshow(data, **kwargs)
+    im = ax.imshow(data, vmin=0., vmax=100, **kwargs)
 
     # Create colorbar
     cbar = ax.figure.colorbar(im, ax=ax, **cbar_kw)

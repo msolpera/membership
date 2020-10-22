@@ -5,17 +5,21 @@ import matplotlib.pyplot as plt
 
 
 def main():
-    inputfiles = readFiles('input')
+    """
+    Make the convergence plot for the Outer Loop runs, using the files in the
+    'UPMASK_convergence' folder. These files were pre-processed with the
+    script XXXXXXX
+    """
 
     stats = {'LSR': [], 'BSL': [], 'HMS': [], 'MCC_5': [], 'TPR_5': [],
              'PPV_5': [], 'MCC_9': [], 'TPR_9': [], 'PPV_9': []}
     rng = 0.025
 
     # For each synthetic cluster
-    for arch in inputfiles:
-        print(arch)
+    for arch in Path('UPMASK_convergence').iterdir():
+        print(arch.name)
         # Read data from synthetic cluster's file
-        data = ascii.read('input/' + arch)
+        data = ascii.read(arch)
 
         for sta in stats.keys():
             # Data for this statistic
@@ -68,17 +72,11 @@ def main():
     plt.yticks(fontsize=10)
     plt.xlim(5, 25)
 
-    fig.tight_layout()
-    plt.savefig('pyUP_MiniB010_convergence.png', dpi=300, bbox_inches='tight')
+    # fig.tight_layout()
+    # plt.savefig('pyUP_MiniB010_convergence.png', dpi=300, bbox_inches='tight')
     # fig = plt.figure(constrained_layout=True)
-    # plt.show()
+    plt.show()
 
-
-def readFiles(name):
-    """
-    Read files from the input folder
-    """
-    return [arch.name for arch in Path(name).iterdir() if arch.is_file()]
 
 if __name__ == '__main__':
     main()

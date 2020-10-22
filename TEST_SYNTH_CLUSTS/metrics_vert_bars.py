@@ -5,6 +5,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
+# Folder where the files are located
+fold = "metrics/"
+
 # Define the "tie" range.
 tie_max = .025
 tie_min = -1. * tie_max
@@ -12,37 +15,26 @@ tie_min = -1. * tie_max
 
 def main():
     """
-    Plot the bar plots with the statistics obtained after applying the
-    getMetrics() script to the pyUPMASK and UPMASK results.
+    Plot the vertical bar plots for all the statistics, separated into PM,
+    PHOT, and combined results.
     """
     configs = ("Agglo", "Gauss", "KMean", "kNNde", 'MiniB', "Voron")
-    Hval = ('auto',)  # 'symm', 'SR05')
-    N_UPMASK = ("25",)  # "50")
-    flag600 = True
+    Hval = 'auto'  # 'symm', 'SR05'
+    N_UPMASK = "25"  # "50"
 
-    # Folder where the files are located
-    fold = "../TEST_SYNTH_CLUSTS/test_results/"
-
-    for H in Hval:
-        for m in configs:
-            print(" ", m)
-
-            for NU in N_UPMASK:
-                print("  ", NU)
-
-                pyUP_PHOT, pyUP_PM, UP_PHOT, UP_PM = readTables(
-                    fold, NU, H, m, flag600)
-
-                win_PHOT, loss_PHOT, emp_PHOT, win_PM, loss_PM, emp_PM =\
-                    WinTieLoss(tie_max, tie_min, pyUP_PHOT, pyUP_PM, UP_PHOT,
-                               UP_PM, 'metrics_bars')
-
-                makePlot(
-                    fold, NU, tie_max, tie_min, m, win_PHOT, loss_PHOT,
-                    emp_PHOT, win_PM, loss_PM, emp_PM)
+    for m in configs:
+        print(m)
+        pyUP_PHOT, pyUP_PM, UP_PHOT, UP_PM = readTables(
+            N_UPMASK, Hval, m)
+        win_PHOT, loss_PHOT, emp_PHOT, win_PM, loss_PM, emp_PM =\
+            WinTieLoss(tie_max, tie_min, pyUP_PHOT, pyUP_PM, UP_PHOT,
+                       UP_PM, 'metrics_bars')
+        makePlot(
+            N_UPMASK, tie_max, tie_min, m, win_PHOT, loss_PHOT,
+            emp_PHOT, win_PM, loss_PM, emp_PM)
 
 
-def readTables(fold, N_UPMASK, H, m, flag600=False):
+def readTables(N_UPMASK, H, m, flag600=False):
     """
     """
     pyUP_PHOT = Table.read(
@@ -50,20 +42,20 @@ def readTables(fold, N_UPMASK, H, m, flag600=False):
     pyUP_PM = Table.read(
         fold + 'metrics_PM_{}_H_{}.dat'.format(m, H), format='ascii')
 
-    if flag600:
-        UP_PHOT = Table.read(
-            fold + '600/metrics_PHOT_UP_600_' + str(N_UPMASK) + '_H_' + H +
-            '.dat', format='ascii')
-        UP_PM = Table.read(
-            fold + '600/metrics_PM_UP_600_' + str(N_UPMASK) + '_H_' + H +
-            '.dat', format='ascii')
-    else:
-        UP_PHOT = Table.read(
-            fold + '100_UPMASK_res/metrics_UP-PHOT_H_{}_{}.dat'.format(
-                H, N_UPMASK), format='ascii')
-        UP_PM = Table.read(
-            fold + '100_UPMASK_res/metrics_UP-PM_H_{}_{}.dat'.format(
-                H, N_UPMASK), format='ascii')
+    # if flag600:
+    UP_PHOT = Table.read(
+        fold + '/metrics_PHOT_UP_600_' + str(N_UPMASK) + '_H_' + H +
+        '.dat', format='ascii')
+    UP_PM = Table.read(
+        fold + '/metrics_PM_UP_600_' + str(N_UPMASK) + '_H_' + H +
+        '.dat', format='ascii')
+    # else:
+    #     UP_PHOT = Table.read(
+    #         fold + '100_UPMASK_res/metrics_UP-PHOT_H_{}_{}.dat'.format(
+    #             H, N_UPMASK), format='ascii')
+    #     UP_PM = Table.read(
+    #         fold + '100_UPMASK_res/metrics_UP-PM_H_{}_{}.dat'.format(
+    #             H, N_UPMASK), format='ascii')
 
     return pyUP_PHOT, pyUP_PM, UP_PHOT, UP_PM
 
@@ -140,7 +132,7 @@ def WinTieLoss(tie_max, tie_min, pyUP_PHOT, pyUP_PM, UP_PHOT, UP_PM, caller):
 
 
 def makePlot(
-    fold, N_UPMASK, tie_max, tie_min, m, win_PHOT, loss_PHOT, emp_PHOT,
+    N_UPMASK, tie_max, tie_min, m, win_PHOT, loss_PHOT, emp_PHOT,
         win_PM, loss_PM, emp_PM):
     """
     """
@@ -183,7 +175,7 @@ def makePlot(
     barsPlot(ax, Results_PHOT, category_names_PHOT)
     ax = plt.subplot(313)
     barsPlot(ax, Results_comb, category_names_comb)
-    file_out = fold + 'plots/' + '{}_{}.png'.format(m, N_UPMASK)
+    file_out = 'plots/' + '{}_{}.png'.format(m, N_UPMASK)
     plt.savefig(file_out, dpi=150, bbox_inches='tight')
 
 

@@ -2,7 +2,7 @@
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
-from metrics_plot import tie_min, tie_max, WinTieLoss, readTables
+from metrics_vert_bars import tie_min, tie_max, WinTieLoss, readTables
 
 
 def main():

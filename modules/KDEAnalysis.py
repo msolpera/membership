@@ -40,6 +40,7 @@ def probs(xy, data, cl_probs, Nst_max=5000):
         import matplotlib.pyplot as plt
         import seaborn as sns
         plt.subplot(131)
+        plt.title("a")
         plt.scatter(field_stars[:, 0], field_stars[:, 1], s=15, alpha=.3, label="Non-members")
         plt.scatter(membs_stars[:, 0], membs_stars[:, 1], s=15, alpha=.7, label="Members")
         plt.xlabel("x")
@@ -48,6 +49,7 @@ def probs(xy, data, cl_probs, Nst_max=5000):
         plt.ylim(0, 1)
         plt.legend()
         plt.subplot(132)
+        plt.title("b")
         aa = {'x': field_stars[:, 0], 'y': field_stars[:, 1]}
         bb = {'x': membs_stars[:, 0], 'y': membs_stars[:, 1]}
         sns.kdeplot(data=aa, x='x', y='y', label="Non-members")
@@ -56,6 +58,7 @@ def probs(xy, data, cl_probs, Nst_max=5000):
         plt.ylim(0, 1)
         plt.legend()
         plt.subplot(133)
+        plt.title("c")
         idx = np.argsort(cl_probs)
         plt.scatter(all_data[:, 0][idx], all_data[:, 1][idx], s=15, c=cl_probs[idx], cmap='Oranges')
         plt.xlabel("x")

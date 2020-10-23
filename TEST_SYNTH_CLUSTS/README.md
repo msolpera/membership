@@ -54,7 +54,5 @@ Picks a random file (output from the pyUPMASk and UPMASK analysis) and
 generates a coordinates and CMD plot.
 
 
-
-
 * `UP_convergence`
 Analysis of the required number of outer loop runs for UPMASK to converge. Uses the files in the 'UPMASK_convergence/' folder, which were pre-processed with the `XXXX` script to obtain their metrics.

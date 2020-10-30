@@ -4,6 +4,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
+np.random.seed(12345)
+
+
 def main():
     """
     Make the convergence plot for the Outer Loop runs, using the files in the
@@ -49,10 +52,11 @@ def main():
     fig, ax = plt.subplots(figsize=(6, 6))
     # plot the cumulative histogram
     for sta, lst in stats.items():
-        nbins = np.arange(6, 50, 2)
+        nbins = np.arange(6, 50, 2) + np.random.uniform(-2, 2)
         n, bins, patches = ax.hist(
             lst, bins=nbins, density=True, histtype='step', cumulative=True,
-            label=sta)
+            ls='--', lw=1.5,
+            label=r"" + sta.replace('_', '$_').replace('5', '5$').replace('9', '9$'))
     #     bins = bins[:-1]
     #     msk = n >= 0.95
     #     bins_msk = bins[msk]
@@ -61,21 +65,20 @@ def main():
     # n_mean = np.mean(n_break)
     # n_max = np.max(n_break)
 
-    ax.axhline(y=0.85, color='r', linestyle='--')
+    ax.axhline(y=0.9, color='k', linestyle=':')
     # ax.grid(True)
     ax.legend(loc='lower right')
     # ax.set_title('n_mean = {:.1f}, n_max = {}'.format(n_mean, n_max), fontsize=10)
     ax.set_xlabel('Outer loop runs', fontsize=10)
-    ax.set_ylabel('Convergence percentil', fontsize=10)
+    ax.set_ylabel('Convergence percentile', fontsize=10)
     x_int = [5, 10, 15, 20, 25]
     plt.xticks(x_int, fontsize=10)
     plt.yticks(fontsize=10)
-    plt.xlim(5, 25)
+    plt.xlim(4, 26)
 
-    # fig.tight_layout()
-    # plt.savefig('pyUP_MiniB010_convergence.png', dpi=300, bbox_inches='tight')
-    # fig = plt.figure(constrained_layout=True)
-    plt.show()
+    fig.tight_layout()
+    plt.savefig('plots/UP_convergence.png', dpi=300, bbox_inches='tight')
+    # plt.show()
 
 
 if __name__ == '__main__':

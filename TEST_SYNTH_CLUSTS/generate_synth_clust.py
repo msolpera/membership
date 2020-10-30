@@ -11,9 +11,9 @@ print("Random seed:", seed)
 np.random.seed(seed)
 
 
-def main(CI=.5):
+def main(CI=150, plot_AD=False):
     """
-    CI : float, 0.<CI<1.
+    CI = N_field / N_membs
       The contamination index.
     """
 
@@ -69,7 +69,8 @@ def main(CI=.5):
     CI_array, data_arrs = CI_AD(cl_rad, cl_cent, table_data, data_dims[3:])
 
     # Generate plot for other dimensions
-    makePlot_2(CI, data_dims[3:], data_arrs)
+    if plot_AD:
+        makePlot_2(CI, data_dims[3:], data_arrs)
 
     # Write final data
     fname = "synth_clusts/" +\

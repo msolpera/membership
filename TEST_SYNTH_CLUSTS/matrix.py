@@ -12,8 +12,8 @@ def main():
     N_UPMASK = "25"  # "50")
     configs = ("Voron", "kNNde", "Agglo", 'MiniB', "KMean", "Gauss")
     col_labels = ('VOR', 'KNN', 'AGG', 'MBK', 'KMS', 'GMM')
-    metrics = ["LSR", "BSL", "HMS", "MCC_5", "TPR_5", "PPV_5", "MCC_9",
-               "TPR_9", "PPV_9"]
+    metrics = ["LSR", "BSL", "HMS", r"MCC$_5$", r"TPR$_5$", r"PPV$_5$",
+               r"MCC$_9$", r"TPR$_9$", r"PPV$_9$"]
 
     winloss_rates = [[], [], []]
     for m in configs:
@@ -43,7 +43,7 @@ def main():
     for i, win_loss in enumerate(winloss_rates):
         print(titl[i])
         fig, ax = plt.subplots(figsize=(7, 7))
-        plt.title(titl[i])
+        # plt.title(titl[i])
         # (metrics, methods)
         matrx_vals = np.array(win_loss).T
         im, cbar = heatmap(matrx_vals, metrics, col_labels, ax=ax,

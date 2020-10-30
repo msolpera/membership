@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 fold = "metrics/"
 
 # Define the "tie" range.
-tie_max = .025
+tie_max = 0.005
 tie_min = -1. * tie_max
 
 

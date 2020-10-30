@@ -1,7 +1,7 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
+# import matplotlib.gridspec as gridspec
 from metrics_vert_bars import tie_min, tie_max, WinTieLoss, readTables
 
 
@@ -54,7 +54,7 @@ def makePlot(H, NU, tie_max, tie_min, winloss_rates):
         plt.scatter(v[0], v[1], marker='o', s=250, alpha=.7)
         names = {"Agglo": 'AGG', "Gauss": 'GMM', "KMean": 'KMS',
                  "kNNde": 'KNN', 'MiniB': 'MBK', "Voron": 'VOR'}
-        print(names[k], v[0], v[1])
+        print(names[k], "{:.2f} {:.2f} {:.2f}".format(v[0], v[1], v[2]))
         plt.annotate(names[k] + " ({:.0f}%)".format(
             v[2]), (v[0] + .5, v[1] + .5), fontsize=10)
         min_y = min(min_y, v[1] - .15)

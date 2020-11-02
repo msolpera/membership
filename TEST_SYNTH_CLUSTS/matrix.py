@@ -35,7 +35,7 @@ def main():
         N_tot = CI_PHOT.size
         winloss_rates[1].append(100 * (delta / N_tot))
 
-        delta = (win_PHOT + win_PM) - (loss_PHOT - loss_PM)
+        delta = (win_PHOT + win_PM) - (loss_PHOT + loss_PM)
         N_tot = CI_PM.size + CI_PHOT.size
         winloss_rates[2].append(100 * (delta / N_tot))
 

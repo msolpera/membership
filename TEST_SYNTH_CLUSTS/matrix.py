@@ -35,7 +35,11 @@ def main():
         N_tot = CI_PHOT.size
         winloss_rates[1].append(100 * (delta / N_tot))
 
+        # Delta for pyUPMASK
         delta = (win_PHOT + win_PM) - (loss_PHOT + loss_PM)
+        # # Delta for UPMASK
+        # delta = (loss_PHOT + loss_PM) - (win_PHOT + win_PM)
+
         N_tot = CI_PM.size + CI_PHOT.size
         winloss_rates[2].append(100 * (delta / N_tot))
 
@@ -47,7 +51,7 @@ def main():
         # (metrics, methods)
         matrx_vals = np.array(win_loss).T
         im, cbar = heatmap(matrx_vals, metrics, col_labels, ax=ax,
-                           cmap="YlGn", cbarlabel="(W-L)%")
+                           cmap="RdYlGn", cbarlabel="(W-L)%") # YlGn
         annotate_heatmap(im, valfmt="{x:.0f}")
         # plt.show()
         file_out = 'plots/matrix_{}.png'.format(titl[i])
@@ -84,7 +88,7 @@ def heatmap(
         ax = plt.gca()
 
     # Plot the heatmap
-    im = ax.imshow(data, vmin=0., vmax=100, **kwargs)
+    im = ax.imshow(data, vmin=-100., vmax=100, **kwargs)
 
     # Create colorbar
     cbar = ax.figure.colorbar(im, ax=ax, **cbar_kw)
@@ -118,7 +122,7 @@ def heatmap(
 
 
 def annotate_heatmap(
-    im, data=None, valfmt="{x:.2f}", textcolors=("black", "white"),
+    im, data=None, valfmt="{x:.2f}", textcolors=("black", "black"),
         threshold=None, **textkw):
     """
     A function to annotate a heatmap.
@@ -173,7 +177,7 @@ def annotate_heatmap(
             # This line prevents '-0' values
             val = 0. if val == 0. else val
             if val < 0.:
-                clr = 'red'
+                clr = 'black' #'red'
             else:
                 clr = textcolors[int(im.norm(val) > threshold)]
             kw.update(color=clr)

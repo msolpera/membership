@@ -75,9 +75,7 @@ def readINI():
         N_membs, clust_method, clRjctMethod, C_thresh, cl_method_pars
 
 
-def dread(
-    file_path, ID_c, x_c, y_c, data_cols, data_errs, oultr_method,
-        stdRegion_nstd):
+def dread(file_path, ID_c, x_c, y_c, data_cols, data_errs):
     """
     """
 

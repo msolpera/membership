@@ -15,7 +15,7 @@ def main(verbose=False):
     from the 'output/' folder.
     """
 
-    configs = ('UPMASK_600', 'pyUPMASK_600')
+    configs = ('UPMASK_600_CT_15',) #'UPMASK_600', 'pyUPMASK_600')
     features = ('PHOT', 'PM')
     Hval = ('auto',)  # 'symm', 'SR05')
 

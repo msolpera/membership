@@ -5,11 +5,16 @@ import matplotlib.pyplot as plt
 from metrics_vert_bars import tie_min, tie_max, WinTieLoss, readTables
 
 
+# Defines which UPMASK results to use
+UP_alg = "CT_"
+# UP_alg = ""
+
+
 def main():
     """
     """
     Hval = 'auto'  # 'symm', 'SR05')
-    N_UPMASK = "25"  # "50")
+    N_UPMASK = "15" # "25"  # "50")
     configs = ("Voron", "kNNde", "Agglo", 'MiniB', "KMean", "Gauss")
     col_labels = ('VOR', 'KNN', 'AGG', 'MBK', 'KMS', 'GMM')
     metrics = ["LSR", "BSL", "HMS", r"MCC$_5$", r"TPR$_5$", r"PPV$_5$",
@@ -18,7 +23,8 @@ def main():
     winloss_rates = [[], [], []]
     for m in configs:
 
-        pyUP_PHOT, pyUP_PM, UP_PHOT, UP_PM = readTables(N_UPMASK, Hval, m)
+        pyUP_PHOT, pyUP_PM, UP_PHOT, UP_PM = readTables(
+            N_UPMASK, Hval, m, UP_alg)
 
         CI_PM, CI_PHOT, win_PHOT, loss_PHOT, win_PM, loss_PM =\
             WinTieLoss(
@@ -55,8 +61,9 @@ def main():
         annotate_heatmap(im, valfmt="{x:.0f}")
         # plt.show()
         file_out = 'plots/matrix_{}.png'.format(titl[i])
-        fig.tight_layout()
-        plt.savefig(file_out, dpi=300, bbox_inches='tight')
+        # fig.tight_layout()
+        # plt.savefig(file_out, dpi=300, bbox_inches='tight')
+        plt.show()
 
 
 def heatmap(

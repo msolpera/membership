@@ -5,19 +5,19 @@ import matplotlib.pyplot as plt
 from metrics_vert_bars import tie_min, tie_max, WinTieLoss, readTables
 
 
-def main():
+def main(UP_alg="CT_"):
     """
     Make the summary plot that compares the different methods tested.
     """
     Hval = 'auto'  # 'symm', 'SR05')
-    N_UPMASK = "25"  # "50")
+    N_UPMASK = "15" # "25"  # "50")
     configs = ("Voron", "kNNde", "Agglo", 'MiniB', "KMean", "Gauss")
 
     winloss_rates = {}
     for m in configs:
 
         pyUP_PHOT, pyUP_PM, UP_PHOT, UP_PM = readTables(
-            N_UPMASK, Hval, m)
+            N_UPMASK, Hval, m, UP_alg)
 
         CI_PM, CI_PHOT, win_PHOT, loss_PHOT, win_PM, loss_PM =\
             WinTieLoss(

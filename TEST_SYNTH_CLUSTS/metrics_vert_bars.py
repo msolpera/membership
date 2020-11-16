@@ -5,8 +5,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
+# Defines which UPMASK results to use
+UP_alg = "CT_"
+# UP_alg = ""
+
 # Folder where the files are located
-fold = "metrics/"
+fold = "metrics"
 
 # Define the "tie" range.
 tie_max = 0.005
@@ -15,17 +19,17 @@ tie_min = -1. * tie_max
 
 def main():
     """
-    Plot the vertical bar plots for all the statistics, separated into PM,
-    PHOT, and combined results.
+    For each clustering method plot the horizontal bar plots for all the
+    metrics, separated into PM, PHOT, and combined results.
     """
     configs = ("Agglo", "Gauss", "KMean", "kNNde", 'MiniB', "Voron")
     Hval = 'auto'  # 'symm', 'SR05'
-    N_UPMASK = "25"  # "50"
+    N_UPMASK = "15" #"25"  # "50"
 
     for m in configs:
         print(m)
         pyUP_PHOT, pyUP_PM, UP_PHOT, UP_PM = readTables(
-            N_UPMASK, Hval, m)
+            N_UPMASK, Hval, m, UP_alg)
         win_PHOT, loss_PHOT, emp_PHOT, win_PM, loss_PM, emp_PM =\
             WinTieLoss(tie_max, tie_min, pyUP_PHOT, pyUP_PM, UP_PHOT,
                        UP_PM, 'metrics_bars')
@@ -34,21 +38,20 @@ def main():
             emp_PHOT, win_PM, loss_PM, emp_PM)
 
 
-def readTables(N_UPMASK, H, m, flag600=False):
+def readTables(N_UPMASK, H, m, UP_alg=""):
     """
     """
     pyUP_PHOT = Table.read(
-        fold + 'metrics_PHOT_{}_H_{}.dat'.format(m, H), format='ascii')
+        fold + '/metrics_PHOT_{}_H_{}.dat'.format(m, H), format='ascii')
     pyUP_PM = Table.read(
-        fold + 'metrics_PM_{}_H_{}.dat'.format(m, H), format='ascii')
+        fold + '/metrics_PM_{}_H_{}.dat'.format(m, H), format='ascii')
 
-    # if flag600:
     UP_PHOT = Table.read(
-        fold + '/metrics_PHOT_UP_600_' + str(N_UPMASK) + '_H_' + H +
-        '.dat', format='ascii')
+        fold + '/metrics_PHOT_UPMASK_600_' + UP_alg + str(N_UPMASK) +
+        '_H_' + H + '.dat', format='ascii')
     UP_PM = Table.read(
-        fold + '/metrics_PM_UP_600_' + str(N_UPMASK) + '_H_' + H +
-        '.dat', format='ascii')
+        fold + '/metrics_PM_UPMASK_600_' + UP_alg + str(N_UPMASK) +
+        '_H_' + H + '.dat', format='ascii')
     # else:
     #     UP_PHOT = Table.read(
     #         fold + '100_UPMASK_res/metrics_UP-PHOT_H_{}_{}.dat'.format(
@@ -177,6 +180,7 @@ def makePlot(
     barsPlot(ax, Results_comb, category_names_comb)
     file_out = 'plots/' + '{}_{}.png'.format(m, N_UPMASK)
     plt.savefig(file_out, dpi=150, bbox_inches='tight')
+    # plt.show()
 
 
 def barsPlot(ax, results, category_names):

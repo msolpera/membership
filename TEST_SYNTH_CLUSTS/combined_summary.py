@@ -1,16 +1,20 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-# import matplotlib.gridspec as gridspec
 from metrics_vert_bars import tie_min, tie_max, WinTieLoss, readTables
 
 
-def main(UP_alg="CT_"):
+def main():
     """
     Make the summary plot that compares the different methods tested.
     """
+    # Defines which UPMASK results to use
+    # Cantat-Gaudin results
+    UP_alg, N_UPMASK = "CG_", "15"
+    # Original UPMASK results
+    # UP_alg, N_UPMASK = "", "25"
+
     Hval = 'auto'  # 'symm', 'SR05')
-    N_UPMASK = "15" # "25"  # "50")
     configs = ("Voron", "kNNde", "Agglo", 'MiniB', "KMean", "Gauss")
 
     winloss_rates = {}

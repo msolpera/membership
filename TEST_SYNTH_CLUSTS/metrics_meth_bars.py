@@ -10,15 +10,20 @@ def main():
     For all the clustering methods plot the horizontal bar plots for all the
     metrics, separated into PM, PHOT, and combined results.
     """
+    # Defines which UPMASK results to use
+    # Cantat-Gaudin results
+    UP_alg, N_UPMASK = "CT_", "15"
+    # Original UPMASK results
+    # UP_alg, N_UPMASK = "", "25"
+
     configs = ("Voron", "kNNde", "Agglo", "MiniB", "KMean", "Gauss")
     Hval = 'auto'  # 'symm', 'SR05'
-    N_UPMASK = "25"  # "50"
 
     results = []
     for i, m in enumerate(configs):
         print(m)
         pyUP_PHOT, pyUP_PM, UP_PHOT, UP_PM = readTables(
-            N_UPMASK, Hval, m)
+            N_UPMASK, Hval, m, UP_alg)
         win_PHOT, loss_PHOT, emp_PHOT, win_PM, loss_PM, emp_PM =\
             WinTieLoss(tie_max, tie_min, pyUP_PHOT, pyUP_PM, UP_PHOT,
                        UP_PM, 'metrics_bars')

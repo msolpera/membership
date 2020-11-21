@@ -5,16 +5,16 @@ import matplotlib.pyplot as plt
 from metrics_vert_bars import tie_min, tie_max, WinTieLoss, readTables
 
 
-# Defines which UPMASK results to use
-UP_alg = "CT_"
-# UP_alg = ""
-
-
 def main():
     """
     """
+    # Defines which results to use
+    # # Cantat-Gaudin results
+    UP_alg, N_UPMASK = "CG_", "25"
+    # Original UPMASK results
+    # UP_alg, N_UPMASK = "", "25"
+
     Hval = 'auto'  # 'symm', 'SR05')
-    N_UPMASK = "15" # "25"  # "50")
     configs = ("Voron", "kNNde", "Agglo", 'MiniB', "KMean", "Gauss")
     col_labels = ('VOR', 'KNN', 'AGG', 'MBK', 'KMS', 'GMM')
     metrics = ["LSR", "BSL", "HMS", r"MCC$_5$", r"TPR$_5$", r"PPV$_5$",

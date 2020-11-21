@@ -5,10 +5,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-# Defines which UPMASK results to use
-UP_alg = "CT_"
-# UP_alg = ""
-
 # Folder where the files are located
 fold = "metrics"
 
@@ -24,7 +20,12 @@ def main():
     """
     configs = ("Agglo", "Gauss", "KMean", "kNNde", 'MiniB', "Voron")
     Hval = 'auto'  # 'symm', 'SR05'
-    N_UPMASK = "15" #"25"  # "50"
+
+    # Defines which UPMASK results to use
+    # Cantat-Gaudin results
+    UP_alg, N_UPMASK = "CT_", "15"
+    # Original UPMASK results
+    # UP_alg, N_UPMASK = "", "25"
 
     for m in configs:
         print(m)

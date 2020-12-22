@@ -5,7 +5,7 @@ def main():
 
     UPMASK_t = 497184
     method = (
-        'KNN', 'AGG', 'VOR', 'MBK', 'KMS', 'GMM', 'UPMASK\nMST', 'UPMASK')
+        'KNN', 'AGG', 'VOR', 'MBK', 'KMS', 'GMM', 'MST', 'UPMASK')
     # Times used by the rest of the methods
     times = np.array([
         2905, 3343, 12595, 81185, 252075, 320836, 366232, UPMASK_t])
@@ -22,9 +22,9 @@ def main():
 
     autolabel(bar_plot, ax, s)
     fig.tight_layout()
-    plt.savefig('plots/times.png', dpi=300, bbox_inches='tight')
+    # plt.savefig('plots/times.png', dpi=300, bbox_inches='tight')
     # plt.figure(constrained_layout=True)
-    # plt.show()
+    plt.show()
 
 
 def autolabel(bar_plot, ax, s):

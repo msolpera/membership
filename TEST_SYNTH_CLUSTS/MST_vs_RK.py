@@ -8,16 +8,23 @@ import matplotlib.pyplot as plt
 """
 Compare the results of a pyUPMASK run using Kmeans (25 OL runs, 25 stars per
 cluster, GUMM off, KDE off) with the results from UPMASK-MST (ie: the Cantat-
-Gaudin modification). This is to check wich RFR method is more adequate;
-Ripley's K function or mimimum-spanning tree.'
+Gaudin modification). This is to check which RFR method is more adequate;
+Ripley's K function or minimum-spanning tree.
+
+Positive --> Ripley's K is better, Negative --> MST is better
+
+In general, Ripley's K function tends to show better results.
 """
+
+# Folder with the results from pyUPMASK using Kmeans and no GUMM or KDE
+KM_fold = 'KMS_clean'
 
 # Stars per cluster used in the Cantat-Gaudin code
 stpcl = '15'  # '25'
+print("Stars per cluster selected:", stpcl)
+
 # Folder with the results from the Cantat-Gaudin method
 CG_fold = 'UPMASK_600_CG_' + stpcl
-# Folder with the results from pyUPMASK using Kmeans and no GUMM or KDE
-KM_fold = 'KMS_clean'
 
 # Read metrics file for the clean Kmeans performed with pyUPMASK on 40
 # synthetic clusters
@@ -48,16 +55,16 @@ for clst in pyUP_PHOT:
     # Metrics deltas.
     # Positive --> Ripley's K is better, Negative --> MST is better
     m_delta_phot.append(
-        np.array([_ for _ in clst[metrics]]) -
-        np.array([_ for _ in UPCT_PHOT[ii][metrics]]))
+        np.array([_ for _ in clst[metrics]])
+        - np.array([_ for _ in UPCT_PHOT[ii][metrics]]))
 m_delta_phot = np.array(m_delta_phot)
 
 m_delta_pm = []
 for clst in pyUP_PM:
     ii = UPCT_PM_names.index(clst['Name'])
     m_delta_pm.append(
-        np.array([_ for _ in clst[metrics]]) -
-        np.array([_ for _ in UPCT_PM[ii][metrics]]))
+        np.array([_ for _ in clst[metrics]])
+        - np.array([_ for _ in UPCT_PM[ii][metrics]]))
 m_delta_pm = np.array(m_delta_pm)
 
 m_delta_phot_mean = np.median(m_delta_phot, 0)

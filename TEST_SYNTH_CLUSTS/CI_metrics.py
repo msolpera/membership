@@ -1,11 +1,13 @@
 
 import matplotlib.pyplot as plt
-from metrics_vert_bars import tie_min, tie_max, WinTieLoss, readTables
+from auxFuncs import tie_min, tie_max, WinTieLoss, readTables
 
 
 def main(plot_raw_metrics=False):
     """
     Plot the metrics versus CI for all the clusters.
+
+    plot_raw_metrics: plot each metric vs CI for pyUPMASK alone.
     """
     configs = ("Voron", "kNNde", "Agglo", 'MiniB', "KMean", "Gauss")
     Hval = 'auto'  # 'symm', 'SR05'
@@ -16,7 +18,7 @@ def main(plot_raw_metrics=False):
         pyUP_PHOT, pyUP_PM, UP_PHOT, UP_PM = readTables(N_UPMASK, Hval, m)
 
         CI_PM, CI_PHOT, comp_PHOT, comp_PM, pyU_PHOT, pyU_PM = WinTieLoss(
-            tie_max, tie_min, pyUP_PHOT, pyUP_PM, UP_PHOT, UP_PM, 'CI')
+            pyUP_PHOT, pyUP_PM, UP_PHOT, UP_PM, 'CI')
 
         makePlot(
             tie_max, tie_min, m, CI_PM, CI_PHOT, comp_PHOT,
@@ -44,8 +46,8 @@ def makePlot(
         rawMetricsPlot(metrics, CI_PM, CI_PHOT, pyU_PHOT, pyU_PM)
         file_out = 'plots/' + 'CI_{}.png'.format(m)
         fig.tight_layout()
-        plt.savefig(file_out, dpi=150, bbox_inches='tight')
-        # plt.show()
+        # plt.savefig(file_out, dpi=150, bbox_inches='tight')
+        plt.show()
 
 
 def CIPlot(metrics, tie_min, tie_max, CI_PM, comp_PM, CI_PHOT, comp_PHOT):

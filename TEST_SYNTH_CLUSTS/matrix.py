@@ -2,7 +2,7 @@
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
-from metrics_vert_bars import tie_min, tie_max, WinTieLoss, readTables
+from auxFuncs import tie_min, tie_max, WinTieLoss, readTables
 
 
 def main():
@@ -10,13 +10,17 @@ def main():
     """
     # Defines which results to use
     # # Cantat-Gaudin results
-    UP_alg, N_UPMASK = "CG_", "25"
+    UP_alg, N_UPMASK = "CG_", "15" # "25"
     # Original UPMASK results
     # UP_alg, N_UPMASK = "", "25"
 
+    configs = ["Voron", "kNNde", "Agglo", 'MiniB', "KMean", "Gauss"]
+    col_labels = ['VOR', 'KNN', 'AGG', 'MBK', 'KMS', 'GMM']
+    if UP_alg == "":
+        configs += ["UPMASK_600_CG_15"]
+        col_labels += ['MST']
+
     Hval = 'auto'  # 'symm', 'SR05')
-    configs = ("Voron", "kNNde", "Agglo", 'MiniB', "KMean", "Gauss")
-    col_labels = ('VOR', 'KNN', 'AGG', 'MBK', 'KMS', 'GMM')
     metrics = ["LSR", "BSL", "HMS", r"MCC$_5$", r"TPR$_5$", r"PPV$_5$",
                r"MCC$_9$", r"TPR$_9$", r"PPV$_9$"]
 
@@ -27,9 +31,7 @@ def main():
             N_UPMASK, Hval, m, UP_alg)
 
         CI_PM, CI_PHOT, win_PHOT, loss_PHOT, win_PM, loss_PM =\
-            WinTieLoss(
-                tie_max, tie_min, pyUP_PHOT, pyUP_PM, UP_PHOT,
-                UP_PM, 'summary')
+            WinTieLoss(pyUP_PHOT, pyUP_PM, UP_PHOT, UP_PM, 'summary')
 
         # PM
         delta = win_PM - loss_PM
@@ -51,19 +53,21 @@ def main():
 
     titl = ["PM", "PHOT", "Combined"]
     for i, win_loss in enumerate(winloss_rates):
+        # if i != 2:
+        #     continue
         print(titl[i])
         fig, ax = plt.subplots(figsize=(7, 7))
         # plt.title(titl[i])
         # (metrics, methods)
         matrx_vals = np.array(win_loss).T
         im, cbar = heatmap(matrx_vals, metrics, col_labels, ax=ax,
-                           cmap="RdYlGn", cbarlabel="(W-L)%") # YlGn
+                           cmap="RdYlGn", cbarlabel="(X - UPMASK)%") # YlGn
         annotate_heatmap(im, valfmt="{x:.0f}")
         # plt.show()
         file_out = 'plots/matrix_{}.png'.format(titl[i])
-        # fig.tight_layout()
-        # plt.savefig(file_out, dpi=300, bbox_inches='tight')
-        plt.show()
+        fig.tight_layout()
+        plt.savefig(file_out, dpi=300, bbox_inches='tight')
+        # plt.show()
 
 
 def heatmap(

@@ -12,6 +12,7 @@ in pyUPMASK from UPMASK, and then adding the results. The three smallest values
 point to the three worst performers.
 """
 
+# Select a method here
 method = 'Voron'
 pyU_prob_min = .9
 UP_prob_min = .9
@@ -22,7 +23,7 @@ metrics_n = [
 outp_py, outp_UP = 'output/pyUPMASK_600/', 'output/UPMASK_600/'
 
 for ftype in ('PHOT', 'PM'):
-    mfile_UP = 'metrics/metrics_' + ftype + '_UP_600_25_H_auto.dat'
+    mfile_UP = 'metrics/metrics_' + ftype + '_UPMASK_600_25_H_auto.dat'
     mfile_py = 'metrics/metrics_' + ftype + '_' + method + '_H_auto.dat'
 
     met_U = ascii.read(Path(mfile_UP))

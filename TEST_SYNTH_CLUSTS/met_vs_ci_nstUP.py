@@ -1,4 +1,4 @@
-from pathlib import Path
+
 from astropy.io import ascii
 import numpy as np
 import matplotlib.pyplot as plt
@@ -38,7 +38,8 @@ def main():
     axes[1].axhline(0, ls='--', c='red')
     axes[2].axhline(0, ls='--', c='red')
     fig.tight_layout()
-    plt.savefig('dmetrics_vs_ci.png', dpi=300, bbox_inches='tight')
+    # plt.savefig('dmetrics_vs_ci.png', dpi=300, bbox_inches='tight')
+    plt.show()
 
 
 if __name__ == '__main__':

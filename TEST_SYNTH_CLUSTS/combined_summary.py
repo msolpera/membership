@@ -1,7 +1,7 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-from metrics_vert_bars import tie_min, tie_max, WinTieLoss, readTables
+from auxFuncs import tie_min, tie_max, WinTieLoss, readTables
 
 
 def main():
@@ -10,7 +10,7 @@ def main():
     """
     # Defines which UPMASK results to use
     # Cantat-Gaudin results
-    UP_alg, N_UPMASK = "CG_", "15"
+    UP_alg, N_UPMASK = "CG_", "15" # "25"
     # Original UPMASK results
     # UP_alg, N_UPMASK = "", "25"
 
@@ -24,9 +24,7 @@ def main():
             N_UPMASK, Hval, m, UP_alg)
 
         CI_PM, CI_PHOT, win_PHOT, loss_PHOT, win_PM, loss_PM =\
-            WinTieLoss(
-                tie_max, tie_min, pyUP_PHOT, pyUP_PM, UP_PHOT,
-                UP_PM, 'summary')
+            WinTieLoss(pyUP_PHOT, pyUP_PM, UP_PHOT, UP_PM, 'summary')
 
         win_sum = win_PM.sum() + win_PHOT.sum()
         loss_sum = loss_PM.sum() + loss_PHOT.sum()

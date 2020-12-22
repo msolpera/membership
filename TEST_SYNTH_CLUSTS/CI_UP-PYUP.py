@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
-from metrics_vert_bars import tie_min, tie_max
-from metrics_bars import readTables
+from auxFuncs import tie_min, tie_max, readTables
 import numpy as np
 
 fold = '/metrics'
@@ -33,7 +32,7 @@ def main():
     sct_rdm_pm = np.random.normal(-2, 2, len(CI_PM[0]))
     sct_rdm_ph = np.random.normal(-2, 2, len(CI_PHOT[0]))
     for j, met in enumerate(conf):
-        ax = plt.subplot(3, 2, j+1)
+        ax = plt.subplot(3, 2, j + 1)
         plt.title(met)
         plt.axhline(0., c='k', ls=':')
         x_pm = abs(CI_PM[j] + sct_rdm_pm)
@@ -59,7 +58,7 @@ def main():
         if j == 0:
             plt.legend()
         fig.tight_layout()
-    plt.savefig('CI_pyU.png', dpi=300, bbox_inches='tight')
+    # plt.savefig('CI_pyU.png', dpi=300, bbox_inches='tight')
     plt.show()
 
 

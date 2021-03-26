@@ -10,9 +10,9 @@ def main():
     """
     # Defines which results to use
     # # Cantat-Gaudin results
-    UP_alg, N_UPMASK = "CG_", "15" # "25"
+    # UP_alg, N_UPMASK = "CG_", "15" # "25"
     # Original UPMASK results
-    # UP_alg, N_UPMASK = "", "25"
+    UP_alg, N_UPMASK = "", "25"
 
     configs = ["Voron", "kNNde", "Agglo", 'MiniB', "KMean", "Gauss"]
     col_labels = ['VOR', 'KNN', 'AGG', 'MBK', 'KMS', 'GMM']

@@ -1,0 +1,1460 @@
+%                                                                 aa.dem
+%DIF LATEXDIFF DIFFERENCE FILE
+%DIF DEL v0.2/pera_etal.tex   Mon Dec 21 17:42:37 2020
+%DIF ADD pera_etal.tex        Mon Dec 21 17:42:30 2020
+% AA vers. 9.1, LaTeX class for Astronomy & Astrophysics
+% demonstration file
+%                                                       (c) EDP Sciences
+%-----------------------------------------------------------------------
+%
+%\documentclass[referee]{aa} % for a referee version
+%\documentclass[onecolumn]{aa} % for a paper on 1 column  
+%\documentclass[longauth]{aa} % for the long lists of affiliations 
+%\documentclass[letter]{aa} % for the letters 
+%\documentclass[bibyear]{aa} % if the references are not structured 
+%                              according to the author-year natbib style
+
+%
+% \documentclass{aa}
+\documentclass[draft]{aa}
+
+%
+\usepackage{graphicx}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{txfonts}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% To add links in your PDF file, use the package "hyperref"
+% with options according to your LaTeX or PDFLaTeX drivers.
+%\usepackage[options]{hyperref}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, urlcolor=blue, citecolor=cyan, pdfborder={0 0 0}}
+
+
+% \usepackage{natbib}
+% \usepackage[space]{grffile}
+% \usepackage{latexsym}
+% \usepackage{amsfonts,amsmath,amssymb}
+% \usepackage{url}
+% \usepackage[utf8]{inputenc}
+% \usepackage{fancyref}
+
+\hyphenation{UPMASK}
+\hyphenation{pyUPMASK}
+%DIF PREAMBLE EXTENSION ADDED BY LATEXDIFF
+%DIF UNDERLINE PREAMBLE %DIF PREAMBLE
+\RequirePackage[normalem]{ulem} %DIF PREAMBLE
+\RequirePackage{color}\definecolor{RED}{rgb}{1,0,0}\definecolor{BLUE}{rgb}{0,0,1} %DIF PREAMBLE
+\providecommand{\DIFaddtex}[1]{{\protect\color{blue}\uwave{#1}}} %DIF PREAMBLE
+\providecommand{\DIFdeltex}[1]{{\protect\color{red}\sout{#1}}}                      %DIF PREAMBLE
+%DIF SAFE PREAMBLE %DIF PREAMBLE
+\providecommand{\DIFaddbegin}{} %DIF PREAMBLE
+\providecommand{\DIFaddend}{} %DIF PREAMBLE
+\providecommand{\DIFdelbegin}{} %DIF PREAMBLE
+\providecommand{\DIFdelend}{} %DIF PREAMBLE
+\providecommand{\DIFmodbegin}{} %DIF PREAMBLE
+\providecommand{\DIFmodend}{} %DIF PREAMBLE
+%DIF FLOATSAFE PREAMBLE %DIF PREAMBLE
+\providecommand{\DIFaddFL}[1]{\DIFadd{#1}} %DIF PREAMBLE
+\providecommand{\DIFdelFL}[1]{\DIFdel{#1}} %DIF PREAMBLE
+\providecommand{\DIFaddbeginFL}{} %DIF PREAMBLE
+\providecommand{\DIFaddendFL}{} %DIF PREAMBLE
+\providecommand{\DIFdelbeginFL}{} %DIF PREAMBLE
+\providecommand{\DIFdelendFL}{} %DIF PREAMBLE
+%DIF HYPERREF PREAMBLE %DIF PREAMBLE
+\providecommand{\DIFadd}[1]{\texorpdfstring{\DIFaddtex{#1}}{#1}} %DIF PREAMBLE
+\providecommand{\DIFdel}[1]{\texorpdfstring{\DIFdeltex{#1}}{}} %DIF PREAMBLE
+\newcommand{\DIFscaledelfig}{0.5}
+%DIF HIGHLIGHTGRAPHICS PREAMBLE %DIF PREAMBLE
+\RequirePackage{settobox} %DIF PREAMBLE
+\RequirePackage{letltxmacro} %DIF PREAMBLE
+\newsavebox{\DIFdelgraphicsbox} %DIF PREAMBLE
+\newlength{\DIFdelgraphicswidth} %DIF PREAMBLE
+\newlength{\DIFdelgraphicsheight} %DIF PREAMBLE
+% store original definition of \includegraphics %DIF PREAMBLE
+\LetLtxMacro{\DIFOincludegraphics}{\includegraphics} %DIF PREAMBLE
+\newcommand{\DIFaddincludegraphics}[2][]{{\color{blue}\fbox{\DIFOincludegraphics[#1]{#2}}}} %DIF PREAMBLE
+\newcommand{\DIFdelincludegraphics}[2][]{% %DIF PREAMBLE
+\sbox{\DIFdelgraphicsbox}{\DIFOincludegraphics[#1]{#2}}% %DIF PREAMBLE
+\settoboxwidth{\DIFdelgraphicswidth}{\DIFdelgraphicsbox} %DIF PREAMBLE
+\settoboxtotalheight{\DIFdelgraphicsheight}{\DIFdelgraphicsbox} %DIF PREAMBLE
+\scalebox{\DIFscaledelfig}{% %DIF PREAMBLE
+\parbox[b]{\DIFdelgraphicswidth}{\usebox{\DIFdelgraphicsbox}\\[-\baselineskip] \rule{\DIFdelgraphicswidth}{0em}}\llap{\resizebox{\DIFdelgraphicswidth}{\DIFdelgraphicsheight}{% %DIF PREAMBLE
+\setlength{\unitlength}{\DIFdelgraphicswidth}% %DIF PREAMBLE
+\begin{picture}(1,1)% %DIF PREAMBLE
+\thicklines\linethickness{2pt} %DIF PREAMBLE
+{\color[rgb]{1,0,0}\put(0,0){\framebox(1,1){}}}% %DIF PREAMBLE
+{\color[rgb]{1,0,0}\put(0,0){\line( 1,1){1}}}% %DIF PREAMBLE
+{\color[rgb]{1,0,0}\put(0,1){\line(1,-1){1}}}% %DIF PREAMBLE
+\end{picture}% %DIF PREAMBLE
+}\hspace*{3pt}}} %DIF PREAMBLE
+} %DIF PREAMBLE
+\LetLtxMacro{\DIFOaddbegin}{\DIFaddbegin} %DIF PREAMBLE
+\LetLtxMacro{\DIFOaddend}{\DIFaddend} %DIF PREAMBLE
+\LetLtxMacro{\DIFOdelbegin}{\DIFdelbegin} %DIF PREAMBLE
+\LetLtxMacro{\DIFOdelend}{\DIFdelend} %DIF PREAMBLE
+\DeclareRobustCommand{\DIFaddbegin}{\DIFOaddbegin \let\includegraphics\DIFaddincludegraphics} %DIF PREAMBLE
+\DeclareRobustCommand{\DIFaddend}{\DIFOaddend \let\includegraphics\DIFOincludegraphics} %DIF PREAMBLE
+\DeclareRobustCommand{\DIFdelbegin}{\DIFOdelbegin \let\includegraphics\DIFdelincludegraphics} %DIF PREAMBLE
+\DeclareRobustCommand{\DIFdelend}{\DIFOaddend \let\includegraphics\DIFOincludegraphics} %DIF PREAMBLE
+\LetLtxMacro{\DIFOaddbeginFL}{\DIFaddbeginFL} %DIF PREAMBLE
+\LetLtxMacro{\DIFOaddendFL}{\DIFaddendFL} %DIF PREAMBLE
+\LetLtxMacro{\DIFOdelbeginFL}{\DIFdelbeginFL} %DIF PREAMBLE
+\LetLtxMacro{\DIFOdelendFL}{\DIFdelendFL} %DIF PREAMBLE
+\DeclareRobustCommand{\DIFaddbeginFL}{\DIFOaddbeginFL \let\includegraphics\DIFaddincludegraphics} %DIF PREAMBLE
+\DeclareRobustCommand{\DIFaddendFL}{\DIFOaddendFL \let\includegraphics\DIFOincludegraphics} %DIF PREAMBLE
+\DeclareRobustCommand{\DIFdelbeginFL}{\DIFOdelbeginFL \let\includegraphics\DIFdelincludegraphics} %DIF PREAMBLE
+\DeclareRobustCommand{\DIFdelendFL}{\DIFOaddendFL \let\includegraphics\DIFOincludegraphics} %DIF PREAMBLE
+%DIF LISTINGS PREAMBLE %DIF PREAMBLE
+\RequirePackage{listings} %DIF PREAMBLE
+\RequirePackage{color} %DIF PREAMBLE
+\lstdefinelanguage{DIFcode}{ %DIF PREAMBLE
+%DIF DIFCODE_UNDERLINE %DIF PREAMBLE
+  moredelim=[il][\color{red}\sout]{\%DIF\ <\ }, %DIF PREAMBLE
+  moredelim=[il][\color{blue}\uwave]{\%DIF\ >\ } %DIF PREAMBLE
+} %DIF PREAMBLE
+\lstdefinestyle{DIFverbatimstyle}{ %DIF PREAMBLE
+	language=DIFcode, %DIF PREAMBLE
+	basicstyle=\ttfamily, %DIF PREAMBLE
+	columns=fullflexible, %DIF PREAMBLE
+	keepspaces=true %DIF PREAMBLE
+} %DIF PREAMBLE
+\lstnewenvironment{DIFverbatim}{\lstset{style=DIFverbatimstyle}}{} %DIF PREAMBLE
+\lstnewenvironment{DIFverbatim*}{\lstset{style=DIFverbatimstyle,showspaces=true}}{} %DIF PREAMBLE
+%DIF END PREAMBLE EXTENSION ADDED BY LATEXDIFF
+
+\begin{document} 
+
+
+\title{pyUPMASK: an improved unsupervised clustering algorithm}
+% \subtitle{I. Overviewing the $\kappa$-mechanism}
+
+% \author{Pera M S, Perren G I, Navone H, V\'{a}zquez R A}
+\author{M. S. Pera\inst{1}
+\and
+G. I. Perren\inst{1}
+\and
+A. Moitinho\inst{2}
+\and
+H. Navone\inst{3,5}
+\and
+R. A. Vazquez\inst{4}
+% % C. Ptolemy\inst{2}\fnmsep\thanks{Just to show the usage
+% % of the elements in the author field}
+}
+
+\institute{Instituto de Astrof\'isica de La Plata (IALP-CONICET), 1900 La
+Plata, Argentina\\
+\email{msolpera@gmail.com}
+\and
+CENTRA, Faculdade de Ci\^encias, Universidade de Lisboa, Ed. C8, Campo Grande,
+1749-016 Lisboa, Portugal
+% SIM, Faculdade de Ciências, Universidade de Lisboa, Ed. C8, Campo Grande,
+% P-1749-016 Lisboa, Portugal
+\and
+Facultad de Ciencias Exactas, Ingenier\'ia y Agrimensura (UNR), 2000 Rosario,
+Argentina
+\and
+Instituto de F\'isica de Rosario (CONICET-UNR), 2000 Rosario, Argentina,
+\and
+Facultad de Ciencias Astronómicas y Geofísicas (UNLP-IALP-CONICET), 1900 La
+Plata, Argentina
+}
+
+\date{Received December XX, 2020; accepted XXX XX, 2021}
+
+% \abstract{}{}{}{}{} 
+% 5 {} token are mandatory
+\abstract
+  % context heading (optional)
+  % {} leave it empty if necessary  
+  {}
+  % aims heading (mandatory)
+  {We present pyUPMASK, an unsupervised clustering method for stellar clusters
+  that builds upon the original UPMASK package. Its general approach makes it
+  plausible to be applied \DIFdelbegin \DIFdel{on analysis }\DIFdelend \DIFaddbegin \DIFadd{to analyses }\DIFaddend that deal with binary classes of any kind,
+  as long as the fundamental hypotheses are met.
+  The code is written entirely in Python and is made available through a public
+  repository.}
+  % methods heading (mandatory)
+  {The core of the algorithm follows the method developed in UPMASK but
+  introducing several key enhancements. These enhancements not only make
+  pyUPMASK more general, they also improve its performance considerably.
+  }
+  % results heading (mandatory)
+  {We thoroughly tested the performance of pyUPMASK on 600 synthetic clusters,
+  affected by varying degrees of contamination by field stars. To assess the
+  performance we employed six different statistical metrics that measure the
+  accuracy of probabilistic classification.}
+  % conclusions heading (optional), leave it empty if necessary 
+  {Our results show that pyUPMASK is better performant than UPMASK for every
+  \DIFaddbegin \DIFadd{statistical }\DIFaddend performance metric, while still managing to be many times faster.
+  }
+
+\keywords{
+  open clusters and associations: general --
+  methods: data analysis --
+  methods: statistical --
+  open clusters and associations: individual: NGC2516
+}
+
+\maketitle
+
+
+
+\section{Introduction}
+ \label{sec:intro}
+
+ Galactic open clusters are of \DIFdelbegin \DIFdel{vital importance in }\DIFdelend \DIFaddbegin \DIFadd{great importance for }\DIFaddend the study of the
+ Galaxy's chemical evolution, structure, and dynamics; as well as providing
+ test beds for astrophysical codes that model the evolution of stars.
+ Located largely on the disk of the Milky Way, their analysis is severely
+ hindered by the presence of contaminating field stars, located in the
+ foreground and background of the object of interest. These stars are
+ projected on the observed \DIFdelbegin \DIFdel{frame }\DIFdelend \DIFaddbegin \DIFadd{field of view }\DIFaddend and end up deeply mixed
+ with the \DIFdelbegin \DIFdel{true }\DIFdelend \DIFaddbegin \DIFadd{cluster }\DIFaddend members. The process of disentangling these two classes of
+ elements (members from non-members, i.e. field stars) can be referred
+ to as ``decontamination''.
+ %
+ A proper decontamination of the cluster region is a key previous step to the
+ analysis of the \DIFdelbegin \DIFdel{--hopefully now-- clean }\DIFdelend cluster sequence in search of the
+ fundamental parameters (metallicity, age, distance, extinction, etc.) that
+ characterize the OC. This analysis\DIFdelbegin \DIFdel{is performed over the photometric
+ spaceand }\DIFdelend \DIFaddbegin \DIFadd{, which is often performed in photometric
+ space, }\DIFaddend requires a sequence that is as complete as possible, but also as free
+ of contaminating field stars (non-members) as possible. The goal of a
+ decontamination algorithm is to obtain a subset of stars that fulfills both
+ these conditions simultaneously.
+
+ Over the years, a handful of decontamination algorithms were presented in the
+ stellar cluster literature. Most of them are variations of the
+ Vasilevskis-Sanders method \citep{Vasilevskis_1958,Sanders_1971} applied over
+ proper motions, which are generally considered to be much better member
+ discriminators than photometry.
+ The ``Unsupervised Photometric Membership Assignment in Stellar Clusters''
+ algorithm (UPMASK), originally presented in \citet[][henceforth KMM14]{KMM14},
+ has the advantage of being not only non-parametric, but also unsupervised.
+ This means that no a priori selection of field stars is required to serve as a
+ comparison model, as it is in the previously mentioned methods. \DIFaddbegin \DIFadd{Although
+ UPMASK was motivated by the need of assigning cluster memberships from
+ photometric data, KMM14 had pointed out that the method is general and could
+ be easily applied to other data types, and clusters of objects.
+ }\DIFaddend %
+ The KMM14 article has been referenced almost \DIFdelbegin \DIFdel{40 times}\DIFdelend \DIFaddbegin \DIFadd{50 times, having also being
+ applied to stellar proper motions and to study clusters of galaxies, }\DIFaddend in the six
+ years span since it was published, which indicates a wide adoption by the
+ astrophysical community.
+
+ \DIFdelbegin \DIFdel{We present here }\DIFdelend \DIFaddbegin \DIFadd{Here we present }\DIFaddend an improved version of the original UPMASK algorithm, which we
+ call pyUPMASK as it is written entirely in Python. We believe this new package
+ can be of great use, particularly with the advent of the \DIFdelbegin \DIFdel{third Gaia data
+ release in the very near future. }\DIFdelend \DIFaddbegin \DIFadd{recent early data
+ release 3 (eDR3, ) of the the Gaia mission
+ }\DIFaddend This package is made available as a
+ stand-alone code, but it will also be included in an upcoming release of our
+ Automated Stellar Cluster Analysis tool \citep[\texttt{ASteCA};][]{Perren_2015}.
+ %
+ Throughout the article we will refer as statistical clusters as simply
+ ``clusters'', and explicitly distinguish them from stellar clusters when
+ required.\\
+
+ This paper is organized as follows: in Section \ref{sec:methods} we
+ give a brief summary of the UPMASK algorithm, and present the details of the
+ enhancements introduced in our code. 
+ Section \ref{sec:validation} introduces the synthetic cluster sample
+ used in the analysis, and the selected statistical performance metrics
+ employed to asses the behavior of both UPMASK and pyUPMASK.
+ Results are summarized in Section \ref{sec:results}. Finally, our
+ conclusions are given in Section \ref{sec:conclusions}.
+
+
+
+%******************************************************************************
+\section{Methods}
+ \label{sec:methods}
+
+ We present here a brief description of the general algorithm used \DIFdelbegin \DIFdel{by }\DIFdelend \DIFaddbegin \DIFadd{in }\DIFaddend UPMASK,
+ as well as the major enhancements introduced in pyUPMASK.
+ Both methods are open source and their codes can be found in their
+ respective public repositories.\footnote{UPMASK: 
+ \DIFdelbegin %DIFDELCMD < \url{https://github.com/cran/UPMASK}%%%
+\DIFdelend \DIFaddbegin \url{https://cran.r-project.org/web/packages/UPMASK/}\DIFaddend }$^{,}$\footnote{pyUPMASK:
+ \url{https://github.com/msolpera/pyUPMASK}} % TODO final repo link here
+
+
+
+%******************************************************************************
+\subsection{The UPMASK algorithm}
+ \label{ssec:upmask}
+
+ The UPMASK package is described in full in KMM14 and we will not repeat it
+ here. We give instead a summary of \DIFdelbegin \DIFdel{its }\DIFdelend \DIFaddbegin \DIFadd{the }\DIFaddend most relevant parts and of its core
+ algorithm. The reader is directed to the original article for a more detailed
+ description.\\
+
+ % https://towardsdatascience.com/guide-to-classification-on-imbalanced-datasets-d6653aa5fa23
+ Assigning probability memberships to the two classes of elements within a 
+ stellar cluster \DIFaddbegin \DIFadd{field }\DIFaddend (members and field stars) is a notably complicated
+ problem, for two main reasons. First, the classes are usually very much
+ imbalanced. This means that one of the classes (field stars) can make up a
+ lot more than 50\% of the total dataset. In some extreme cases, the frame of
+ an observed stellar cluster can consist of over 90\% of field stars, and less
+ than 10\% of actual true members. Even worse, this information (i.e., the
+ true balance) can not be assumed to be known a priori.
+ Second, the two classes are deeply entangled. This is particularly true in the
+ two-dimensional coordinates space where members and field stars are mixed
+ throughout the entire cluster region. Off the shelf clustering methods
+ normally assume that there is some kind of frontier that largely separates
+ the classes, with minimal overlap. This is not the case in stellar clusters
+ analysis.
+ %
+ UPMASK deals with both these issues in a clever and effective way, by taking
+ advantage of the fact that we can approximate the distribution of field stars
+ in the coordinates space with a uniform model. This is further discussed
+ in Sect.~\ref{sssec:ripley}.\\
+
+ UPMASK is composed of two main blocks: an outer loop and an inner
+ loop. The outer loop is responsible for taking into account the uncertainties
+ in the data (which is optional and turned off by default), and of re-running
+ the inner loop a manually fixed number of times. The latter is required due
+ to the inherent stochasticity of the K-Means method \citep{macqueen1967},
+ employed by the inner loop. The number of runs for the outer loop is one of
+ the two most important parameters in the algorithm.
+ %
+ The inner loop holds the two main parts that make up the core of the
+ algorithm: the clustering method (K-Means, as stated before), and the
+ ``random field rejection'' method (henceforth: RFR).
+ The clustering method is applied on the non-positional features (photometry,
+ proper motions, etc), and separates the cluster data into $N$ clusters. The
+ $N$ value is determined by a parameter
+ % defined as:\\
+ % \noindent \emph{``an integer with the average number of stars per k-means
+ % cluster''},\\
+ % \noindent
+ which determines the number of elements that should be
+ contained in each cluster. I.e. dividing the total number of stars by this
+ value gives $N$, the final number of clusters that are generated.
+
+ After the clustering method is applied, the RFR method serves the purpose of
+ filtering those clusters identified by the K-means that are consistent
+ with a random \DIFaddbegin \DIFadd{uniform }\DIFaddend distribution of elements. This consistency is assessed
+ in UPMASK by means of a two-dimensional kernel density estimation (KDE)
+ analysis. In short: the KDE of the coordinates space of each cluster 
+ (identified by the K-Means in the previous step) is compared with the KDE of a
+ two-dimensional uniform distribution in the same range. If these are deemed
+ to be similar enough, the cluster is discarded as a realization of a random
+ selection of field stars, and all its stars are assigned a value of 0. Those
+ clusters that survive the RFR process are kept for a subsequent iteration of
+ the inner loop. When no more clusters are rejected, the inner loop is finished
+ all the stars within surviving clusters are assigned a value of 1. After this,
+ a new iteration of the outer loop is initiated.
+ %
+ The final probabilities assigned to each star are simply the averages of the
+ (0, 1) values assigned by the inner loop, at each run of the outer loop.\\
+
+ The two parameters mentioned above are the most important parameters in
+ UPMASK, since varying their value can substantially affect the
+ method's performance. We will comment on how we selected these
+ parameters in Sect~\ref{ssec:input_pars}.
+
+
+
+%******************************************************************************
+\subsection{The pyUPMASK algorithm}
+ \label{ssec:pyupmask}
+
+  An obvious difference between pyUPMASK and UPMASK is that the former is
+  written entirely in Python\footnote{\url{https://www.python.org/}} instead
+  of R\footnote{\url{https://www.r-project.org/}}, as is the case with UPMASK.
+  We believe that this is a considerable advantage given the noticeable shift
+  of the astrophysical community towards the Python language in recent years.
+  This is made evident by large Python-based projects like
+  Astropy\footnote{\url{http://www.astropy.org}} \citep{astropy:2013,
+  astropy:2018},
+  and international conferences such as ``Python in
+  Astronomy''\footnote{\url{http://openastronomy.org/pyastro/}}. A recent
+  survey found that Python is the most popular programing language in the
+  astronomical community \citep{Momcheva2015,Tollerud2019SustainingCS}.
+
+  \begin{figure}
+   \centering
+   % keepaspectratio,width=\textwidth,height=\textheight
+   % \includegraphics[width=\hsize]{figs/flowchart.png}
+   \includegraphics[width=\hsize]{figs/flowchart.png}
+   \caption{Flow chart of the pyUPMASK code. The enhanced clustering block and
+   the analysis blocks added in this work are colored in violet.}
+   \label{fig:flowchart}
+  \end{figure}
+
+  The general structure of pyUPMASK follows closely the UPMASK algorithm, this
+  is: an outer loop containing an inner loop that applies the cluster
+  identification and rejection methods. What sets apart these two algorithms
+  is that: 1. pyUPMASK supports almost a dozen clustering
+  methods (UPMASK only supports K-Means); 2. pyUPMASK contains
+  three added analysis blocks that are not present in UPMASK.
+  In Fig.~\ref{fig:flowchart} we show the complete flow-chart of the pyUPMASK
+  algorithm. The blocks colored in violet are those that are either enhanced or
+  added in this work.
+  %
+  The enhanced clustering methods block and the three added blocks are detailed
+  in Sects~\ref{sssec:clustering}, \ref{sssec:ripley},
+  \ref{sssec:gumm}, and \ref{sssec:kde-probs}, respectively. The remaining
+  portions of the code are mostly equivalent to those described in KMM14 for
+  UPMASK and, for the sake of brevity, we will not repeat their details or
+  purpose here.
+
+ 
+
+%******************************************************************************
+\subsubsection{Clustering methods}
+ \label{sssec:clustering}
+
+ While UPMASK supports the K-Means method exclusively (\DIFdelbegin \DIFdel{at least for now}\DIFdelend \DIFaddbegin \DIFadd{as of the current
+ version 1.2}\DIFaddend ), pyUPMASK relies on the Python library
+ \texttt{scikit-learn}\footnote{\url{https://scikit-learn.org/}}
+ \citep{scikit-learn} for the implementation of most of the supported
+ clusterings methods. This library includes around a dozen different
+ clustering methods for unlabeled data, which are all available to use in
+ pyUPMASK. Eventually this can be extended to support even more methods
+ in future releases of the code, via the \texttt{PyClustering}
+ library\footnote{\url{https://pyclustering.github.io}}.\\
+
+ Once chosen, the clustering method processes the non-spatial data at the
+ beginning of the inner loop as shown in Fig.~\ref{fig:flowchart}. The number
+ of individual clusters to generate is fixed indirectly through a
+ user-selected input parameter, as done in UPMASK.
+ % . This parameter
+ % is called \texttt{starsPerClust\_kmeans} in UPMASK, as stated in
+ % Sect.~\ref{ssec:upmask}, with a similar one present in pyUPMASK called
+ % \texttt{N\_membs}. It
+ % determines the number of elements that should be
+ % contained in each cluster, i.e. dividing the total number of stars by this
+ % value gives the final number of clusters that are generated.
+ Each of these clusters is then analyzed by the RFR method and kept or
+ rejected given its similarity with a random uniform distribution of elements.
+ This is further discussed in Sect.~\ref{sssec:ripley}.\\
+
+ In Sect~\ref{sec:results} we present a suit of tests performed with
+ four of the methods provided by \texttt{scikit-learn}: K-Means (KMS), Mini
+ Batch K-Means~\citep[MBK,][]{Sculley2010}, Gaussian mixture models~
+ \citep[GMM,][]{Baxter2010}, and Agglomerative
+ clustering~\citep[AGG,][]{Zepeda2013}.
+ %
+ In addition to these we include tests performed with two methods developed in
+ this work: the nearest neighbors density method (KNN), which is based in the
+ density peak approach introduced in \cite{Rodriguez2014}; and the 
+ Voronoi (VOR) method which is based in the construction of N-dimensional
+ Voronoi diagrams~\citep{Voronoi_1908}.
+ The last three methods (AGG, KNN, VOR) have a characteristic in common:
+ no stochastic process or approximation is employed by either of them. In
+ other words, they are deterministic.
+ This means that, for the same input data, the exact same result (i.e.,
+ clustering) will be obtained for different runs.
+ Assuming that no data resampling is performed (the default setting in both
+ UPMASK and pyUPMASK) the outer Loop then needs to be run only once, as
+ subsequent runs would produce the same probabilities each time. For this
+ reason we refer to these as ``single-run'' methods. As can easily be
+ inferred, these are significantly faster than both UPMASK and the rest of the
+ tested methods, which require multiple outer Loop runs.
+
+ The results obtained with the six selected methods are compared to UPMASK
+ results obtained on the same dataset of synthetic clusters. The synthetic
+ clusters dataset is described in  Sect.~\ref{ssec:synthetic}.
+
+
+
+%******************************************************************************
+\subsubsection{Ripley's K function}
+ \label{sssec:ripley}
+
+ After the clusters are generated on the non-spatial data, the RFR block is
+ used to filter out those that are consistent with the realization of a random
+ uniform distribution on the spatial data (i.e., coordinates). The hypothesis
+ at work here is that field stars will be randomly scattered throughout the
+ two spatial dimensions of the frame, following somewhat closely a uniform
+ distribution. Actual star cluster members on the other hand, will present a
+ more densely packed spatial distribution.
+ The latter is of course an approximation to the real --and unknown--
+ probability distribution of field stars but it is still a very reasonable
+ one, as the results show.
+
+ UPMASK employs a KDE-based method to characterize the distribution of each
+ cluster found in the spatial dimensions. This distribution is then compared
+ to that of thousands of random uniform distributions, generated in the same
+ two-dimensional range and with the same number of elements. After that,
+ a ``KDE distance'' is obtained by comparing their means, maximum, and
+ standard deviation values.
+ If the distance between both distributions is less than a user-defined
+ threshold parameter, the cluster is considered to be close enough to a
+ realization of a random uniform distribution. When this condition is met, the
+ cluster is rejected as a ``fake cluster'' (see Fig~\ref{fig:flowchart}).
+
+ In pyUPMASK we introduce Ripley's K function \citep{ripley_1976,ripley_1979}
+ to asses the ``closeness'' of a cluster to a random uniform distribution. This
+ function is defined as:
+
+ \begin{equation}
+ \hat{R}(r) = \frac{A}{N^2} \sum_i^N \sum_{j\neq i}^N I(d_{ij} < r) e_{ij}
+ \end{equation}
+
+ \noindent where $A$ is the area of the domain (our observed frame), $N$ is
+ the number of points within it, $d_{ij}$ is the distance between points
+ $i,j$, $I$ is a function that returns 1 if the condition is met and 0
+ otherwise, $e_{ij}$ is the edge correction (if required), and $r$ is the
+ scale at which the $ \hat{R}$ function is calculated.
+
+ Ripley's K function is employed to test for complete spatial randomness (CSR),
+ also called homogeneous Poisson point process, consisting basically of
+ points randomly located on a given domain. In a two-dimensional space it is
+ trivial to prove that if points are distributed following CSR, then $K(r)$
+ equals $\pi r^2$~\citep{Streib_2011}.
+ The K function is thus a perfect match for our intended usage which is
+ precisely to test if a set of points (stars) are distributed following
+ uniform spatial randomness.
+ We employ the form of the K function given by:
+
+ % Dixon (2001)
+ % The simplest use of Ripley’s K function is to test CSR, i.e. test whether
+ % the observed events are consistent with a homogeneous Poisson process. 
+
+ % Streib & Davis (2011)
+ % Ripley’s K-function measures the randomness
+ % of a point pattern over a given spatial domain at a specified
+ % scale r. The K-function compares the expected number of
+ % points within a local neighborhood of radius r at any point
+ % in the dataset versus the expected density assuming com-
+ % plete spatial randomness (CSR). If points adhere to CSR, then K(r)=pi*r^2
+ %
+ % Since clustering may occur in small neighborhoods but not in larger
+ % neighborhoods or vice versa, the K-function is generally computed across
+ % multiple scales
+
+ % https://onlinelibrary.wiley.com/doi/abs/10.1002/9781118445112.stat08071
+ % Complete spatial randomness (CSR) is the colloquial phrase used to describe a
+ % spatial homogeneous Poisson process.
+
+ % https://en.wikipedia.org/wiki/Poisson_point_process
+ % Poisson point process is a type of random mathematical object that consists
+ % of points randomly located on a mathematical space
+ %
+ % https://en.wikipedia.org/wiki/Complete_spatial_randomness
+ % Complete spatial randomness (CSR) describes a point process whereby point
+ % events occur within a given study area in a completely random fashion
+
+ % Random Graphs for Statistical Pattern Recognition, Marchette (2004)
+ % p 42:
+ % Poisson point processes (and their sample-size conditional versions, uniform point
+ % processes) are widely used as a “null” model for statistical pattern recognition. Since
+ % classification and clustering are attempts to identify structure in data, a hypothesis
+ % testing approach identifies the absence of structure with the null hypothesis. The term
+ % complete spatial randomness is often used to identify this null hypothesis [37]. For
+ % instance, Penrose and Yukich [153] prove central limit theorems for functionals on
+ % many data random graphs of interest in pattern recognition under Poisson and uniform
+ % process models (see Section 3.9).
+
+ \begin{equation}
+ \hat{L}(r) = [\hat{K}(r)/\pi]^2
+ \end{equation}
+
+ \noindent which converges to $r$ under CSR. Following~\cite{Dixon_2014} we
+ combine information from several distances ($r$ values) in a single test
+ statistic defined as:
+
+ \begin{equation}
+ \hat{L}_{m} = \sup_{r} |\hat{L}(r) - r|
+ \label{eq:ripley_L}
+ \end{equation}
+
+ % https://rdrr.io/cran/spatstat/man/Kest.html
+ % "Users are advised *not to* to specify this argument; there is a sensible
+ % default"
+ % "For a rectangular window it is prudent to restrict the r values to a
+ % maximum of 1/4 of the smaller side length of the rectangle
+ % (Ripley, 1977, 1988; Diggle, 1983)"
+ \noindent (where ``sup'' is the supremum).
+ Given that the observed frame's lengths are normalized by default to the
+ range $[0,1]$ prior to processing, the list of distances where Eq.
+ \ref{eq:ripley_L} is calculated are chosen to be in the range $[0, 0.25]$.
+ This is the range advised in the \texttt{Kest} function of the
+ \texttt{spatstat}
+ package~\citep{Baddeley_2015}\footnote{\url{http://spatstat.org/}}.
+
+ % https://support.minitab.com/en-us/minitab-express/1/help-and-how-to/
+ % basic-statistics/inference/supporting-topics/basics/what-is-a-critical-value/
+ % In hypothesis testing, a critical value is a point on the test distribution
+ % that is compared to the test statistic to determine whether to reject the
+ % null hypothesis. If the absolute value of your test statistic is greater
+ % than the critical value, you can declare statistical significance and
+ % reject the null hypothesis.
+ The null hypothesis ($H_0$) for the $\hat{L}_{m}$ is that the points follow
+ CSR. We need to select a critical value such that if the test is
+ greater than that value, the test is considered to be statistically
+ significant and $H_0$ is rejected.
+ Such critical values were estimated by Monte Carlo simulations
+ in~\cite{ripley_1979}. pyUPMASK uses the 1\% critical value --i.e.,
+ there is a 1\% probability of erroneously rejecting $H_0$ (also called a
+ Type I Error)-- approximated for $\hat{L}_{m}$ as $1.68\sqrt{A}/N$ where
+ $A$ and $N$ are the area and number of points, respectively.
+ %
+ In future releases of the code we plan on integrating analytical
+ expressions for the critical values, for example those obtained in
+ \cite{Lagache_2013} and~\cite{Marcon_2013}.\\
+
+ pyUPMASK employs \texttt{astropy}'s implementation of the K function, which
+ includes the required edge corrections for points that are located close to
+ the domain boundaries. Compared to UPMASK's KDE test, the K function is not
+ only a more natural choice for this task, it is also orders of magnitude
+ faster.
+
+
+
+%******************************************************************************
+\subsubsection{Gaussian-Uniform mixture model}
+ \label{sssec:gumm}
+
+ After the RFR block is finished and the ``fake clusters'' are rejected, only
+ those stars that were found in clusters sufficiently different from a random
+ uniform distribution of points are kept. These dataset of stars is
+ nonetheless still affected by contamination from field stars that could no be
+ removed. This is because these field stars were, by chance, associated with a
+ cluster composed mainly of true star cluster members and thus not rejected.
+ We developed a method to clean this region, applied on the 2-dimensional
+ coordinates space which we call GUMM, as it based on fitting a
+ Gaussian-Uniform mixture model to the dataset.
+
+ A $D$-dimensional Gaussian distribution can be written as:
+
+ \begin{equation}
+ \mathcal{N}(\mathbf{x} | \mu, \Sigma)=
+ \frac{1}{(2 \pi)^{D / 2}|\Sigma|^{1 / 2}}
+ \exp \left(-\frac{1}{2}(\mathbf{x}-\mu)^{T} \Sigma^{-1}(\mathbf{x}-\mu)\right)
+ \end{equation}
+
+ \noindent where $\mathbf{x}$ is the $D$-dimensional data vector, and $
+ (\mu,\Sigma)$ are the mean and covariance matrix.
+ % A Gaussian Mixture Model or GMM is a "*probabilistic model for representing
+ % the presence of (normally distributed) subpopulations within an overall
+ % population*". It attempts to find a mixture (combination) of
+ % multi-dimensional Gaussian probability distributions that best model an input
+ % dataset.
+ A GMM with $K$ components (i.e., Gaussians) is defined as:
+
+ \begin{equation}
+ \rho_{GMM}=\sum_{i=1}^{K} \pi_{i}
+ \mathcal{N}\left(\boldsymbol{\mathbf{x} | \mu}_{i}, \boldsymbol{\Sigma}_{i}\right)
+ \end{equation}
+
+ \noindent where $\pi_i$ are the weights (or mixing coefficients)
+ associated with each of the $K$ components. Similar to the GMM, we define the
+ GUMM as a 2-dimensional mixture model composed of a Gaussian, representing
+ the stellar cluster, and a uniform distribution, representing the noise due
+ to contaminating field stars. The full model is then written as:
+
+ \begin{equation}
+ \rho_{GUMM}=
+ \pi_{0} \mathcal{N}\left(\boldsymbol{\mathbf{x} | \mu}, \boldsymbol{\Sigma}\right)+
+ \pi_{1} U[0,1]
+ \end{equation}
+
+ \noindent where $U[0,1]$ is the uniform distribution in the range $[0,1]$,
+ and $\pi_{x} (x=0,1)$ are the unknown weights for each model.
+ No restrictions are imposed on the position, shape, or
+ extension of the 2D Gaussian representing the stellar cluster.
+ Following the recipe employed by the classic GMM, we use the
+ iterative Expectation-Maximization algorithm~\citep[EM,][]{dempster_1977} to
+ estimate these  weights, as well as the mean and covariance of the 2D
+ Gaussian. After the EM algorithm converges to a solution, each star is
+ assigned a probability of belonging to the 2D Gaussian 
+ (i.e., to the putative cluster). We then need to decide which stars to reject
+ as field stars, based on these probability values. To do this the percentile
+ distribution of the probabilities is generated, and the value
+ where the curve begins a sharp climb towards large probabilities is
+ automatically identified as the probability cut. The value
+ corresponding to the climb in the percentile curve is estimated with the
+ method developed in the \texttt{kneebow} package\footnote{
+ \url{https://github.com/georg-un/kneebow}}. The user can input a
+ manual value for this probability cut (or even skip the GUMM altogether), but
+ after extensive testing this method has proven to give very good results and
+ it is thus the recommended default.
+ Stars below this value are rejected as contaminating field stars, and the
+ surviving stars are kept as cluster members.
+
+ \begin{figure}
+ % \resizebox{\hsize}{!}{\includegraphics{figs/GUMM.png}}
+ \includegraphics[width=\hsize]{figs/GUMM.png}
+ \caption{The GUMM process in four steps. a: The set of stars that survived
+ the RFR block. b: Probabilities assigned by the GUMM to all the stars in the
+ frame. c: The method for selecting the probability cut value using a
+ percentile plot. d: The final set cleaned from most of the contaminating
+ field stars.}
+ \label{fig:gumm}
+ \end{figure}
+
+ The results of processing a group of stars from a synthetic cluster with the
+ GUMM can be seen in Fig.~\ref{fig:gumm}.
+ The a. plot shows the 2D coordinates space after the RFR
+ block rejects those clusters consistent with a random uniform distribution.
+ It can be seen that, even after clusters mainly composed of field stars are
+ rejected, the central overdensity is still visibly contaminated by the
+ surrounding field stars. The b. plot shows the probabilities assigned to each
+ star of belonging to the 2D Gaussian, by the GUMM process. In plot c. we show
+ the percentile diagram for the probabilities, where the red line shows the
+ value where the cut is imposed. Finally, plot d. shows the region after those
+ stars with probabilities below the aforementioned cut are rejected.\\
+
+ This process, although almost trivial at first glance, greatly improves the
+ purity of the final sample of estimated true members at very little cost
+ regarding completeness. The hypothesis at work is of course that the putative
+ stellar cluster is more concentrated in the coordinates space than regular
+ field stars, as previously stated.
+
+
+
+%******************************************************************************
+\subsubsection{Kernel density estimator probabilities}
+ \label{sssec:kde-probs}
+
+ Once a run of the inner loop is finished, each star in the observed field is
+ classified to be either a cluster member or a field star. This is a hard
+ binary classification, meaning that only probability values of 0. and 1. are
+ assigned. The KDE block takes these binary probabilities and turns them into
+ continuous probabilities in the range [0, 1]. This improves the final results
+ in general by assigning more realistic probability values. Furthermore, this
+ block is essential for single-run clustering methods (defined in
+ Sect~\ref{sssec:clustering}). Clustering methods like K-Means or GMM
+ require multiple outer loop runs. The final probabilities are then estimated
+ by averaging all the binary probability values, which breaks the binarity.
+ Single-run methods work, as the name indicates, on a single run of the outer
+ loop. This means that without this block, single-run methods would assign
+ probabilities of 0 and 1 exclusively.\\
+
+ The KDE probabilities are assigned after a full run of the inner loop, with
+ all stars classified as either members or non-members. The process is as
+ follows:
+
+ \begin{enumerate}
+  \item Separates each of those two classes into different sets
+  \item Estimate the KDE for each class, using all the available data i.e.:
+  coordinates plus the data dimensions used for clustering (photometry, proper
+  motions, etc.)
+  \item Evaluate all the data in the frame in the KDE obtained for each class
+  \item Use the above evaluations as likelihood estimates in the Bayesian
+  probability for two exclusive and exhaustive hypotheses (i.e., a star
+  belongs to either the members distribution or the field stars distribution)
+ \end{enumerate}
+
+ The final cluster membership probability (using uniform equal priors) is
+ written as:
+
+ \begin{equation}
+ P_{cl} = KDE_{m} / (KDE_{m} + KDE_{nm})
+ \end{equation}
+
+ \noindent where $KDE_{m}$ and $KDE_{nm}$ are the KDE likelihoods for the
+ members and non-members (field), respectively. The process can be seen in
+ Fig.~\ref{fig:KDE} for the coordinates dimensions (even though it is applied
+ on all the data dimensions\DIFaddbegin \DIFadd{, described in Sect.~\ref{ssec:synthetic}}\DIFaddend ).
+ The a. plot shows the two classes, members and
+ non-members, generated after the inner loop is finished. In plot b. we show
+ the 2-dimensional coordinates KDEs for both classes, reminding again that this
+ is applied on all the data dimensions. The c. plot shows the
+ non-binary $P_{cl} $ probabilities assigned by the method in the coordinates
+ space. Finally, the d. plot is equivalent to the c, plot but for the proper
+ motions space.
+
+  \begin{figure}
+  % \resizebox{\hsize}{!}{\includegraphics{figs/KDE.png}}
+  \includegraphics[width=\hsize]{figs/KDE.png}
+  \caption{KDE probabilities method, shown in the coordinates space. a:
+  members and non-members, as estimated by the inner loop process. b:
+  KDEs for both classes. c: final $P_{cl} $ probabilities assigned in the
+  coordinates space. d: same as c. but for proper motions.}
+  \label{fig:KDE}
+  \end{figure}
+
+
+
+%******************************************************************************
+\section{Validation of the method}
+ \label{sec:validation}
+
+ In order to perform a thorough comparison of the performance of pyUPMASK
+ \DIFdelbegin \DIFdel{versus }\DIFdelend \DIFaddbegin \DIFadd{with }\DIFaddend that of UPMASK, we applied both methods to a large number of synthetic
+ clusters and quantified the results using numerous statistical metrics.
+ We describe here the set of synthetic clusters, the selected metrics, and the
+ reasoning behind the choice of input parameters.
+
+
+
+%******************************************************************************
+\subsection{Synthetic datasets}
+ \label{ssec:synthetic}
+
+ We employed a total of 600 synthetic clusters to analyze the performance of
+ UPMASK and pyUPMASK, the latter in the six configurations mentioned in
+ Sect~\ref{sssec:clustering}. This set is divided into a sub-set of 320
+ clusters, and another one of 280 clusters. The first sub-set is equivalent to
+ that used in the original UPMASK article (KMM14), as it is composed of
+ clusters with synthetic photometry generated with the same process as that
+ used in KMM14. We will refer to this sub-set as PHOT hereinafter.
+ The second sub-set contains 280 clusters and, although it also contains
+ synthetic photometry, it was generated adding synthetic proper motions to all
+ the stars in the frame.
+ The idea is then to see how both algorithms handle the case were only
+ photometry is available, and the increasingly common case (thanks to the Gaia
+ \DIFdelbegin \DIFdel{survey}\DIFdelend \DIFaddbegin \DIFadd{mission}\DIFaddend ) were proper motions with very reasonable quality are available.
+ Clusters were generated with a wide range of field star contamination.
+ The level of contamination is measured by the contamination index (CI),
+ defined as the number of field stars to cluster members in the frame. The
+ maximum CI in our set of synthetic clusters is 200.
+
+ In Fig.~\ref{fig:synth_clust} we show examples of a PHOT (top) and PM
+ (bottom) synthetic clusters, generated with moderate contamination 
+ (CI$\approx$50).
+
+
+ \begin{figure}
+ \includegraphics[width=\hsize]{figs/synth_clusts.png}
+ % \resizebox{\hsize}{!}{\includegraphics{figs/synth_clusts.png}}
+ \caption{Top row: coordinates and color-magnitude diagram for a PHOT synthetic
+ cluster with moderate CI.
+ Bottom row: coordinates and vector-point diagram for a PM synthetic
+ cluster with moderate CI.}
+ \label{fig:synth_clust}
+ \end{figure}
+
+
+
+%******************************************************************************
+\subsection{Performance metrics}
+ \label{ssec:performance}
+
+ % Classification Vs. Clustering
+ % https://blog.bismart.com/en/classification-vs.-clustering-a-practical-explanation
+ % the difference lies in the fact that classification uses predefined classes in
+ % which objects are assigned, while clustering identifies similarities between
+ % objects, which it groups according to those characteristics in common and
+ % which differentiate them from other groups of objects
+
+ % https://stats.stackexchange.com/a/194890/10416
+ % the two proper accuracy scores (Brier and log-loss) are rewarding different
+ % things and it's not surprising they behave differently.
+
+
+ % Hand (2009)
+ % One of the important issues in performance evaluation is that of which
+ % criterion to choose to measure classifier performance.
+ %
+ % hernandez-Orallo et al. (2012)
+ % A Unified View of Performance Metrics: Translating Threshold Choice into
+ % Expected Classification Loss (2012)
+ % "The choice of a proper performance metric for evaluating classification (Hand,
+ % 1997) is an old but still lively debate which has incorporated many different
+ % performance metrics along the way."
+ %
+ % Merkle & Steyvers (2013)
+ % different strictly proper scoring rules can yield very different substantive
+ % conclusions, which implies that researchers should carefully consider the
+ % scoring rule that is used to evaluate forecasters
+ A proper choice for evaluating the classification performance of a
+ probabilistic model (such as UPMASK or pyUPMASK) is a debate that carries on
+ even today~\citep{Hand_2009,hernandez_2012}. Different metrics or scoring
+ rules will yield different results regarding the model's
+ performance~\citep{Merkle_2013}, which means that relaying on a single metric
+ is not recommended. This is particularly true when dealing with datasets that
+ can be highly imbalanced, as is our case. We thus chose to employ multiple
+ metrics. By combining all of them we \DIFdelbegin \DIFdel{can be sure that we }\DIFdelend \DIFaddbegin \DIFadd{expect to }\DIFaddend obtain a non-biased
+ assessment of the overall performance of pyUPMASK versus UPMASK.
+
+ We selected six metrics that can be divided into two groups of three each.
+ The first group consists of strictly proper scoring rules, which
+ guarantee that they are only optimized when the true classification is
+ obtained. This group is composed of the following metrics:\\
+
+ % https://stats.stackexchange.com/a/312787/10416
+ % * Proper scoring rules are scoring rules that are minimized in expectation if
+ % the predictive density is the true density.
+ % * Strictly proper scoring rules are scoring rules that are only minimized in
+ % expectation if the predictive density is the true density.
+
+ % https://stats.stackexchange.com/a/339993/10416
+ % * A strictly proper scoring rule, like the Brier score, guarantees that the
+ % best score will only be attained when we are as close to the true
+ % probabilities as possible.
+ % * A proper scoring rule, like the continuous ranked probability score (CRPS),
+ % does not guarantee that the best score will only be attained by a classifier
+ % whose predictions are the closest to the true probabilities. Other candidate
+ % classifiers might attain CRPS scores that match that of the optimal classifier.
+ % * A semi-proper scoring rule, like the AUC-ROC, not only does it not guarantee
+ % that the best performance will be attained by a classifier whose predictions
+ % are the closest to the true probabilities, but it is also (potentially)
+ % possible to improve on the values of AUC-ROC by moving the predicted
+ % probabilities away from their true values. Nevertheless, under certain
+ % conditions (eg. the class distribution is a priori known in the case of
+ % AUC-ROC) such rules can approximate a proper scoring rule. Byrne (2016) "A
+ % note on the use of empirical AUC for evaluating probabilistic forecasts"
+ % raises some interesting points regarding AUC-ROC.
+ % * An improper scoring rule, like Accuracy, offers little to no connection to
+ % our original task of predicting probabilities as close as possible to the true
+ % probabilities.
+
+ % https://www.fharrell.com/post/class-damage/
+ % a proper accuracy scoring rule is (...) a metric that is optimized when
+ % the forecasted probabilities are identical to the true outcome probabilities
+ % The two most commonly used proper scoring rules are the (...) Brier score, and
+ % the logarithmic scoring rule.
+
+ % https://towardsdatascience.com/log-loss-function-math-explained-5b83cd8d9c83
+ \noindent \textbullet\ \emph{Logarithmic Scoring Rule}:
+ \begin{equation}
+ LSR = 1+\frac{1}{N} \sum_{i=1}^N y_{true} \log(p) + (1-y_{true}) \log(1-p)
+ \end{equation}
+ \noindent where $N$ is the number of elements, $y_{true}\in\{0,1\}$ is the
+ true label, and $p{=}\operatorname{Pr}(y{=}1)$ is the probability that
+ $y{=}1$, i.e., the probability that the element belongs to the class
+ identified with a 1~\citep{Good_1952}. The LSR (also called Log-loss or
+ Cross-entropy) heavily penalizes large differences between $y_{true}$ and
+ $p$.\\
+
+ \noindent \textbullet\ \emph{Brier Score Loss}:
+ \begin{equation}
+ BSL = 1-\frac{1}{N} \sum_{i=1}^N (p-y_{true})^2
+ \end{equation}
+ \noindent equivalent to the mean squared error for binary classification,
+ it was originally introduced in~\cite{Brier_1950}.\\
+
+ \noindent \textbullet\ \emph{H Measure}:
+ \begin{equation}
+ HMS = 1 - \frac{L}{L_{max}}
+ \end{equation}
+ \noindent where $L$ is the loss function, and $L_{max}$ is the maximum
+ loss~\cite[the expression for the loss function is much too mathematically
+ involved to be presented here, it can be seen in full in][]{Hand_2009}.
+ This is a relatively new metric. It was developed as a replacement of the
+ popular AUC (area under the receiver operating characteristic curve) score;
+ now known to be an incoherent performance measure and thus not
+ recommended~\citep{Lobo_2008,Parker_2011,Hand_2014}. The HMS automatically
+ handles unbalanced classes by treating the misclassification of the smaller
+ class (in our case almost always true members, except for extremely low CI
+ values) as more serious than those of the larger class.\\
+
+ \noindent It is worth noting that the definitions of LSR and BSL were altered
+ from their original forms by inverting and adding a +1. This way all the
+ metrics defined assign 1 to a perfect score.\\
+
+ % https://towardsdatascience.com/the-ultimate-guide-to-binary-classification-metrics-c25c3627dd0a
+ The three metrics in the first group can be used directly on the membership
+ probabilities in the [0, 1] range, resulting from UPMASK or pyUPMASK.
+ % https://stats.stackexchange.com/a/90705/10416
+ % Improper scoring rules such as proportion classified correctly, sensitivity,
+ % and specificity are not only arbitrary (in choice of threshold) but are
+ % improper, i.e., they have the property that maximizing them leads to a bogus
+ % model, inaccurate predictions, and selecting the wrong features.
+ The second group defined below, consists of scoring rules that are applied
+ to binary classifiers. These are the types of metrics used in the original
+ KMM14 article and we employ them here for consistency\footnote{Notice that in
+ KMM14 the statistical measures TPR and MMR are incorrectly defined. What the
+ authors call ``TPR'' is in fact the PPV, and what they call ``MMR''
+ is actually the properly defined TPR.}.
+ In the definitions that follow TP is a true positive (a member star correctly
+ classified as such), TN is a true negative (a field star correctly classified
+ as such), FN is a false negative (a member star incorrectly
+ classified as field), and FP is a false positive (a field star incorrectly
+ classified as member):\\
+
+ \noindent \textbullet\ \emph{True Positive Rate}:
+ \begin{equation}
+ TPR = \frac{TP}{TP+FN}
+ \end{equation}
+ \noindent also called sensitivity or recall, it measures the proportion of
+ true members that are correctly identified.\\
+
+ \noindent \textbullet\ \emph{Positive Predictive Value}:
+ \begin{equation}
+ PPV = \frac{TP}{TP+FP}
+ \end{equation}
+ \noindent also called precision, it measures how many stars classified as
+ members are in fact true members.\\
+
+ \noindent \textbullet\ \emph{Matthews Correlation Coefficient}:
+ \begin{equation}
+ MCC = \frac{TP \times TN - FP \times FN}{\sqrt{(TP + FP)(TP + FN)(TN + FP)(TN + FN)}}
+ \end{equation}
+ \noindent introduced in \cite{Matthews_1975}, it can be thought of as an
+ equivalent to Pearson's correlation coefficient for binary classifiers. Unlike
+ the TPR and PPV, the MCC also takes the TNs into account. It is
+ recommended when dealing with imbalanced classes, as is our case.\\
+
+ \noindent To turn the problem into one of binary classification and be able
+ to use the three metrics defined in the second group, we must first select a
+ probability threshold that separates the stars into both classes (members and
+ non-members). In KMM14 a single threshold of 90\% was used. Since the choice
+ of a threshold can affect the results from these three metrics, we decided
+ to use two different thresholds: 50\% and 90\%. This way we end up with nine
+ metrics to test the performance of UPMASK and pyUPMASK: LSR, BSL, HMS, TPR$_5$,
+ PPV$_5$, MCC$_5$, TPR$_9$, PPV$_9$, and MCC$_9$; where the sub-index 5 and 9
+ indicate the 50\% and 90\% thresholds respectively.
+
+
+
+%******************************************************************************
+\subsection{Input parameters selection}
+ \label{ssec:input_pars}
+
+ \begin{figure}
+ % \resizebox{\hsize}{!}{\includegraphics{figs/upmask_N.png}}
+ \includegraphics[width=\hsize]{figs/upmask_N.png}
+ \caption{a, b, c: boxplot of the combined metrics difference versus CI for the
+ 100 synthetic clusters used in the test. Combinations for the
+ $N_{15},\,N_{25},\,N_{50}$ values are shown.
+ d: outer loop convergence analysis. The convergence percentile
+ of the nine metrics versus the number of outer loop run is shown. The black
+ dashed line marks the 90\% convergence point.}
+ \label{fig:UPMASKruns}
+ \end{figure}
+
+ There are two main parameters in UPMSAK and pyUPMASK that affect the outcome
+ of the methods: the number of stars per cluster, and the number of runs of the
+ outer loop.
+ The former, which we will refer to as $N_{clust}$, was investigated in KMM14
+ where the authors concluded that a value between 10 to 25 is appropriate. In
+ the latest version \DIFaddbegin \DIFadd{(v1.2) }\DIFaddend of the UPMASK code, depending on how it is run, the
+ default value for $N_{clust}$ is either 25 or 50\footnote{It is 50 if one runs
+ the code using the \texttt{UPMASKfile} function, and 25 if one uses the
+ \texttt{UPMASKdata} function.}.
+ %
+ We performed our own tests using 100 synthetic clusters (50 PHOT and 50 PM)
+ covering the full CI range, selected at random from the full list of 600
+ mentioned in Sect~\ref{ssec:synthetic}. This set was analyzed with the nine
+ performance metrics described in Sect~\ref{ssec:performance}.
+ In Fig.~\ref{fig:UPMASKruns} we show the results obtained for three
+ $N_{clust}$ values 15, 25, and 50. We combined all the metrics for the 100
+ synthetic clusters into one set and subtracted these (900) values for a
+ given $N_{clust}$ value from another. The results are plotted versus the CI of
+ the synthetic clusters. From a. to c. the combinations
+ $N_{15}-N_{25}$, $N_{15}-N_{50}$, and $N_{25}-N_{50}$ are shown where a
+ positive value means that the $N_{clust}$ value on the left performed better
+ than the one on the right, and vice-versa for negative values. As can be seen,
+ the differences are rather small and don't tend to change for different CI
+ values.
+ We thus decided to use the middle value $N_{clust}=25$ for all the UPMASK and
+ pyUPMASK runs, as a reasonable number of default stars per cluster for all the
+ CI range.\\
+
+ Deciding how many times the outer loop should run is the other important
+ parameter: a low number will terminate the code before it is able to present
+ fully converged probability values, and a large number will waste processing
+ time. We processed the same set of 100 synthetic clusters with $N_{clust}=25$
+ and analyzed when each of the nine metrics converged to a stable value. The
+ stabilization point is defined as the outer loop run where the metric changes
+ inside the $\pm0.025$ range for 5 consecutive runs. Results are shown in
+ Fig.~\ref{fig:UPMASKruns} d. plot as a the convergence percentile 
+ (i.e., the percentage of clusters that have converged) for each metric, versus
+ the outer loop run. It can be seen that almost all the metrics reach a
+ convergence above 90\% (horizontal black dashed line) before the 25th outer
+ loop run. The two exceptions are TPR$_9$ and PPV$_9$ which still show a
+ convergence above 85\% before the 25th run.
+ Given these results we will use 25 runs in the outer loop for all the UPMASK
+ and pyUPMASK analysis, with the obvious exceptions of the single-run methods
+ described in Sect~\ref{sssec:clustering}.
+
+ % \begin{figure}
+ % \includegraphics[width=\hsize]{figs/UP_convergence.png}
+ % \caption{Outer loop convergence analysis. The convergence percentile of the
+ % nine metrics versus the number of outer loop run is shown. The black dashed
+ % line marks the 90\% convergence point.}
+ % \label{fig:UPMASKconverge}
+ % \end{figure}
+
+ The PHOT set was processed using all the available photometry as input ($V,
+ B-V, U-B, V-I, J-H, H-K$) but selecting only the four principal dimensions
+ after the principal component analysis dimensionality reduction.
+ For the PM set we used only the proper motions ($\mu_{\alpha}, \mu{\delta}$),
+ and no photometry. Proper motions are generally regarded as better cluster
+ members discriminators than photometry. We were able to confirm this by
+ checking that the results (with either UPMASK or pyUPMASK) degraded if
+ photometry was added to the proper motions as input data for the PM set.
+
+
+
+
+%******************************************************************************
+\section{Results}
+ \label{sec:results}
+
+ To ensure that the results are comparable between the pyUPMASK and UPMASK runs,
+ all the analysis were performed on the same computer cluster. In what follows
+ results are classified according to whether pyUPMASK or UPMASK performed
+ better for a given metric and synthetic cluster.
+ % as a pyUPMASK win if the metric value is greater than that obtained with
+ % UPMASK, and a pyUPMASK loss (or UPMASK win) if it is smaller.
+ We allow for a small range of $\pm0.005$ to act as a ``tie zone''
+ where both methods can be thought of as performing equally well.\\
+
+ \begin{figure*}
+ \resizebox{\hsize}{!}{\includegraphics{figs/all_methods.png}}
+ \caption{Results for the 600 synthetic clusters processed with the six
+ clustering methods used in pyUPMASK versus UPMASK. For each metric, green and
+ red bars represent the cases where pyUPMASK and UPMASK performed better,
+ respectively. Yellow bars represent cases where both methods performed
+ equally well.}
+ \label{fig:allmethods}
+ \end{figure*}
+
+ In Fig~\ref{fig:allmethods} we show the metrics for the combined PHOT and PM
+ sets of synthetic clusters, for each of the six clustering methods used in
+ pyUPMASK. Green, yellow, and red bars depict the proportion of cases where
+ pyUPMASK performed better, equally well, and where UPMASK performed
+ better, respectively.
+ It is easy to see that, although with some variation across clustering methods,
+ pyUPMASK has a better performance than UPMASK for all the methods and all the
+ metrics.
+ This is an outstanding result that unmistakably shows the \DIFdelbegin \DIFdel{power of }\DIFdelend \DIFaddbegin \DIFadd{large improvement
+ brought by }\DIFaddend pyUPMASK.
+ The three methods that apply multiple outer loop runs (MBK, KMS, GMM) show a
+ clear advantage over the remaining single-run methods, regarding the
+ proportion of cases where pyUPMASK resulted in larger metric values.\\
+
+ In~\cite{Cantat_2018} the authors used a modified version of UPMASK to
+ estimate membership probabilities for more than 1200 cataloged clusters. The
+ modification \DIFaddbegin \DIFadd{was motivated by the need of increasing the speed for processing
+ large numbers of clusters and }\DIFaddend mainly consists in replacing the default KDE
+ based method in the RFR block in UPMASK, for a minimum spanning tree method 
+ (see article for more details).
+ We tested this modified version\footnote{Thanks to Dr Cantat-Gaudin
+ who shared the code with us.}, which we will refer to as MST, using the same
+ set of synthetic clusters and metrics employed so far. The code was executed
+ with 25 runs of the outer loop, and 15 stars per cluster (internal tests
+ showed that this gave more adequate results than using 25).\\
+
+ The results of our six clustering methods, plus the MST method, versus UPMASK
+ can be compressed into a single matrix plot as shown in
+ Fig.~\ref{fig:matrix}. We display here the X minus UPMASK percentage
+ metric difference, where X represents each of the pyUPMASK clustering methods
+ plus MST. This value is obtained subtracting the number of synthetic clusters
+ where pyUPMASK/MST performed better than UPMASK, from the number of clusters
+ where UPMASK showed a better performance, and taking the percentage.
+ This difference ranges from -100, which would indicate that UPMASK performed
+ better on all 600 synthetic clusters, to 100, indicating that pyUPMASK (or
+ MST) was the better performer for the 600 clusters. A value of 0 indicates
+ that both methods performed better on an equal number of cases.
+ %
+ As can be seen, for the pyUPMASK methods all the squares in the matrix are
+ positive (the smallest one being the PPV$_5$ metric for the VOR method) which
+ again shows that pyUPMASK \DIFdelbegin \DIFdel{is a much stronger method }\DIFdelend \DIFaddbegin \DIFadd{performed significantly better }\DIFaddend than UPMASK, measured
+ by any of the employed metrics.
+ The advantage of the MBK, KMS, GMM methods over the single-run methods is
+ easier to see here compared to Fig.~\ref{fig:allmethods}. The only exception
+ is the TPR$_9$ metric where the VOR, KNN, and AGG methods show a larger
+ differential than the remaining multiple-runs methods; i.e., more true members
+ are classified as such. This comes at the expense of the PPV$_9$ metric where
+ the MBK, KMS, GMM methods show much larger values; i.e., fewer field stars are
+ incorrectly classified as members. Other than this, there is no visible
+ relation between any clustering method and a given performance metric.
+
+ The MST method shows a \DIFdelbegin \DIFdel{rather }\DIFdelend \DIFaddbegin \DIFadd{somewhat }\DIFaddend erratic behavior across the metrics. It
+ performs worse than UPMASK for almost all of the clusters for several metrics
+ (i.e., HMS, TPR$_5$, MCC$_9$, TPR$_9$) and better for a few others (LSR, BSL).
+ Overall, the \DIFaddbegin \DIFadd{statistical }\DIFaddend performance of the MST method is worse than both
+ UPMASK and pyUPMASK with any of the tested clustering methods.
+ \DIFaddbegin \DIFadd{Notwithstanding, MST is faster than UPMASK (as we show below)
+ and outperforms all other methods in the LSR and BSL metrics.}\DIFaddend \\
+
+ \begin{figure}
+ \includegraphics[width=\hsize]{figs/matrix.png}
+ \caption{Matrix plot of the six pyUPMASK clustering methods plus MST, versus
+ the nine defined metrics for the 600 synthetic clusters. Each square shows
+ the percentage difference of the number of cases where pyUPMASK/MST performed
+ better, minus the number where UPMASK performed better.}
+ \label{fig:matrix}
+ \end{figure}
+
+ In Fig.~\ref{fig:CIdelta} we show the dependence with CI for the pyUPMASK
+ minus UPMASK difference for all the metrics, for each clustering method. A
+ positive value (green region) means that pyUPMASK performed better while a
+ negative value (red region) means that it performed worse than UPMASK. The
+ PHOT and PM sets are shown with triangles and circles, respectively.
+ There is no apparent trend with CI for the results of any clustering method.
+ What is clear is that pyUPMASK performs even better for the PM set as
+ evidenced by the overall larger (more positive) differences, particularly for
+ clusters with large CI values. This is a very desirable result taking into
+ account that high quality proper motions are becoming more accessible very
+ fast.\\
+
+ \begin{figure*}
+ \resizebox{\hsize}{!}{\includegraphics{figs/CI_delta.png}}
+ \caption{Differences between pyUPMASK versus UPMASK results for all the
+ metrics combined, versus the CI (shown as a logarithm). Each clustering method
+ is shown separately, as are the PHOT and PM sets using blue triangles and
+ black circles, respectively. The red and green regions correspond to the
+ regions where pyUPMASK gives worse and better results than UPMASK,
+ respectively.}
+ \label{fig:CIdelta}
+ \end{figure*}
+
+ \begin{table}
+ \caption{Aggregated results for all the metrics and all the synthetic
+ clusters, for the six pyUPMASK clustering methods used, as percentage of
+ results where pyUPMASK outperformed UPMASK, and vice-versa, respectively. The
+ missing percentage to add up to 100 corresponds to ties.
+ The second rows for each method show the minimum and maximum percentage values
+ obtained for any single metric (shown in parenthesis), for that method.}
+ \label{tab:results}
+ \centering
+ \begin{tabular}{l c c l}
+ \hline\hline
+ Method & pyUPMASK & UPMASK\\
+  & min | max & min | max \\
+ \hline
+   VOR & 66 & 29 \\
+   & 55 (BSL) | 78 (TPR$_9$) & 13 (TPR$_9$) | 42 (PPV$_5$)\\
+   KNN & 68 & 27\\
+   & 57 (BSL) | 85 (TPR$_9$) & 8 (TPR$_9$) | 40 (PPV$_5$)\\
+   AGG & 72 & 24 \\
+   & 59 (BSL) | 90 (TPR$_9$) & 4 (TPR$_9$) | 38 (PPV$_5$)\\
+   MBK & 77 & 16\\
+   & 51 (TPR$_9$) | 90 (MCC$_5$) & 8 (HMS) | 36 (TPR$_9$)\\
+   KMS & 79 & 15\\
+   & 66 (TPR$_9$) | 88 (HMS) & 8 (PPV$_9$) | 22 (TPR$_9$)\\
+   GMM & 83 & 11\\
+   & 74 (TPR$_9$) | 93 (HMS) & 5 (HMS) | 16 (LSR)\\
+ \hline
+ \end{tabular}
+ \end{table}
+
+ We can further compress the results by combining each metric into a single
+ value, for each of the clustering methods tested in pyUPMASK. I.e., we take
+ the 5400 results for each clustering method (600 synthetic clusters times nine
+ metrics) and calculate the percentage where pyUPMASK outperformed UPMASK.
+ The same process can be applied to the synthetic clusters where
+ UPMASK outperformed pyUPMASK to obtain a similar, inverted, percentage.
+ The results are shown in Table~\ref{tab:results}.
+ This table shows that even the ``worst'' pyUPMASK performer (VOR) gives
+ better metrics than UPMASK 66\% of the times. The method  with the highest
+ pyUPMASK percentage (GMM) outperforms UPMASK 83\% of the times; a massive
+ advantage. The worst individual metric result is obtained for TPR$_9$ in the
+ MBK method. Still the value is larger than 50\% which means that the majority
+ of the cases were better handled by pyUPMASK. On the other end of the
+ analysis the best metric result is found for HMS in the GMM method, where
+ pyUPMASK manages to outperform UPMASK for virtually all of the cases.\\
+
+ % CG 15    : 6103.86 min
+ % CG 25    : 5183.82 min
+ % UPMASK 25: 8286.415 min
+ % UPMASK 25 / CG 15 ~ 1.357 ~ 1.4
+
+ Another important aspect along with the performance measured by the
+ statistical metrics is the performance measured in computing time. This is
+ shown in Fig.~\ref{fig:timeanalys} as a bar plot normalized to the total time
+ used by UPMASK to process the 600 synthetic clusters. The numbers on top of
+ the bars displays how many times faster each clustering method in pyUPMASK
+ (green bars) is compared to UPMASK (red bar). We also show the time
+ performance of the MST modification mentioned previously (orange bar).
+ The fastest method is expectedly a single-run method, KNN,
+ which performs 170 times faster than UPMASK. This is an enormous margin of
+ difference. Even the slowest method, GMM, is faster than UPMASK: it manages to
+ process the set of synthetic cluster employing almost 38\% less time than
+ UPMASK, or 1.6 times faster. On average we can say that pyUPMASK using a
+ single-run method is over 100 times faster than UPMASK, and more than 3 times
+ faster for the multiple run methods.\\
+
+ \begin{figure}
+  \centering
+  % width=\textwidth,height=\textheight
+  \includegraphics[width=\hsize]{figs/time_analysis.png}
+  \caption{Amount of time employed in processing the 600 synthetic
+  clusters by each pyUPMASK method (green bars), the MST method (orange bar)
+  and UPMASK (red bar). Bars are normalized so that UPMASK corresponds to a
+  total value of 1.}
+  \label{fig:timeanalys}
+ \end{figure}
+
+ The choice between which clustering method to employ in pyUPMASK will then
+ depend on the specific requirements of the analysis. If the absolute best
+ performance measured by a classification metric is sought after, then clearly
+ GMM is the method to chose (with the added advantage of being faster than
+ UPMASK). If we can trade some performance for a faster
+ process, then KMS or MBK can be used. And if we are willing to trade even more
+ classification performance (while still performing much better than UPMASK),
+ then VOR, KNN, or AGG are by far the fastest approaches.
+
+
+
+
+
+%******************************************************************************
+\subsection{Computational resources}
+ \label{ssec:vor_ngc2516}
+
+ Finally, we consider the issue of computational resources requirements.
+ We have found that for very large input data files the memory and
+ processing power requirements can be too much for most methods to handle.
+ Although the VOR clustering method is the worst performer out of the six
+ tested methods (measured by classification metrics) it has an advantage
+ compared to all the others, including UPMASK, when it comes to analyzing large
+ files. 
+ %
+ To obtain the Voronoi diagram of an N-dimensional set of points, Python's 
+ \texttt{scipy} package relies on the Qhull
+ library~\citep{Barber_1996}\footnote{\url{http://www.qhull.org/}}.
+ This library is written in the C language which makes it extremely efficient,
+ thus making pyUPMASK's VOR method very efficient for large datasets.
+
+ To test this we downloaded a large 6$\times$6 deg region around the NGC2516
+ cluster from Gaia's second data release\DIFaddbegin \DIFadd{~\mbox{%DIFAUXCMD
+\citep{GaiaDR2_2018}}\hspace{0pt}%DIFAUXCMD
+}\DIFaddend . The resulting
+ field contains over 420000 stars up to a maximum magnitude of $G=19$ mag. This
+ limit was imposed because beyond this value the photometric errors grow
+ exponentially.
+ %
+ The frame was processed with the six tested pyUPMASK clustering methods
+ and UPMASK, using proper motions and parallax as input data. We used 25
+ outer loop iterations for all the methods, except of course for
+ the single-run methods, and a value of 25 for the parameter that determines
+ the number of elements per cluster (i.e., the default values for both
+ parameters as explained in Sect.~\ref{ssec:input_pars}).\\
+
+ \begin{figure*}
+ \resizebox{\hsize}{!}{\includegraphics{figs/NGC2516_CMDs.png}}
+ \caption{Results for the NGC2516 cluster by the VOR (left), KNN (center), and
+ MBK (right) methods. Estimated members are shown as green circles, field stars
+ are shown as gray dots.}
+ \label{fig:NGC2516}
+ \end{figure*}
+
+ Only three methods were able to complete the process: VOR, KNN, and MBK. The
+ methods AGG, KMS, and GMM failed due to memory requirements as they
+ attempted to allocate arrays of $\sim$640 Gb, $\sim$31 Gb, and
+ $\sim$31 Gb on memory, respectively. UPMASK was not able to finish even the
+ first iteration of the inner loop within the first iteration of the outer loop
+ after a full week of running, so it was halted.
+ The results of the VOR, KNN, and MBK methods can be seen in a color-magnitude
+ diagram (CMD) in Fig.~\ref{fig:NGC2516}. We plotted the 1500 stars with larger
+ membership probabilities given by each method, as this is the approximate
+ number of cluster members in the frame (given by a simple stellar density
+ analysis). It is evident that the VOR method returns the most reasonable and
+ less contaminated CMD out of the three. Furthermore, this method managed to
+ process the cluster almost 4 and 40 times faster than KNN and MBK,
+ respectively. It is worth noting that in a personal computer, which has far
+ less resources than a computational cluster, VOR was the only method that
+ was able to run.\\
+
+ A smaller field containing this same cluster was analyzed with UPMASK
+ in~\cite{Cantat_2018}. The processed area contains only
+ $\sim$1100 stars associated to this cluster up to a magnitude of G${=}18$ mag.
+ The analysis done in this work resulted in less than 800 stars
+ with membership probabilities (MPs) above 0.5, and $\sim$100 stars with
+ MPs$>0.9$. In contrast, using the same magnitude cut, we are able to obtain
+ with the VOR method on our very large field over 1700 stars with MPs$>0.99$
+ tracing a well defined sequence. The advantage of studying a cluster
+ using almost all of its members versus using less than 10\% of them 
+ (comparing the large MPs subsets), is obvious.\\
+
+ The VOR method is thus the only one that was able to produce quality results
+ for this very large dataset, and it did so while using the least amount of
+ processing time by a wide margin.
+
+ % Using a value of 25 means that more than 16000 clusters need to be
+ % analyzed. As this could be too much for some of the methods we
+ % decided to also test using a value of 100, which drops the number of
+ % identified clusters to a little over 4000.\\
+
+ % VOR: 19.6 min (3.7x vs KNN, 39x vs MBK)
+ % KNN: 72.7 min
+ % MBK: 756.9 min
+
+
+
+
+
+
+%******************************************************************************
+\section{Conclusions}
+ \label{sec:conclusions}
+
+ Since its development in KMM14 the UPMASK code has been used to analyze
+ thousands of clusters. This is due to the fact that it is a very
+ smart, general, and efficient unsupervised method, that requires no prior
+ knowledge about the observed field.
+ %
+ In this work we introduced pyUPMASK, a tool based on the general UPMASK
+ algorithm with several added enhancements. The primary aim of pyUPMASK is the
+ assignment of membership probabilities to cluster stars observed in a frame
+ contaminated by field stars.
+ %
+ We tested our code extensively using six hundred synthetic clusters affected
+ by a large range of contamination. Six performance metrics were employed,
+ three of them in two different configurations, to ensure sufficient coverage
+ when assessing statistical classification.
+ Results from six different clustering methods in pyUPMASK were compared to
+ those from UPMASK.
+ Under the conditions established for the analysis, the pyUPMASK tool proved to
+ clearly outperform UPMASK 
+ % under every metric and with every clustering method used,
+ while still managing to be faster (and, for the single-run methods, extremely
+ faster).
+
+ This new tool is thus highly configurable (around a dozen clustering
+ algorithms supported), fast, and an excellent performer measured by
+ several metrics.
+ pyUPMASK is fully written in Python and it is made available for its use
+ under a GPL v3 general public
+ license\footnote{\url{https://www.gnu.org/copyleft/gpl.html}}.
+
+
+
+
+
+
+\begin{acknowledgements}
+The authors would like to thank Dr Anagnostopoulos for his help with the
+\texttt{hmeasure} (\url{https://github.com/cran/hmeasure}) R package.
+%
+The authors would like to thank Dr Cantat-Gaudin for sharing the code used
+in~\cite{Cantat_2018}\DIFaddbegin \DIFadd{.
+%DIF > 
+AM acknowledges support from the Portuguese Fundação para a Ciência e a
+Tecnologia (FCT) through the Strategic Programme UID/FIS/00099/2019 for CENTRA}\DIFaddend .
+%
+This research has made use of NASA's Astrophysics Data System.
+%
+This research made use of the Python language~\citep{vanRossum_1995}
+and the following packages:
+NumPy\footnote{\url{http://www.numpy.org/}}~\citep{vanDerWalt_2011};
+SciPy\footnote{\url{http://www.scipy.org/}}~\citep{Jones_2001};
+Astropy\footnote{\url{http://www.astropy.org/}}, a community-developed core Python
+package for Astronomy \citep{astropy:2013,astropy:2018};
+scikit-learn\footnote{\url{http://scikit-learn.org/}}~\citep{pedregosa_2011};
+matplotlib\footnote{\url{http://matplotlib.org/}}~\citep{hunter_2007}.
+%
+This work has made use of data from the European Space Agency (ESA) mission
+{\it Gaia} (\url{https://www.cosmos.esa.int/gaia}), processed by the {\it Gaia}
+Data Processing and Analysis Consortium (DPAC,
+\url{https://www.cosmos.esa.int/web/gaia/dpac/consortium}). Funding for the DPAC
+has been provided by national institutions, in particular the institutions
+participating in the {\it Gaia} Multilateral Agreement.
+\end{acknowledgements}
+
+
+\bibliographystyle{aa}
+\bibliography{biblio}
+
+
+
+% \begin{appendix}
+% \section{Results versus contamination index}
+%  \label{apx:ci}
+
+%  xxxxx   xxxx
+
+%  \begin{figure*}
+%  \resizebox{\hsize}{!}{\includegraphics{figs/CI_delta.png}}
+%  \caption{xxx}
+%  \label{fig:CIdelta}
+%  \end{figure*}
+
+% \end{appendix}
+
+
+
+\end{document}

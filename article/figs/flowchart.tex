@@ -1,0 +1,120 @@
+\documentclass[10pt]{article}
+
+% Convert PDF to PNG:
+% $ pdftoppm flowchart.pdf outputname -png -rx 300 -ry 300
+
+\usepackage{tikz} % este paquete y el de abajo se encargan de crear los
+%'flow charts'
+\usetikzlibrary{matrix,shapes,arrows,positioning,chains}
+% Add shadows to tikz boxes.
+\usepackage{pstricks}
+\usetikzlibrary{shadows.blur}
+\usetikzlibrary{shapes.symbols}
+
+% No page numbering.
+\pagestyle{empty}
+
+\begin{document}
+
+%Define block styles
+\tikzset{
+    decision/.style={
+        diamond,
+        draw,
+        text width=5em,
+        text badly centered,
+        inner sep=0pt
+    },
+    block/.style={
+        rectangle,
+        draw,
+        text width=14em,
+        text centered,
+        rounded corners
+    },
+    block2/.style={
+        rectangle,
+        draw,
+        text width=7em,
+        text centered,
+        rounded corners
+    },
+    cloud/.style={
+        draw,
+        ellipse,
+        text width=5em,
+        minimum height=2em
+    },
+    cloud2/.style={
+        draw,
+        ellipse,
+        text width=6em,
+        minimum height=2em
+    },
+    descr/.style={
+        fill=white,
+        inner sep=2.5pt
+    },
+    connector/.style={
+     -latex,
+     font=\normalsize
+    },
+    rectangle connector/.style={
+        connector,
+        to path={(\tikztostart) -- ++(#1,0pt) \tikztonodes |- (\tikztotarget) },
+        pos=0.5
+    },
+    rectangle connector/.default=-2cm,
+    straight connector/.style={
+        connector,
+        to path=--(\tikztotarget) \tikztonodes
+    }
+}
+
+\begin{tikzpicture}
+\matrix (m)[matrix of nodes, column sep=1.5cm, row sep=0.75cm, align=center,
+nodes={rectangle,draw, anchor=center}, ampersand
+replacement=\& ]
+{
+|[cloud, top color=green!25, bottom color=green!15, blur shadow={shadow blur
+steps=5}]| {Start} \\
+|[block, top color=yellow!25, bottom color=yellow!15,blur shadow={shadow blur
+steps=2}]| {Apply PCA and \\features reduction on data}    \\
+|[block, top color=blue!25, bottom color=blue!15,
+blur shadow={shadow blur steps=2}]|{Run the selected\\clustering algorithm}\\
+|[block, top color=blue!25, bottom color=blue!15, blur shadow={shadow blur
+steps=2}]| {Reject clusters consistent with a random uniform distribution}\\
+|[block, top color=blue!25, bottom color=blue!15,
+blur shadow={shadow blur steps=2}]| {Apply GUMM cleaning}\\
+|[decision, top color=yellow!25, bottom color=yellow!15, blur shadow={shadow
+blur steps=2}]| {Are all the ``fake clusters'' rejected?}   \\
+|[block, top color=yellow!25, bottom color=yellow!15,
+blur shadow={shadow blur steps=2}]|
+{Identify surviving stars as star cluster members and all others
+as field stars}\\
+|[block, top color=blue!25, bottom color=blue!15, blur shadow={shadow blur
+steps=2}]| {Estimate KDE probabilities for members}\\
+|[decision, top color=yellow!25, bottom color=yellow!15, blur shadow={shadow blur steps=2}]| {Is the Outer Loop finished?}\\
+|[cloud, top color=red!25, bottom color=red!15, blur shadow={shadow blur
+steps=2}]| {End}   \\
+};
+\path [draw=black,solid,line width=0.4mm,>=latex,->] (m-1-1) edge (m-2-1);
+\path [draw=black,solid,line width=0.4mm,>=latex,->] (m-2-1) edge (m-3-1);
+\path [draw=black,solid,line width=0.4mm,>=latex,->] (m-3-1) edge (m-4-1);
+\path [draw=black,solid,line width=0.4mm,>=latex,->] (m-4-1) edge (m-5-1);
+\path [draw=black,solid,line width=0.4mm,>=latex,->] (m-5-1) edge (m-6-1);
+\path [draw=black,solid,line width=0.4mm,>=latex,->] (m-6-1) edge (m-7-1);
+\draw [draw=black,solid,line width=0.4mm,>=latex,->] (m-6-1.east) -- ++(2,0) |-  (m-3-1.east)
+node[xshift=-1cm][pos=0,above,text=black]{\textbf{No}}
+node[near start,sloped,above,rotate=180] {\textbf{Inner Loop}};
+\path [draw=black,solid,line width=0.4mm,>=latex,->] (m-7-1) edge (m-8-1)
+node[xshift=0.6cm][yshift=0.85cm][above,text=black]{\textbf{Yes}};
+\path [draw=black,solid,line width=0.4mm,>=latex,->] (m-8-1) edge (m-9-1);
+\draw [draw=black,solid,line width=0.4mm,>=latex,->] (m-9-1.west) -- ++(-2,0) |-  (m-2-1.west)
+node[xshift=1cm][pos=0,above,text=black]{\textbf{No}}
+node[near start,sloped,above] {\textbf{Outer Loop}};
+\path [draw=black,solid,line width=0.4mm,>=latex,->] (m-9-1) edge (m-10-1)
+node[xshift=0.6cm][yshift=-2.15cm][above,text=black]{\textbf{Yes}};
+\path [draw=black,solid,line width=0.4mm,>=latex,->] (m-9-1) edge (m-10-1);
+\end{tikzpicture}
+\end{document}
